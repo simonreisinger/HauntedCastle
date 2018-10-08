@@ -9,3 +9,7 @@ Medieval age room with torches on fire, knight armors, chairs with chess desk, s
 - Fire + Smoke with Particle Effect (applied on torch)
 - Glow + Light Rays (Window)
 - Bump Mapping (Stone Wall)
+
+# Authors:
+Michael Pointner
+Simon Reisinger
