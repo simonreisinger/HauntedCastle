@@ -438,7 +438,7 @@ int main(int argc, char** argv)
 			// Use our shader
 			glUseProgram(shadowShader->programHandle);
 
-			glm::vec3 lightInvDir = glm::vec3(0.0, -1.0, 1.0);
+			glm::vec3 lightInvDir = glm::vec3(0.0, -1.0, -1.0);
 
 			// Compute the MVP matrix from the light's point of view
 			//glm::mat4 depthProjectionMatrix = glm::perspective(90.0f, (float)width / (float)height, -20.0f, 20.0f);
@@ -844,8 +844,15 @@ void handleInput(GLFWwindow* window, float time_delta)
 		double mouseYPosDiff = mouseYPos - mouseYPosOld;
 		
 		actor->actor->addTorque(actor->actor->getGlobalPose().rotate(PxVec3(0, -MOVESPEED * mouseXPosDiff / 10 * time_delta * actor->getExtraSpeed(), 0)));
-		
-		actor->actor->addForce(actor->actor->getGlobalPose().rotate(PxVec3(0, 0, ROTATESPEED * mouseYPosDiff * 15 * time_delta * actor->getExtraSpeed())));
+
+		if (mouseYPosDiff > 0)
+		{
+			camera->rotateDown(-time_delta * mouseYPosDiff / 10);
+		}
+		if (mouseYPosDiff < 0)
+		{
+			camera->rotateUp(time_delta * mouseYPosDiff / 10);
+		}
 	}
 
 	mouseXPosOld = mouseXPos;
@@ -866,11 +873,13 @@ void handleInput(GLFWwindow* window, float time_delta)
 	}
 	if (glfwGetKey(window, GLFW_KEY_DOWN))
 	{
-		camera->rotateDown(time_delta);
+		actor->actor->addForce(actor->actor->getGlobalPose().rotate(PxVec3(0, 0, ROTATESPEED * 15 * time_delta * actor->getExtraSpeed())));
+		//camera->rotateDown(time_delta);
 	}
 	if (glfwGetKey(window, GLFW_KEY_UP))
-	{		
-		camera->rotateUp(time_delta);
+	{
+		actor->actor->addForce(actor->actor->getGlobalPose().rotate(PxVec3(0, 0, -ROTATESPEED * 15 * time_delta * actor->getExtraSpeed())));
+		//camera->rotateUp(time_delta);
 	}
 
 	// actor 0 - rotate

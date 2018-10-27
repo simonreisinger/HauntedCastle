@@ -86,6 +86,8 @@ void Geometry::init(const std::string& displayFile, mat4& matrix, Shader* _shade
 
 	cout << "ModelDir:" << modelDir << endl;
 
+	cout << "ReadFile: " << datensatzDir + displayFile << endl;
+
 	Assimp::Importer displayImporter;
 	const aiScene* scene = displayImporter.ReadFile(datensatzDir + displayFile, aiProcessPreset_TargetRealtime_Quality);
 	if (!scene)

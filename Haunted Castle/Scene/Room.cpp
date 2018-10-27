@@ -16,7 +16,8 @@ Room::Room(Shader* shader, float sposX, float sposY, float sposZ, float srotX, f
 	this->rotz = srotZ;
 	this->scale = sscale;
 
-	const std::string& displayFile = "room3/room3-voller-raum.dae";
+	const std::string& displayFile = "scene2/room.dae";
+	//const std::string& displayFile = "room3/room3-voller-raum.dae";
 
 	glm::mat4& matrix = glm::mat4(1.0f);
 
