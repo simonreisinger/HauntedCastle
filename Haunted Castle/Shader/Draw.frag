@@ -80,7 +80,7 @@ void main(){
 	// PCF
 	// 4 Times Stratified Poisson Sampling
 	for (int i=0;i<4;i++){
-		visibility -= 0.1*(1.0-texture( shadowMap, vec3(ShadowCoord.xy + disk[i]/700.0,  (ShadowCoord.z-bias)/ShadowCoord.w) ));
+		visibility -= 0.25*(1.0-texture( shadowMap, vec3(ShadowCoord.xy + disk[i]/700.0,  (ShadowCoord.z-bias)/ShadowCoord.w) ));
 	}
 
 	if(enableLighting == 0)
@@ -96,8 +96,7 @@ void main(){
 		*/
 		
 		FragColor = vec4(MaterialAmbientColor +
-			visibility * 
-			min(10 / distance(Position_worldspace, LightPosition_worldspace), 1) * 
+			max(visibility * 10, min(100 / pow(distance(Position_worldspace, LightPosition_worldspace), 2), 1)) * 
 			// Diffuse
 			(MaterialDiffuseColor * cosTheta +
 			// Specular

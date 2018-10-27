@@ -1,21 +1,25 @@
-
+Biuld/
+Release/
+build-Debug
+bin/build
+Haunted Castle/*.user
+Haunted Castle/*.suo*.pdb
+.vs
 .DS_Store
 *.opensdf
 *.sdf
 *.suo
 *.user
-bin/build
-Haunted Castle/*.user
-Haunted Castle/*.suo
-build-Debug
-*.pdb
 *.tlog
 *.log
+*.pdb
+*.tlog
+*.obj
+*.log
+*.tlog
+
 *.idb
 *.lastbuildstate
-build-Debug/Haunted Castle.tlog/Haunted Castle.lastbuildstate
 *.ilk
-build-Release
-Release
-.vs
 *.zip
+*.lastbuildstate
