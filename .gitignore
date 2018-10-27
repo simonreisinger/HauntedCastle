@@ -15,8 +15,7 @@ build-Debug
 *.lastbuildstate
 build-Debug/Haunted Castle.tlog/Haunted Castle.lastbuildstate
 *.ilk
-*.lastbuildstate
-build-Debug/Haunted Castle.tlog/Haunted Castle.lastbuildstate
 build-Release
 Release
 .vs
+*.zip
