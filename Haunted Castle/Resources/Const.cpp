@@ -51,7 +51,7 @@ void printMatGeometry(mat4x4 mat)
 GLuint depthTexture;
 glm::mat4 depthBiasMVP;
 glm::mat4 depthMVP;
-vec3 lightPos = vec3(8, -2, -8);
+vec3 lightPos = vec3(3, -2, 3);
 
 float wnear = 0;
 float hnear = 0;

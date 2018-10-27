@@ -51,8 +51,6 @@ void printVec(string name, glm::vec4 vec);
 void OnShutdown();
 mat4x4 pxMatToGlm(PxMat44 pxMat);
 void RenderQuad();
-void initDirectionalShadows();
-void initPointShadows();
 
 Shader* renderShader;
 Shader* shadowShader;
@@ -62,8 +60,6 @@ GLuint hdrFBO;
 GLuint colorBuffers[2];
 GLuint pingpongFBO[2];
 GLuint pingpongColorbuffers[2];
-
-GLuint depthMapFBO;
 
 // TODO actor1 to actor
 Actor* actor; 
@@ -408,6 +404,8 @@ int main(int argc, char** argv)
 		refreshTime += time_delta;
 		time = time_new;
 
+		int drawWidth = width;
+
 		handleInput(window, time_delta);
 
 		update(time_delta);
@@ -426,7 +424,7 @@ int main(int argc, char** argv)
 			// Render to our framebuffer
 			//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
-			glViewport(0, 0, width, height); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+			glViewport(0, 0, drawWidth, height); // Render on the whole framebuffer, complete from the lower left corner to the upper right
 			//glViewport(0, 0, 1024, 1024);  // Render on the whole framebuffer, complete from the lower left corner to the upper right
 
 			// We don't use bias in the shader, but instead we draw back faces, 
@@ -470,7 +468,7 @@ int main(int argc, char** argv)
 
 			// 1. Render scene into floating point framebuffer
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			glViewport(0, 0, width, height);
+			glViewport(0, 0, drawWidth, height);
 
 			glEnable(GL_CULL_FACE);
 			glCullFace(GL_BACK);
@@ -504,7 +502,7 @@ int main(int argc, char** argv)
 			nearDist = 0.1f;
 			farDist = 200.0f;
 			float fov = 100.0f;
-			float ratio = (float)width / (float)height;
+			float ratio = (float)drawWidth / (float)height;
 
 			proj = glm::perspective(fov, ratio, nearDist, farDist);
 
@@ -675,26 +673,11 @@ void init(GLFWwindow* window)
 
 
 
+	int drawWidth = width;
+
 	// 60° Open angle, aspect, near, far
 	proj = glm::perspective(100.0f, (float)width / (float)height, 0.1f, 200.0f);
 
-
-
-	initDirectionalShadows();
-	
-	initPointShadows();
-	
-	// Always check that our framebuffer is ok
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	{
-		std::cout << "Couldn't load frame buffer ";
-		glfwTerminate();
-		system("PAUSE");
-		exit(EXIT_FAILURE);
-	}
-}
-
-void initDirectionalShadows() {
 	// Shadow Maps
 	shadowShader = new Shader(
 		"Shader/Shadow.vert",
@@ -707,7 +690,7 @@ void initDirectionalShadows() {
 	// Depth texture. Slower than a depth buffer, but you can sample it later in your shader
 	glGenTextures(1, &depthTexture);
 	glBindTexture(GL_TEXTURE_2D, depthTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, drawWidth, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 	//glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -740,7 +723,7 @@ void initDirectionalShadows() {
 	for (GLuint i = 0; i < 2; i++)
 	{
 		glBindTexture(GL_TEXTURE_2D, colorBuffers[i]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_BGR, GL_FLOAT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, drawWidth, height, 0, GL_BGR, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -748,46 +731,29 @@ void initDirectionalShadows() {
 		// attach texture to framebuffer
 		glFramebufferTexture2D(
 			GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorBuffers[i], 0
-		);
+			);
 	}
 
 	// - Create and attach depth buffer (renderbuffer)
 	GLuint rboDepth;
 	glGenRenderbuffers(1, &rboDepth);
 	glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, drawWidth, height);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
 	// - Tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
 	GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 	glDrawBuffers(2, attachments);
 
+	// Always check that our framebuffer is ok
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cout << "Couldn't load frame buffer ";
+		glfwTerminate();
+		system("PAUSE");
+		exit(EXIT_FAILURE);
+	}
+
 	
-}
-
-void initPointShadows() {
-	unsigned int depthCubemap;
-	glGenTextures(1, &depthCubemap);
-
-
-	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-	for (unsigned int i = 0; i < 6; ++i)
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-
-
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	
-
-	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemap, 0);
-	/*
-	glDrawBuffer(GL_NONE);
-	glReadBuffer(GL_NONE);
-	*/
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 GLuint quadVAO = 0;
