@@ -19,3 +19,4 @@ build-Release
 Release
 .vs
 *.zip
+.idea/
