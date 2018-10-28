@@ -51,6 +51,7 @@ void printVec(string name, glm::vec4 vec);
 void OnShutdown();
 mat4x4 pxMatToGlm(PxMat44 pxMat);
 void RenderQuad();
+void initDirectionalShadows();
 
 Shader* renderShader;
 Shader* shadowShader;
@@ -404,8 +405,6 @@ int main(int argc, char** argv)
 		refreshTime += time_delta;
 		time = time_new;
 
-		int drawWidth = width;
-
 		handleInput(window, time_delta);
 
 		update(time_delta);
@@ -424,7 +423,7 @@ int main(int argc, char** argv)
 			// Render to our framebuffer
 			//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 			glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
-			glViewport(0, 0, drawWidth, height); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+			glViewport(0, 0, width, height); // Render on the whole framebuffer, complete from the lower left corner to the upper right
 			//glViewport(0, 0, 1024, 1024);  // Render on the whole framebuffer, complete from the lower left corner to the upper right
 
 			// We don't use bias in the shader, but instead we draw back faces, 
@@ -439,7 +438,7 @@ int main(int argc, char** argv)
 			// Use our shader
 			glUseProgram(shadowShader->programHandle);
 
-			glm::vec3 lightInvDir = glm::vec3(0.0, -1.0, 1.0);
+			glm::vec3 lightInvDir = glm::vec3(0.0, -1.0, -1.0);
 
 			// Compute the MVP matrix from the light's point of view
 			//glm::mat4 depthProjectionMatrix = glm::perspective(90.0f, (float)width / (float)height, -20.0f, 20.0f);
@@ -468,7 +467,7 @@ int main(int argc, char** argv)
 
 			// 1. Render scene into floating point framebuffer
 			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			glViewport(0, 0, drawWidth, height);
+			glViewport(0, 0, width, height);
 
 			glEnable(GL_CULL_FACE);
 			glCullFace(GL_BACK);
@@ -502,7 +501,7 @@ int main(int argc, char** argv)
 			nearDist = 0.1f;
 			farDist = 200.0f;
 			float fov = 100.0f;
-			float ratio = (float)drawWidth / (float)height;
+			float ratio = (float)width / (float)height;
 
 			proj = glm::perspective(fov, ratio, nearDist, farDist);
 
@@ -673,11 +672,30 @@ void init(GLFWwindow* window)
 
 
 
-	int drawWidth = width;
-
 	// 60° Open angle, aspect, near, far
 	proj = glm::perspective(100.0f, (float)width / (float)height, 0.1f, 200.0f);
 
+
+
+
+	initDirectionalShadows();
+
+
+
+	// Always check that our framebuffer is ok
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cout << "Couldn't load frame buffer ";
+		glfwTerminate();
+		system("PAUSE");
+		exit(EXIT_FAILURE);
+	}
+
+	
+}
+
+void initDirectionalShadows()
+{
 	// Shadow Maps
 	shadowShader = new Shader(
 		"Shader/Shadow.vert",
@@ -690,7 +708,7 @@ void init(GLFWwindow* window)
 	// Depth texture. Slower than a depth buffer, but you can sample it later in your shader
 	glGenTextures(1, &depthTexture);
 	glBindTexture(GL_TEXTURE_2D, depthTexture);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, drawWidth, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 	//glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
@@ -723,7 +741,7 @@ void init(GLFWwindow* window)
 	for (GLuint i = 0; i < 2; i++)
 	{
 		glBindTexture(GL_TEXTURE_2D, colorBuffers[i]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, drawWidth, height, 0, GL_BGR, GL_FLOAT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_BGR, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -731,29 +749,18 @@ void init(GLFWwindow* window)
 		// attach texture to framebuffer
 		glFramebufferTexture2D(
 			GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorBuffers[i], 0
-			);
+		);
 	}
 
 	// - Create and attach depth buffer (renderbuffer)
 	GLuint rboDepth;
 	glGenRenderbuffers(1, &rboDepth);
 	glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, drawWidth, height);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
 	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
 	// - Tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
 	GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 	glDrawBuffers(2, attachments);
-
-	// Always check that our framebuffer is ok
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	{
-		std::cout << "Couldn't load frame buffer ";
-		glfwTerminate();
-		system("PAUSE");
-		exit(EXIT_FAILURE);
-	}
-
-	
 }
 
 GLuint quadVAO = 0;
@@ -837,8 +844,15 @@ void handleInput(GLFWwindow* window, float time_delta)
 		double mouseYPosDiff = mouseYPos - mouseYPosOld;
 		
 		actor->actor->addTorque(actor->actor->getGlobalPose().rotate(PxVec3(0, -MOVESPEED * mouseXPosDiff / 10 * time_delta * actor->getExtraSpeed(), 0)));
-		
-		actor->actor->addForce(actor->actor->getGlobalPose().rotate(PxVec3(0, 0, ROTATESPEED * mouseYPosDiff * 15 * time_delta * actor->getExtraSpeed())));
+
+		if (mouseYPosDiff > 0)
+		{
+			camera->rotateDown(-time_delta * mouseYPosDiff / 10);
+		}
+		if (mouseYPosDiff < 0)
+		{
+			camera->rotateUp(time_delta * mouseYPosDiff / 10);
+		}
 	}
 
 	mouseXPosOld = mouseXPos;
@@ -849,19 +863,23 @@ void handleInput(GLFWwindow* window, float time_delta)
 	
 	if (glfwGetKey(window, GLFW_KEY_RIGHT))
 	{
-		camera->rotateLeft(time_delta);
+		//camera->rotateLeft(time_delta);
+		actor->actor->addTorque(actor->actor->getGlobalPose().rotate(PxVec3(0, MOVESPEED * time_delta * actor->getExtraSpeed(), 0)));
 	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT))
 	{
-		camera->rotateRight(time_delta);
+		//camera->rotateRight(time_delta);
+		actor->actor->addTorque(actor->actor->getGlobalPose().rotate(PxVec3(0, -MOVESPEED * time_delta * actor->getExtraSpeed(), 0)));
 	}
 	if (glfwGetKey(window, GLFW_KEY_DOWN))
 	{
-		camera->rotateDown(time_delta);
+		actor->actor->addForce(actor->actor->getGlobalPose().rotate(PxVec3(0, 0, ROTATESPEED * 15 * time_delta * actor->getExtraSpeed())));
+		//camera->rotateDown(time_delta);
 	}
 	if (glfwGetKey(window, GLFW_KEY_UP))
-	{		
-		camera->rotateUp(time_delta);
+	{
+		actor->actor->addForce(actor->actor->getGlobalPose().rotate(PxVec3(0, 0, -ROTATESPEED * 15 * time_delta * actor->getExtraSpeed())));
+		//camera->rotateUp(time_delta);
 	}
 
 	// actor 0 - rotate
