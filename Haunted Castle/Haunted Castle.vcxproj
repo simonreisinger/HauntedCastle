@@ -91,7 +91,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="PhysX.cpp" />
     <ClCompile Include="Resources\Camera.cpp" />
     <ClCompile Include="Resources\Const.cpp" />
     <ClCompile Include="Resources\FrustumG.cpp" />
@@ -109,7 +108,6 @@
     <ClCompile Include="Scene\Wardrobe.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="PhysX.hpp" />
     <ClInclude Include="Resources\Camera.hpp" />
     <ClInclude Include="Resources\Const.hpp" />
     <ClInclude Include="Resources\FrustumG.hpp" />

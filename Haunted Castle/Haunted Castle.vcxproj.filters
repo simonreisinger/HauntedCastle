@@ -57,9 +57,6 @@
     <ClCompile Include="Scene\Wardrobe.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="PhysX.cpp">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
     <ClCompile Include="Scene\Door.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
@@ -105,9 +102,6 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="Scene\Wardrobe.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="PhysX.hpp">
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="Scene\Door.hpp">
