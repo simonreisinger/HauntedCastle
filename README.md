@@ -9,6 +9,7 @@
 * [armchair](https://free3d.com/3d-model/armchair-2422.html)
 * [medieval door](https://free3d.com/3d-model/medieval-door-16986.html)
 * [knights](https://free3d.com/3d-model/knight-84265.html)
+* [Wardrobes](https://www.turbosquid.com/3d-models/set-corona-wardrobes-3ds-free/890180)
 
 ### Texture Models
 * [Walls of Room: Stone(1)01 from 3DTotal.com](https://www.cg.tuwien.ac.at/courses/Textures/Total_Textures_V1/)
