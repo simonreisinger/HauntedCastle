@@ -20,7 +20,14 @@
 #include "Scene/Room.hpp"
 #include "Scene/Wardrobe.hpp"
 #include "Scene/Door.hpp"
-#include "Scene/Stuhl.hpp"
+#include "Scene/Chair1.hpp"
+#include "Scene/Chair2.hpp"
+#include "Scene/Desk.hpp"
+#include "Scene/Frame.hpp"
+#include "Scene/Commode.hpp"
+#include "Scene/Torch1.hpp"
+#include "Scene/Torch2.hpp"
+
 
 
 #include <ft2build.h>
@@ -75,7 +82,13 @@ Room* room;
 Camera* camera;
 Wardrobe* wardrobe;
 Door* door;
-Stuhl* stuhl;
+Chair1* chair1;
+Chair2* chair2;
+Desk* desk;
+Frame* frame;
+Commode* commode;
+Torch1* torch1;
+Torch2* torch2;
 
 
 double mouseXPosOld, mouseYPosOld;
@@ -247,11 +260,13 @@ static std::string FormatDebugOutput(GLenum source, GLenum type, GLuint id, GLen
 
 	if (type != GL_DEBUG_TYPE_OTHER)
 	{
+		/*
 		stringStream << "OpenGL Error: " << msg;
 		stringStream << " [Source = " << sourceString;
 		stringStream << ", Type = " << typeString;
 		stringStream << ", Severity = " << severityString;
 		stringStream << ", ID = " << id << "]";
+		*/
 	}
 
 	return stringStream.str();
@@ -601,7 +616,14 @@ void OnShutdown()
 	delete camera; camera = nullptr;
 	delete wardrobe; wardrobe = nullptr;
 	delete door; door = nullptr;
-	delete stuhl; stuhl = nullptr;
+	delete chair1; chair1 = nullptr;
+	delete chair2; chair2 = nullptr;
+	delete desk; desk = nullptr;
+	delete frame; frame = nullptr;
+	delete commode; commode = nullptr;
+	delete torch1; torch1 = nullptr;
+	delete torch2; torch2 = nullptr;
+
 
 
 	delete renderShader; renderShader = nullptr;
@@ -673,14 +695,25 @@ void init(GLFWwindow* window)
 
 	room = new Room(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 	
-	knight1 = new Knight1(renderShader, 12.0f, 0.0f, -15.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-	knight2 = new Knight2(renderShader, 10.0f, 0.0f, 17.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	knight1 = new Knight1(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	knight2 = new Knight2(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
 	wardrobe = new Wardrobe(renderShader, -11.0f, 0.0f, -10.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
-	door = new Door(renderShader, 10.0f, 0.0f, -10.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	door = new Door(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
-	stuhl = new Stuhl(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	chair1 = new Chair1(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	chair2 = new Chair2(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+
+	desk = new Desk(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+
+	frame = new Frame(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+
+	commode = new Commode(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+
+	torch1 = new Torch1(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+
+	torch2 = new Torch2(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
 
 	//ring->setPhysX(gPhysicsSDK, gFoundation, gDefaultErrorCallback, gDefaultAllocatorCallback, gScene);
@@ -835,7 +868,19 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 
 	door->draw(drawShader, view, proj, camera_model, cull);
 
-	stuhl->draw(drawShader, view, proj, camera_model, cull);
+	chair1->draw(drawShader, view, proj, camera_model, cull);
+
+	chair2->draw(drawShader, view, proj, camera_model, cull);
+
+	desk->draw(drawShader, view, proj, camera_model, cull);
+
+	frame->draw(drawShader, view, proj, camera_model, cull);
+
+	commode->draw(drawShader, view, proj, camera_model, cull);
+
+	torch1->draw(drawShader, view, proj, camera_model, cull);
+
+	torch2->draw(drawShader, view, proj, camera_model, cull);
 
 
 	// Actors
