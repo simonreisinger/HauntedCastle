@@ -6,4 +6,9 @@
 
 ## Object Sources:
 
-* (armchair)[https://free3d.com/3d-model/armchair-2422.html]
+* [armchair](https://free3d.com/3d-model/armchair-2422.html)
+* [medieval door](https://free3d.com/3d-model/medieval-door-16986.html)
+
+## Authors:
+* Michael Pointner
+* Simon Reisinger
