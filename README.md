@@ -30,6 +30,7 @@ https://dl.acm.org/citation.cfm?id=37435
 * [knights](https://free3d.com/3d-model/knight-84265.html)
 * [Wardrobes](https://www.turbosquid.com/3d-models/set-corona-wardrobes-3ds-free/890180)
 * [Torch](https://www.yobi3d.com/q/3d-models-fire-torch)
+* [Chess](https://free3d.com/3d-model/chess-table-18114.html)
 
 ### Texture Models
 * [Walls of Room: Stone(1)01 from 3DTotal.com](https://www.cg.tuwien.ac.at/courses/Textures/Total_Textures_V1/)
