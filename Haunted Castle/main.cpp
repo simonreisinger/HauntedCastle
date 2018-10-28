@@ -8,15 +8,20 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "Resources/SceneObject.hpp"
 #include "Resources/Camera.hpp"
+#include <PhysX\PxPhysicsAPI.h>
+#include "Resources\RenderBuffer.h"
+#include "Resources\Const.hpp"
+#include "Resources\FrustumG.hpp"
+
 #include "Scene/Geometry.hpp"
 #include "Scene/Actor.hpp"
 #include "Scene/Knight1.hpp"
 #include "Scene/Knight2.hpp"
 #include "Scene/Room.hpp"
-#include <PhysX\PxPhysicsAPI.h>
-#include "Resources\RenderBuffer.h"
-#include "Resources\Const.hpp"
-#include "Resources\FrustumG.hpp"
+#include "Scene/Wardrobe.hpp"
+#include "Scene/Door.hpp"
+#include "Scene/Stuhl.hpp"
+
 
 #include <ft2build.h>
 #include FT_FREETYPE_H  
@@ -68,6 +73,9 @@ Knight1* knight1;
 Knight2* knight2;
 Room* room;
 Camera* camera;
+Wardrobe* wardrobe;
+Door* door;
+Stuhl* stuhl;
 
 
 double mouseXPosOld, mouseYPosOld;
@@ -82,8 +90,8 @@ float RING_HEIGHT_LOW = 10.0f;
 int width;
 int height;
 
-float MOVESPEED = 200.0 * 1.2f;// 40.0;
-float ROTATESPEED = 2400.0 * 1.2f;
+float MOVESPEED = 200.0 * 2.0 * 1.2f;// 40.0;
+float ROTATESPEED = 2400.0 * 2.0 * 1.2f;
 
 static PxPhysics*				gPhysicsSDK = NULL;			//Instance of PhysX SDK
 static PxFoundation*			gFoundation = NULL;			//Instance of singleton foundation SDK class
@@ -591,6 +599,10 @@ void OnShutdown()
 	delete knight2; knight2 = nullptr;
 	delete room; room = nullptr;
 	delete camera; camera = nullptr;
+	delete wardrobe; wardrobe = nullptr;
+	delete door; door = nullptr;
+	delete stuhl; stuhl = nullptr;
+
 
 	delete renderShader; renderShader = nullptr;
 	delete shadowShader; shadowShader = nullptr;
@@ -655,14 +667,20 @@ void init(GLFWwindow* window)
 
 	camera = new Camera();
 
-	actor = new Actor(renderShader, 2.0f, RING_HEIGHT_HIGH - 5, 6.0f, 180.0f);
+	actor = new Actor(renderShader, 2.0f, -5.0f, 6.0f, 0.0f);
 	actor->setPhysX(gPhysicsSDK, gFoundation, gDefaultErrorCallback, gDefaultAllocatorCallback, gScene);
 	actor->initActor();
 
 	room = new Room(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 	
-	knight1 = new Knight1(renderShader, 30.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.1f);
-	knight2 = new Knight2(renderShader, -20.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.1f);
+	knight1 = new Knight1(renderShader, 12.0f, 0.0f, -15.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	knight2 = new Knight2(renderShader, 10.0f, 0.0f, 17.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+
+	wardrobe = new Wardrobe(renderShader, -11.0f, 0.0f, -10.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+
+	door = new Door(renderShader, 10.0f, 0.0f, -10.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+
+	stuhl = new Stuhl(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
 
 	//ring->setPhysX(gPhysicsSDK, gFoundation, gDefaultErrorCallback, gDefaultAllocatorCallback, gScene);
@@ -812,6 +830,13 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 	knight1->draw(drawShader, view, proj, camera_model, cull);
 
 	knight2->draw(drawShader, view, proj, camera_model, cull);
+
+	wardrobe->draw(drawShader, view, proj, camera_model, cull);
+
+	door->draw(drawShader, view, proj, camera_model, cull);
+
+	stuhl->draw(drawShader, view, proj, camera_model, cull);
+
 
 	// Actors
 	//actor->draw(drawShader, view, proj, camera_model, cull);

@@ -91,6 +91,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="PhysX.cpp" />
     <ClCompile Include="Resources\Camera.cpp" />
     <ClCompile Include="Resources\Const.cpp" />
     <ClCompile Include="Resources\FrustumG.cpp" />
@@ -98,13 +99,17 @@
     <ClCompile Include="Resources\Texture.cpp" />
     <ClCompile Include="Scene\Actor.cpp" />
     <ClCompile Include="Resources\SceneObject.cpp" />
+    <ClCompile Include="Scene\Door.cpp" />
     <ClCompile Include="Scene\Geometry.cpp" />
     <ClCompile Include="Resources\Shader.cpp" />
     <ClCompile Include="Scene\Knight1.cpp" />
     <ClCompile Include="Scene\Knight2.cpp" />
     <ClCompile Include="Scene\Room.cpp" />
+    <ClCompile Include="Scene\Stuhl.cpp" />
+    <ClCompile Include="Scene\Wardrobe.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="PhysX.hpp" />
     <ClInclude Include="Resources\Camera.hpp" />
     <ClInclude Include="Resources\Const.hpp" />
     <ClInclude Include="Resources\FrustumG.hpp" />
@@ -112,11 +117,14 @@
     <ClInclude Include="Resources\Texture.hpp" />
     <ClInclude Include="Scene\Actor.hpp" />
     <ClInclude Include="Resources\SceneObject.hpp" />
+    <ClInclude Include="Scene\Door.hpp" />
     <ClInclude Include="Scene\Geometry.hpp" />
     <ClInclude Include="Resources\Shader.hpp" />
     <ClInclude Include="Scene\Knight1.hpp" />
     <ClInclude Include="Scene\Knight2.hpp" />
     <ClInclude Include="Scene\Room.hpp" />
+    <ClInclude Include="Scene\Stuhl.hpp" />
+    <ClInclude Include="Scene\Wardrobe.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shader\Draw.frag" />

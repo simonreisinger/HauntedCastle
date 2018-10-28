@@ -21,8 +21,8 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 	this->updateTrans = mat4x4(1.0f);
 
 	applyUpdateTrans = false;
-	char* sdf = "Rotor";
-	if (strcmp(nameMesh, sdf) == 0)
+	char* tuerMitte = "TuerMitte";
+	if (strcmp(nameMesh, tuerMitte) == 0)
 	{
 		applyUpdateTrans = true;
 	}
