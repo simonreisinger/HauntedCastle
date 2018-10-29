@@ -95,9 +95,9 @@ void main(){
 			visibility*0.5, 1);
 		*/
 
-		FragColor = vec4(MaterialDiffuseColor, 1);
+		//FragColor = vec4(MaterialDiffuseColor, 1);
 		
-		/*
+		
 		FragColor = vec4(MaterialAmbientColor +
 			visibility * 
 			min(10 / distance(Position_worldspace, LightPosition_worldspace), 1) * 
@@ -105,7 +105,7 @@ void main(){
 			(MaterialDiffuseColor * cosTheta +
 			// Specular
 			MaterialSpecularColor * pow(cosAlpha,5)), enableTransparency==1 ? alpha : 1);
-		*/
+		
 		
 	}
 	

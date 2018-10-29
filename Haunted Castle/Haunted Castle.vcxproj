@@ -99,6 +99,7 @@
     <ClCompile Include="Scene\Actor.cpp" />
     <ClCompile Include="Resources\SceneObject.cpp" />
     <ClCompile Include="Scene\Chair2.cpp" />
+    <ClCompile Include="Scene\Chess.cpp" />
     <ClCompile Include="Scene\Commode.cpp" />
     <ClCompile Include="Scene\Desk.cpp" />
     <ClCompile Include="Scene\Door.cpp" />
@@ -122,6 +123,7 @@
     <ClInclude Include="Scene\Actor.hpp" />
     <ClInclude Include="Resources\SceneObject.hpp" />
     <ClInclude Include="Scene\Chair2.hpp" />
+    <ClInclude Include="Scene\Chess.hpp" />
     <ClInclude Include="Scene\Commode.hpp" />
     <ClInclude Include="Scene\Desk.hpp" />
     <ClInclude Include="Scene\Door.hpp" />

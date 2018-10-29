@@ -81,6 +81,9 @@
     <ClCompile Include="Scene\Torch2.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="Scene\Chess.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Resources\SceneObject.hpp">
@@ -144,6 +147,9 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="Scene\Torch2.hpp">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\Chess.hpp">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

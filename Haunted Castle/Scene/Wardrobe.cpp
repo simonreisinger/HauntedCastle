@@ -16,7 +16,7 @@ Wardrobe::Wardrobe(Shader* shader, float sposX, float sposY, float sposZ, float 
 	this->rotz = srotZ;
 	this->scale = sscale;
 
-	const std::string& displayFile = "wardrobe/wardrobe4.dae";
+	const std::string& displayFile = "wardrobe/wardrobe.dae";
 
 	glm::mat4& matrix = glm::mat4(1.0f);
 

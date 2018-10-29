@@ -27,6 +27,7 @@
 #include "Scene/Commode.hpp"
 #include "Scene/Torch1.hpp"
 #include "Scene/Torch2.hpp"
+#include "Scene/Chess.hpp"
 
 
 
@@ -89,6 +90,10 @@ Frame* frame;
 Commode* commode;
 Torch1* torch1;
 Torch2* torch2;
+Chess* chess;
+
+
+bool renderObjects = false;
 
 
 double mouseXPosOld, mouseYPosOld;
@@ -623,6 +628,7 @@ void OnShutdown()
 	delete commode; commode = nullptr;
 	delete torch1; torch1 = nullptr;
 	delete torch2; torch2 = nullptr;
+	delete chess; chess = nullptr;
 
 
 
@@ -689,32 +695,37 @@ void init(GLFWwindow* window)
 
 	camera = new Camera();
 
-	torch1 = new Torch1(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-	
-	desk = new Desk(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-
 	actor = new Actor(renderShader, 2.0f, -5.0f, 6.0f, 0.0f);
 	actor->setPhysX(gPhysicsSDK, gFoundation, gDefaultErrorCallback, gDefaultAllocatorCallback, gScene);
 	actor->initActor();
 
 	room = new Room(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-	
-	knight1 = new Knight1(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-	knight2 = new Knight2(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
-	wardrobe = new Wardrobe(renderShader, -11.0f, 0.0f, -10.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	if (renderObjects)
+	{
+		torch1 = new Torch1(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
-	door = new Door(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+		desk = new Desk(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
-	chair1 = new Chair1(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-	chair2 = new Chair2(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-	
-	
-	frame = new Frame(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+		knight1 = new Knight1(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+		knight2 = new Knight2(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
-	commode = new Commode(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+		wardrobe = new Wardrobe(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
-	torch2 = new Torch2(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+		door = new Door(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+
+		chair1 = new Chair1(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+		chair2 = new Chair2(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+
+
+		frame = new Frame(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+
+		commode = new Commode(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+
+		torch2 = new Torch2(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+
+		chess = new Chess(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	}
 	
 
 	//ring->setPhysX(gPhysicsSDK, gFoundation, gDefaultErrorCallback, gDefaultAllocatorCallback, gScene);
@@ -858,31 +869,38 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 	}
 
 
-	torch1->draw(drawShader, view, proj, camera_model, cull);
-	
 	// Room
 	room->draw(drawShader, view, proj, camera_model, cull);
 
-	// Object
-	knight1->draw(drawShader, view, proj, camera_model, cull);
+	if (renderObjects)
+	{
 
-	knight2->draw(drawShader, view, proj, camera_model, cull);
+		torch1->draw(drawShader, view, proj, camera_model, cull);
 
-	wardrobe->draw(drawShader, view, proj, camera_model, cull);
+		// Object
+		knight1->draw(drawShader, view, proj, camera_model, cull);
 
-	door->draw(drawShader, view, proj, camera_model, cull);
+		knight2->draw(drawShader, view, proj, camera_model, cull);
 
-	chair1->draw(drawShader, view, proj, camera_model, cull);
+		wardrobe->draw(drawShader, view, proj, camera_model, cull);
 
-	chair2->draw(drawShader, view, proj, camera_model, cull);
+		door->draw(drawShader, view, proj, camera_model, cull);
 
-	desk->draw(drawShader, view, proj, camera_model, cull);
+		chair1->draw(drawShader, view, proj, camera_model, cull);
 
-	frame->draw(drawShader, view, proj, camera_model, cull);
+		chair2->draw(drawShader, view, proj, camera_model, cull);
 
-	commode->draw(drawShader, view, proj, camera_model, cull);
+		desk->draw(drawShader, view, proj, camera_model, cull);
 
-	torch2->draw(drawShader, view, proj, camera_model, cull);
+		frame->draw(drawShader, view, proj, camera_model, cull);
+
+		commode->draw(drawShader, view, proj, camera_model, cull);
+
+		torch2->draw(drawShader, view, proj, camera_model, cull);
+
+		chess->draw(drawShader, view, proj, camera_model, cull);
+
+	}
 	
 
 	// Actors
