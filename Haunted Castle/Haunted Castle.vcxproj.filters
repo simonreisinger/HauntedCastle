@@ -24,9 +24,6 @@
     <ClCompile Include="Resources\Texture.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="Scene\Geometry.cpp">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
     <ClCompile Include="Resources\Camera.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
@@ -84,6 +81,12 @@
     <ClCompile Include="Scene\Chess.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="Resources\Geometry.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
+    <ClCompile Include="Resources\Node.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Resources\SceneObject.hpp">
@@ -93,9 +96,6 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="Resources\Texture.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\Geometry.hpp">
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="Resources\Camera.hpp">
@@ -150,6 +150,12 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="Scene\Chess.hpp">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="Resources\Geometry.hpp">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="Resources\Node.hpp">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

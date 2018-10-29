@@ -39,13 +39,7 @@ namespace cgue
 		PxScene*				gScene;
 
 
-		Mesh* test;
 		Mesh** mesh;
-
-		int enableLighting;
-		int enableGlow;
-		bool enableDraw;
-		float alpha;
 
 		// Positions
 		float posx;

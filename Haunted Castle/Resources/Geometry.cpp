@@ -3,7 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-
+#include "Node.hpp"
 
 using namespace cgue;
 using namespace std;
@@ -23,9 +23,7 @@ void Geometry::searchNodesRecursive(string modelDir, aiNode* node, const aiScene
 	//cout << "NODE: " << name.data << endl;
 	printMatGeometry(name.data, transform);
 
-	if (node->mNumMeshes > 1) {
-		cout << "node->mNumMeshes:" << node->mNumMeshes << endl;
-	}
+	cout << "node->mNumMeshes:" << node->mNumMeshes << endl;
 	
 	for (int i = 0; i < node->mNumMeshes; i++)
 	{
@@ -106,6 +104,10 @@ void Geometry::init(const std::string& displayFile, mat4& matrix, Shader* _shade
 
 	aiNode* rootNode = scene->mRootNode;
 
+	Node* node = new Node();
+
+	//Node* node = new Node(rootNode);
+
 	// Notiz: Mit Blender ist wird jeder Eckpunkt 6-fach gespeichert, 2-mal je Seite
 	size = countVerticesRecursive(rootNode, scene);
 	positions = new float[size * 3];
@@ -154,8 +156,6 @@ void Geometry::update(float time_delta, float time_abs)
 
 void Geometry::draw(Shader* drawShader, mat4x4 view, glm::mat4x4 proj, mat4x4 camera_model, bool cull)
 {
-	if (!enableDraw) return;
-
 	drawShader->useShader();
 
 	mat4x4 globalPose = getGlobalPose();

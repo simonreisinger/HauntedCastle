@@ -1,5 +1,5 @@
 #include <glm/gtc/matrix_transform.hpp>
-#include "Geometry.hpp"
+#include "../Resources/Geometry.hpp"
 #include "../Resources/Shader.hpp"
 
 using namespace cgue;

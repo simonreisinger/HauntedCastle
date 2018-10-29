@@ -24,10 +24,6 @@ Actor::Actor(Shader* shader, float sposx, float sposy, float sposz, float sroty)
 	//matrix = rotate(matrix, sroty / 180.0f * PI, glm::vec3(0, 0, 1));
 
 	init(displayFile, matrix, shader, initTrans);
-
-	enableGlow = 0;
-	enableDraw = true;
-	alpha = 1;
 }
 
 Actor::~Actor(){

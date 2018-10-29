@@ -13,7 +13,7 @@
 #include "Resources\Const.hpp"
 #include "Resources\FrustumG.hpp"
 
-#include "Scene/Geometry.hpp"
+#include "Resources/Geometry.hpp"
 #include "Scene/Actor.hpp"
 #include "Scene/Knight1.hpp"
 #include "Scene/Knight2.hpp"
@@ -693,14 +693,15 @@ void init(GLFWwindow* window)
 
 	camera = new Camera();
 
-	actor = new Actor(renderShader, 2.0f, -5.0f, 6.0f, 0.0f);
+	actor = new Actor(renderShader, 2.0f, -5.0f, 6.0f, 180.0f);
 	actor->setPhysX(gPhysicsSDK, gFoundation, gDefaultErrorCallback, gDefaultAllocatorCallback, gScene);
 	actor->initActor();
 
-	room = new Room(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	//room = new Room(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
 	if (renderObjects)
 	{
+		/*
 		torch1 = new Torch1(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
 		desk = new Desk(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
@@ -712,7 +713,11 @@ void init(GLFWwindow* window)
 
 		door = new Door(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
+		*/
+
 		chair1 = new Chair1(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+
+		/*
 		chair2 = new Chair2(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
 
@@ -723,6 +728,7 @@ void init(GLFWwindow* window)
 		torch2 = new Torch2(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
 		chess = new Chess(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+		*/
 	}
 	
 
@@ -868,11 +874,12 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 
 
 	// Room
-	room->draw(drawShader, view, proj, camera_model, cull);
+	//room->draw(drawShader, view, proj, camera_model, cull);
 
 	if (renderObjects)
 	{
 
+		/*
 		torch1->draw(drawShader, view, proj, camera_model, cull);
 
 		// Object
@@ -884,7 +891,11 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 
 		door->draw(drawShader, view, proj, camera_model, cull);
 
+		*/
+
 		chair1->draw(drawShader, view, proj, camera_model, cull);
+
+		/*
 
 		chair2->draw(drawShader, view, proj, camera_model, cull);
 
@@ -897,6 +908,8 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 		torch2->draw(drawShader, view, proj, camera_model, cull);
 
 		chess->draw(drawShader, view, proj, camera_model, cull);
+
+		*/
 
 	}
 	

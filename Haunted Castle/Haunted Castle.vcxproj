@@ -95,6 +95,7 @@
     <ClCompile Include="Resources\Const.cpp" />
     <ClCompile Include="Resources\FrustumG.cpp" />
     <ClCompile Include="Resources\Mesh.cpp" />
+    <ClCompile Include="Resources\Node.cpp" />
     <ClCompile Include="Resources\Texture.cpp" />
     <ClCompile Include="Scene\Actor.cpp" />
     <ClCompile Include="Resources\SceneObject.cpp" />
@@ -104,7 +105,7 @@
     <ClCompile Include="Scene\Desk.cpp" />
     <ClCompile Include="Scene\Door.cpp" />
     <ClCompile Include="Scene\Frame.cpp" />
-    <ClCompile Include="Scene\Geometry.cpp" />
+    <ClCompile Include="Resources\Geometry.cpp" />
     <ClCompile Include="Resources\Shader.cpp" />
     <ClCompile Include="Scene\Knight1.cpp" />
     <ClCompile Include="Scene\Knight2.cpp" />
@@ -119,6 +120,7 @@
     <ClInclude Include="Resources\Const.hpp" />
     <ClInclude Include="Resources\FrustumG.hpp" />
     <ClInclude Include="Resources\Mesh.hpp" />
+    <ClInclude Include="Resources\Node.hpp" />
     <ClInclude Include="Resources\Texture.hpp" />
     <ClInclude Include="Scene\Actor.hpp" />
     <ClInclude Include="Resources\SceneObject.hpp" />
@@ -128,7 +130,7 @@
     <ClInclude Include="Scene\Desk.hpp" />
     <ClInclude Include="Scene\Door.hpp" />
     <ClInclude Include="Scene\Frame.hpp" />
-    <ClInclude Include="Scene\Geometry.hpp" />
+    <ClInclude Include="Resources\Geometry.hpp" />
     <ClInclude Include="Resources\Shader.hpp" />
     <ClInclude Include="Scene\Knight1.hpp" />
     <ClInclude Include="Scene\Knight2.hpp" />
