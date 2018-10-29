@@ -5,7 +5,7 @@
 #include "Shader.hpp"
 #include "Texture.hpp"
 #include "Mesh.hpp"
-#include "Node.hpp"
+#include "SceneNode.hpp"
 #include <iostream>
 
 #include "assimp/Importer.hpp"	//OO version Header!

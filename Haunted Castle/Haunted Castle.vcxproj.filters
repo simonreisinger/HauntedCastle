@@ -84,7 +84,7 @@
     <ClCompile Include="Resources\Geometry.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="Resources\Node.cpp">
+    <ClCompile Include="Resources\SceneNode.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>
@@ -155,7 +155,7 @@
     <ClInclude Include="Resources\Geometry.hpp">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="Resources\Node.hpp">
+    <ClInclude Include="Resources\SceneNode.hpp">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

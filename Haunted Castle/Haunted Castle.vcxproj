@@ -95,7 +95,7 @@
     <ClCompile Include="Resources\Const.cpp" />
     <ClCompile Include="Resources\FrustumG.cpp" />
     <ClCompile Include="Resources\Mesh.cpp" />
-    <ClCompile Include="Resources\Node.cpp" />
+    <ClCompile Include="Resources\SceneNode.cpp" />
     <ClCompile Include="Resources\Texture.cpp" />
     <ClCompile Include="Scene\Actor.cpp" />
     <ClCompile Include="Resources\SceneObject.cpp" />
@@ -120,7 +120,7 @@
     <ClInclude Include="Resources\Const.hpp" />
     <ClInclude Include="Resources\FrustumG.hpp" />
     <ClInclude Include="Resources\Mesh.hpp" />
-    <ClInclude Include="Resources\Node.hpp" />
+    <ClInclude Include="Resources\SceneNode.hpp" />
     <ClInclude Include="Resources\Texture.hpp" />
     <ClInclude Include="Scene\Actor.hpp" />
     <ClInclude Include="Resources\SceneObject.hpp" />

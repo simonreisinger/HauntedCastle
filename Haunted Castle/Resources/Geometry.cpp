@@ -3,7 +3,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include "Node.hpp"
+#include "SceneNode.hpp"
 
 using namespace cgue;
 using namespace std;
@@ -105,7 +105,7 @@ void Geometry::init(const std::string& displayFile, mat4& matrix, Shader* _shade
 	aiNode* rootNode = scene->mRootNode;
 
 	cout << "node" << endl;
-	Node* node = new Node(rootNode, scene);
+	SceneNode* node = new SceneNode(rootNode, scene, modelDir, shader);
 
 	//Node* node = new Node(rootNode);
 

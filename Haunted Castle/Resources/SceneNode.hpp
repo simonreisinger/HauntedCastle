@@ -9,15 +9,18 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Shader.hpp"
+#include "Mesh.hpp"
+
 using namespace glm;
 
 namespace cgue
 {
-	class Node
+	class SceneNode
 	{
 	public:
-		Node(aiNode* aiNode, const aiScene* scene);
-		virtual ~Node();
+		SceneNode(aiNode* aiNode, const aiScene* scene, string modelDir, Shader* shader);
+		virtual ~SceneNode();
 
 	private:
 
@@ -30,5 +33,14 @@ namespace cgue
 		float* normals;
 		int* indices;
 		float* uvs;
+
+		int childNodeCount;
+		SceneNode** childNode;
+
+		int meshCount;
+		Mesh** mesh;
+
+		string name;
+		mat4x4 transform;
 	};
 }
