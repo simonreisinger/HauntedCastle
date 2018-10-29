@@ -39,7 +39,7 @@ namespace cgue
 		Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* material, glm::mat4x4 initTrans, glm::mat4x4 transform, Shader* shader);
 		virtual ~Mesh();
 		void draw(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalPose, bool cull);
-		void update(float time_delta);
+		void update(float time_delta, float time_abs);
 		void loadUniforms(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalPose);
 		void setPhysX(PxPhysics* mPhysicsSDK, PxFoundation* mFoundation, PxDefaultErrorCallback mDefaultErrorCallback, PxDefaultAllocator mDefaultAllocatorCallback);
 		void setMeshTrans(mat4x4 trans);
@@ -76,10 +76,9 @@ namespace cgue
 		float zmin = 0.0;
 		float zmax = 0.0;
 
-		const char* nameMesh;
+		string nameMesh;
 		mat4x4 meshTrans;
 		mat4x4 updateTrans;
-		bool applyUpdateTrans;
 
 		PxCooking* mCooking;
 

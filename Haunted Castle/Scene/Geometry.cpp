@@ -28,6 +28,13 @@ void Geometry::searchNodesRecursive(string modelDir, aiNode* node, const aiScene
 
 	//cout << "NODE: " << name.data << endl;
 	//printMatGeometry(name.data, transform);
+
+	if (node->mNumMeshes > 1) {
+		cout << "node->mNumMeshes:" << node->mNumMeshes << endl;
+		int x = 0;
+		cin >> x;
+		exit(0);
+	}
 	
 	for (int i = 0; i < node->mNumMeshes; i++)
 	{
@@ -146,11 +153,11 @@ Geometry::~Geometry()
 	delete mesh; mesh = nullptr;
 }
 
-void Geometry::update(float time_delta)
+void Geometry::update(float time_delta, float time_abs)
 {
 	for (int i = 0; i < this->meshCount; i++)
 	{
-		mesh[i]->update(time_delta);
+		mesh[i]->update(time_delta, time_abs);
 	}
 }
 

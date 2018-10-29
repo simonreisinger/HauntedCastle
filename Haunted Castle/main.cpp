@@ -55,12 +55,9 @@ using namespace glm;
 using namespace physx;
 
 void init(GLFWwindow* window);
-void cleanup();
 void draw(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 camera_model);
-void update(float time_delta);
+void update(float time_delta, float time_abs);
 void handleInput(GLFWwindow* window, float time_delta);
-void handleInputJOISTICK(GLFWwindow* window, float time_delta, int numberOfJoistick);
-void printVec(string name, glm::vec4 vec);
 void OnShutdown();
 mat4x4 pxMatToGlm(PxMat44 pxMat);
 void RenderQuad();
@@ -426,16 +423,18 @@ int main(int argc, char** argv)
 	// Game Loop
 	auto time = glfwGetTime();
 	auto refreshTime = 0.0f;
+	auto time_abs = 0.0f;
 	while (!glfwWindowShouldClose(window))
 	{
 		auto time_new = glfwGetTime();
 		auto time_delta = (float)(time_new - time);
 		refreshTime += time_delta;
+		time_abs += time_delta;
 		time = time_new;
 
 		handleInput(window, time_delta);
 
-		update(time_delta);
+		update(time_delta, time_abs);
 		
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -443,131 +442,130 @@ int main(int argc, char** argv)
 		NUMBER_OF_CULLED_MESHES = 0;
 
 
-		for (int iRender = 0; iRender < 1; iRender++)
-		{
-
-			//cout << "frametime: " << time_delta * 1000 << "ms" << " = " << 1.0 / time_delta << " fps" << endl;
-
-			// Render to our framebuffer
-			//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
-			glViewport(0, 0, width, height); // Render on the whole framebuffer, complete from the lower left corner to the upper right
-			//glViewport(0, 0, 1024, 1024);  // Render on the whole framebuffer, complete from the lower left corner to the upper right
-
-			// We don't use bias in the shader, but instead we draw back faces, 
-			// which are already separated from the front faces by a small distance 
-			// (if your geometry is made this way)
-			glDisable(GL_CULL_FACE);
-			//glCullFace(GL_BACK); // Cull back-facing triangles -> draw only front-facing triangles
-
-			// Clear the screen
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-			// Use our shader
-			glUseProgram(shadowShader->programHandle);
-
-			glm::vec3 lightInvDir = glm::vec3(0.0, -1.0, -1.0);
-
-			// Compute the MVP matrix from the light's point of view
-			//glm::mat4 depthProjectionMatrix = glm::perspective(90.0f, (float)width / (float)height, -20.0f, 20.0f);
-			glm::mat4 depthProjectionMatrix = glm::ortho<float>(-20, 20, 20, -20, -40.0f, 40.0f);
-			//glm::mat4 depthViewMatrix = camera->modelMatrix * pxMatToGlm(PxMat44(actor->actor->getGlobalPose().getInverse()));//
-			glm::mat4 depthViewMatrix = glm::lookAt(lightInvDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-			//lookAt
-			// or, for spot light :
-			//glm::vec3 lightPos(5, 20, 20);
-			//glm::mat4 depthProjectionMatrix = glm::perspective<float>(45.0f, 1.0f, 2.0f, 50.0f);
-			//glm::mat4 depthViewMatrix = glm::lookAt(lightPos, lightPos-lightInvDir, glm::vec3(0,1,0));
-
-			glm::mat4 depthModelMatrix = glm::mat4(1.0);
-			glm::mat4 depthVP = depthProjectionMatrix * depthViewMatrix;
-			glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
-
-			// Send our transformation to the currently bound shader, 
-			// in the "MVP" uniform
-
-			// Shadow
-			draw(shadowShader, depthViewMatrix, depthProjectionMatrix, mat4x4(1.0f));
 
 
-			glEnable(GL_CULL_FACE);
-			glCullFace(GL_BACK); // Cull back-facing triangles -> draw only front-facing triangles
+		//cout << "frametime: " << time_delta * 1000 << "ms" << " = " << 1.0 / time_delta << " fps" << endl;
 
-			// 1. Render scene into floating point framebuffer
-			glBindFramebuffer(GL_FRAMEBUFFER, 0);
-			glViewport(0, 0, width, height);
+		// Render to our framebuffer
+		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+		glViewport(0, 0, width, height); // Render on the whole framebuffer, complete from the lower left corner to the upper right
+		//glViewport(0, 0, 1024, 1024);  // Render on the whole framebuffer, complete from the lower left corner to the upper right
 
-			glEnable(GL_CULL_FACE);
-			glCullFace(GL_BACK);
+		// We don't use bias in the shader, but instead we draw back faces, 
+		// which are already separated from the front faces by a small distance 
+		// (if your geometry is made this way)
+		glDisable(GL_CULL_FACE);
+		//glCullFace(GL_BACK); // Cull back-facing triangles -> draw only front-facing triangles
 
-			// Clear screen
-			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		// Clear the screen
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-			glUseProgram(renderShader->programHandle);
+		// Use our shader
+		glUseProgram(shadowShader->programHandle);
 
-			glm::mat4 biasMatrix(
-				0.5, 0.0, 0.0, 0.0,
-				0.0, 0.5, 0.0, 0.0,
-				0.0, 0.0, 0.5, 0.0,
-				0.5, 0.5, 0.5, 1.0
-				);
+		glm::vec3 lightInvDir = glm::vec3(0.0, -1.0, -1.0);
 
-			GLuint DepthVPID = glGetUniformLocation(renderShader->programHandle, "depthVP");
-			glUniformMatrix4fv(DepthVPID, 1, GL_FALSE, &depthVP[0][0]);
+		// Compute the MVP matrix from the light's point of view
+		//glm::mat4 depthProjectionMatrix = glm::perspective(90.0f, (float)width / (float)height, -20.0f, 20.0f);
+		glm::mat4 depthProjectionMatrix = glm::ortho<float>(-20, 20, 20, -20, -40.0f, 40.0f);
+		//glm::mat4 depthViewMatrix = camera->modelMatrix * pxMatToGlm(PxMat44(actor->actor->getGlobalPose().getInverse()));//
+		glm::mat4 depthViewMatrix = glm::lookAt(lightInvDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+		//lookAt
+		// or, for spot light :
+		//glm::vec3 lightPos(5, 20, 20);
+		//glm::mat4 depthProjectionMatrix = glm::perspective<float>(45.0f, 1.0f, 2.0f, 50.0f);
+		//glm::mat4 depthViewMatrix = glm::lookAt(lightPos, lightPos-lightInvDir, glm::vec3(0,1,0));
+
+		glm::mat4 depthModelMatrix = glm::mat4(1.0);
+		glm::mat4 depthVP = depthProjectionMatrix * depthViewMatrix;
+		glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
+
+		// Send our transformation to the currently bound shader, 
+		// in the "MVP" uniform
+
+		// Shadow
+		draw(shadowShader, depthViewMatrix, depthProjectionMatrix, mat4x4(1.0f));
 
 
-			glActiveTexture(GL_TEXTURE2);
-			glBindTexture(GL_TEXTURE_2D, depthTexture);
-			GLuint ShadowMapID = glGetUniformLocation(renderShader->programHandle, "shadowMap");
-			glUniform1i(ShadowMapID, 2);
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK); // Cull back-facing triangles -> draw only front-facing triangles
 
-			mat4x4 camera_model = camera->getCameraModel();
+		// 1. Render scene into floating point framebuffer
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glViewport(0, 0, width, height);
+
+		glEnable(GL_CULL_FACE);
+		glCullFace(GL_BACK);
+
+		// Clear screen
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		glUseProgram(renderShader->programHandle);
+
+		glm::mat4 biasMatrix(
+			0.5, 0.0, 0.0, 0.0,
+			0.0, 0.5, 0.0, 0.0,
+			0.0, 0.0, 0.5, 0.0,
+			0.5, 0.5, 0.5, 1.0
+			);
+
+		GLuint DepthVPID = glGetUniformLocation(renderShader->programHandle, "depthVP");
+		glUniformMatrix4fv(DepthVPID, 1, GL_FALSE, &depthVP[0][0]);
+
+
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, depthTexture);
+		GLuint ShadowMapID = glGetUniformLocation(renderShader->programHandle, "shadowMap");
+		glUniform1i(ShadowMapID, 2);
+
+		mat4x4 camera_model = camera->getCameraModel();
 			
 
-			mat4x4 view = camera_model * pxMatToGlm(PxMat44(actor->actor->getGlobalPose().getInverse()));
+		mat4x4 view = camera_model * pxMatToGlm(PxMat44(actor->actor->getGlobalPose().getInverse()));
 
-			nearDist = 0.1f;
-			farDist = 200.0f;
-			float fov = 100.0f;
-			float ratio = (float)width / (float)height;
+		nearDist = 0.1f;
+		farDist = 200.0f;
+		float fov = 100.0f;
+		float ratio = (float)width / (float)height;
 
-			proj = glm::perspective(fov, ratio, nearDist, farDist);
+		proj = glm::perspective(fov, ratio, nearDist, farDist);
 
-			hnear = abs(2 * tan(fov / 2) * nearDist);
-			wnear = abs(hnear * ratio);
+		hnear = abs(2 * tan(fov / 2) * nearDist);
+		wnear = abs(hnear * ratio);
 
-			hfar = abs(2 * tan(fov / 2) * farDist);
-			wfar = abs(hfar * ratio);
-
-
-
-			vec4 camera_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraPos(), 1);
-			vec3 p = vec3(camera_pos.x, camera_pos.y, camera_pos.z);
-
-			vec4 look_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraLookAt(), 1);
-			vec3 l = vec3(look_pos.x, look_pos.y, look_pos.z);
-
-			vec4 up_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraUp(), 1);
-			vec3 u = vec3(up_pos.x, up_pos.y, up_pos.z);
-			u = u - p;
-			u = normalize(u);
+		hfar = abs(2 * tan(fov / 2) * farDist);
+		wfar = abs(hfar * ratio);
 
 
-			vec3 distcamera = p - l;
-			float dist = length(distcamera);
+
+		vec4 camera_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraPos(), 1);
+		vec3 p = vec3(camera_pos.x, camera_pos.y, camera_pos.z);
+
+		vec4 look_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraLookAt(), 1);
+		vec3 l = vec3(look_pos.x, look_pos.y, look_pos.z);
+
+		vec4 up_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraUp(), 1);
+		vec3 u = vec3(up_pos.x, up_pos.y, up_pos.z);
+		u = u - p;
+		u = normalize(u);
 
 
-			mat4x4 lookAt = glm::lookAt(p, l, u);
+		vec3 distcamera = p - l;
+		float dist = length(distcamera);
+
+
+		mat4x4 lookAt = glm::lookAt(p, l, u);
 
 			
-			frustumG->setCamInternals(fov, ratio, nearDist, farDist);
-			frustumG->setCamDef(p, l, u);
+		frustumG->setCamInternals(fov, ratio, nearDist, farDist);
+		frustumG->setCamDef(p, l, u);
 			
 
 
-			draw(renderShader, lookAt, proj, camera_model);
+		draw(renderShader, lookAt, proj, camera_model);
 
-		}
+		
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -909,10 +907,10 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 	glDisable(GL_CULL_FACE);
 }
 
-void update(float time_delta) // TODO change time_delta to delta_time
+void update(float time_delta, float time_abs) // TODO change time_delta to delta_time
 {
 	// Actors
-	actor->update(time_delta);
+	chair1->update(time_delta, time_abs);
 
 	if (gScene)
 		StepPhysX(time_delta);

@@ -16,16 +16,22 @@ Mesh::Mesh()
 Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* material, glm::mat4x4 initTrans, glm::mat4x4 transform, Shader* shader)
 {
 	this->shader = shader;
-	this->nameMesh = nameMesh;
+	std::string str(nameMesh);
+	this->nameMesh = str;
 	this->meshTrans = initTrans * transform;
 	this->updateTrans = mat4x4(1.0f);
 
+
+	cout << this->nameMesh << endl;
+
+	/*
 	applyUpdateTrans = false;
 	char* tuerMitte = "TuerMitte";
 	if (strcmp(nameMesh, tuerMitte) == 0)
 	{
 		applyUpdateTrans = true;
 	}
+	*/
 
 	//cout << "Mesh: " << nameMesh << "   " << applyUpdateTrans << endl;
 	//cout << "Mesh: "<< nameMesh << "   " << endl;
@@ -325,13 +331,35 @@ void Mesh::draw(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalPose, boo
 	}
 }
 
-void Mesh::update(float time_delta)
+void Mesh::update(float time_delta, float time_abs)
 {
+	/*
+	cout << nameMesh << endl;
+	cout << time_abs << endl;
+	cout << updateTrans[3][1] << endl;
+	*/
+
+	if ((nameMesh.compare("polySurface105") == 0 || 
+		nameMesh.compare("leglow1_group_leglow1_pasted__polySurface74_leglow1_polySurface") == 0) && 
+		time_abs > 10 && updateTrans[3][1] > -2)
+	{
+		updateTrans = translate(this->updateTrans, vec3(0, -0.01, 0));
+	}
+
+	/*
+	char* tuerMitte = "TuerMitte";
+	if (strcmp(nameMesh, tuerMitte) == 0)
+	{
+
+	}
+	*/
+	/*
 	if (applyUpdateTrans)
 	{
 		//cout << nameMesh << endl;
 		this->updateTrans = rotate(this->updateTrans, 10.0f * time_delta, vec3(0, 0, 1));
 	}
+	*/
 }
 
 void Mesh::setPhysX(PxPhysics* mPhysicsSDK, PxFoundation* mFoundation, PxDefaultErrorCallback mDefaultErrorCallback, PxDefaultAllocator mDefaultAllocatorCallback)
