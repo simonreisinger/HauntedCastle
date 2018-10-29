@@ -27,7 +27,6 @@ Chair1::Chair1(Shader* shader, float sposX, float sposY, float sposZ, float srot
 
 	// Shader
 	shader->useShader();
-	enableLighting = 1;
 	enableDraw = true;
 	alpha = 1;
 

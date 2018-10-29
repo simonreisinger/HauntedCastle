@@ -27,7 +27,6 @@ Commode::Commode(Shader* shader, float sposX, float sposY, float sposZ, float sr
 
 	// Shader
 	shader->useShader();
-	enableLighting = 1;
 	enableDraw = true;
 	alpha = 1;
 

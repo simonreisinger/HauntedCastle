@@ -25,7 +25,6 @@ Actor::Actor(Shader* shader, float sposx, float sposy, float sposz, float sroty)
 
 	init(displayFile, matrix, shader, initTrans);
 
-	enableLighting = 1;
 	enableGlow = 0;
 	enableDraw = true;
 	alpha = 1;

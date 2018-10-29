@@ -93,7 +93,7 @@ Torch2* torch2;
 Chess* chess;
 
 
-bool renderObjects = false;
+bool renderObjects = true;
 
 
 double mouseXPosOld, mouseYPosOld;

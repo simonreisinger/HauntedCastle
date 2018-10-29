@@ -53,6 +53,10 @@ glm::mat4 depthBiasMVP;
 glm::mat4 depthMVP;
 vec3 lightPos = vec3(9.8, -2, -8);
 
+// While inserting torch position interchange y and z and then invert y => Result (x, -z, y)
+vec3 torch1Pos = vec3(12.5634, -9.75919, -11.12736);
+vec3 torch2Pos = vec3(12.5634, -9.75919, 8.90968);
+
 float wnear = 0;
 float hnear = 0;
 float wfar = 0;

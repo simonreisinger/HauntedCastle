@@ -8,14 +8,16 @@ out vec2 UV;
 out vec3 Position_worldspace;
 out vec3 Normal_cameraspace;
 out vec3 EyeDirection_cameraspace;
-out vec3 LightDirection_cameraspace;
+out vec3 Torch1Direction_cameraspace;
+out vec3 Torch2Direction_cameraspace;
 out vec4 ShadowCoord;
 
 uniform mat4 MVP;
 uniform mat4 V;
 uniform mat4 M;
-uniform vec3 LightPosition_worldspace;
 uniform mat4 depthVP;
+uniform vec3 Torch1Position_worldspace;
+uniform vec3 Torch2Position_worldspace;
 
 void main(){
 
@@ -33,8 +35,11 @@ void main(){
 	vec3 vertexPosition_cameraspace = ( V * M * vec4(vertexPosition_modelspace,1)).xyz;
 	EyeDirection_cameraspace = vec3(0,0,0) - vertexPosition_cameraspace;
 	
-	vec3 LightPosition_cameraspace = ( V * vec4(LightPosition_worldspace,1)).xyz;
-	LightDirection_cameraspace = LightPosition_cameraspace + EyeDirection_cameraspace;
+	vec3 Torch1Position_cameraspace = ( V * vec4(Torch1Position_worldspace,1)).xyz;
+	Torch1Direction_cameraspace = Torch1Position_cameraspace + EyeDirection_cameraspace;
+	
+	vec3 Torch2Position_cameraspace = ( V * vec4(Torch2Position_worldspace,1)).xyz;
+	Torch2Direction_cameraspace = Torch2Position_cameraspace + EyeDirection_cameraspace;
 	
 	Normal_cameraspace = ( V * M * vec4(vertexNormal_modelspace,0)).xyz;
 	

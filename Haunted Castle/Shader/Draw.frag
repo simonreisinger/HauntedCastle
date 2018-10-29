@@ -5,26 +5,21 @@ in vec2 UV;
 in vec3 Position_worldspace;
 in vec3 Normal_cameraspace;
 in vec3 EyeDirection_cameraspace;
-in vec3 LightDirection_cameraspace;
+in vec3 Torch1Direction_cameraspace;
+in vec3 Torch2Direction_cameraspace;
 in vec4 ShadowCoord;
 
 
 layout (location = 0) out vec4 FragColor;
-layout (location = 1) out vec4 BrightColor;  
 
 // Values that stay constant for the whole mesh.
 uniform sampler2D myTextureSampler;
-uniform mat4 MV;
-uniform vec3 LightPosition_worldspace;
+uniform vec3 Torch1Position_worldspace;
+uniform vec3 Torch2Position_worldspace;
 uniform int hasTexture;
 uniform vec3 diffuseColor;
 uniform vec3 specularColor;
 uniform sampler2DShadow shadowMap;
-
-uniform int enableLighting;
-uniform int enableGlow;
-uniform int enableTransparency;
-uniform float alpha;
 
 vec2 disk[16] = vec2[]( 
    vec2( -0.94202634, -0.39907226 ), 
@@ -58,18 +53,40 @@ void main(){
 	{
 		MaterialDiffuseColor = diffuseColor;
 	}
-	vec3 AmbientIntensity = vec3(0.1,0.1,0.1);
+
+
+	float AmbientIntensity = 0.1;
 	vec3 MaterialAmbientColor = AmbientIntensity * MaterialDiffuseColor;
 	vec3 MaterialSpecularColor = specularColor;
 
-	vec3 n = normalize( Normal_cameraspace );
-	vec3 l = normalize( LightDirection_cameraspace );
-	float cosTheta = clamp( dot( n,l ), 0,1 );
+
+
+
+	vec3 n1 = normalize( Normal_cameraspace );
+	vec3 l1 = normalize( Torch1Direction_cameraspace );
+	float cosTheta1 = clamp( dot( n1, l1 ), 0, 1 );
 	
-	vec3 E = normalize(EyeDirection_cameraspace);
-	vec3 R = reflect(-l,n);
-	float cosAlpha = clamp( dot( E,R ), 0,1 );
+	vec3 E1 = normalize(EyeDirection_cameraspace);
+	vec3 R1 = reflect( -l1, n1 );
+	float cosAlpha1 = clamp( dot( E1, R1 ), 0, 1 );
+
+	float I1 = 1 / distance( Torch1Position_worldspace, Position_worldspace );
+
+
+
+	vec3 n2 = normalize( Normal_cameraspace );
+	vec3 l2 = normalize( Torch2Direction_cameraspace );
+	float cosTheta2 = clamp( dot( n2, l2 ), 0, 1 );
 	
+	vec3 E2 = normalize(EyeDirection_cameraspace);
+	vec3 R2 = reflect( -l2, n2 );
+	float cosAlpha2 = clamp( dot( E2, R2 ), 0, 1 );
+
+	float I2 = 1 / distance( Torch2Position_worldspace, Position_worldspace );
+
+	
+
+
 
 	float visibility=1.0;
 	
@@ -80,43 +97,26 @@ void main(){
 	// PCF
 	// 4 Times Stratified Poisson Sampling
 	for (int i=0;i<4;i++){
-		visibility -= 0.1*(1.0-texture( shadowMap, vec3(ShadowCoord.xy + disk[i]/700.0,  (ShadowCoord.z-bias)/ShadowCoord.w) ));
+		visibility -= 0.25*(1.0-texture( shadowMap, vec3(ShadowCoord.xy + disk[i]/700.0,  (ShadowCoord.z-bias)/ShadowCoord.w) ));
 	}
 
-	if(enableLighting == 0)
-	{
-		FragColor = vec4(MaterialAmbientColor + visibility * MaterialDiffuseColor * 0.1, enableTransparency==1 ? alpha : 1);
-	}
-	else
-	{
-		/*
-		FragColor = vec4(MaterialAmbientColor +
-			// Diffuse
-			visibility*0.5, 1);
-		*/
-
-		//FragColor = vec4(MaterialDiffuseColor, 1);
-		
-		
-		FragColor = vec4(MaterialAmbientColor +
-			visibility * 
-			min(10 / distance(Position_worldspace, LightPosition_worldspace), 1) * 
-			// Diffuse
-			(MaterialDiffuseColor * cosTheta +
-			// Specular
-			MaterialSpecularColor * pow(cosAlpha,5)), enableTransparency==1 ? alpha : 1);
-		
-		
-	}
+	FragColor = vec4(
 	
-	BrightColor = vec4(0,0,0,1);
-	if(enableGlow == 1)
-	{
-		BrightColor = FragColor;
-	}
+		// Ambient
+		vec3(MaterialAmbientColor) + 
 
-	//FragColor = vec4(vec3(visibility*0.8+0.2), 1);
-	//FragColor = vec4(vec3(4 * cosTheta / pow(distance(Position_worldspace, LightPosition_worldspace), 2)),1);
-	//FragColor = vec4(n,1);
-	//FragColor = vec4(vec3(   min(2 / distance(Position_worldspace, LightPosition_worldspace), 1)    ),1);
+		// Diffuse Torch 1
+		MaterialDiffuseColor * I1 * cosTheta1 +
+		// Specular Torch 1
+		MaterialSpecularColor * I1 * pow(cosAlpha1, 5) +
+
+		// Diffuse Torch 2
+		MaterialDiffuseColor * I2 * cosTheta2 +
+		// Specular Torch 2
+		MaterialSpecularColor * I2 * pow(cosAlpha2, 5) +
+
+		// Window
+		MaterialDiffuseColor * visibility
+
+		, 1);
 }

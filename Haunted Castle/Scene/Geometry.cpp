@@ -160,9 +160,6 @@ void Geometry::draw(Shader* drawShader, mat4x4 view, glm::mat4x4 proj, mat4x4 ca
 
 	drawShader->useShader();
 
-	auto enableLighting_location = glGetUniformLocation(drawShader->programHandle, "enableLighting");
-	glUniform1i(enableLighting_location, enableLighting);
-
 	auto enableGlow_location = glGetUniformLocation(drawShader->programHandle, "enableGlow");
 	glUniform1i(enableGlow_location, enableGlow);
 

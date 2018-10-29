@@ -47,6 +47,9 @@ extern glm::mat4 depthMVP;
 
 extern vec3 lightPos;
 
+extern vec3 torch1Pos;
+extern vec3 torch2Pos;
+
 extern float wnear;
 extern float hnear;
 extern float wfar;
