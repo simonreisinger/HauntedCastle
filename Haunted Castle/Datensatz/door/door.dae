@@ -12,7 +12,7 @@
   </asset>
   <library_images>
     <image id="Privy_Council_Door_png" name="Privy_Council_Door_png">
-      <init_from>Privy%20Council%20Door.png</init_from>
+      <init_from>Privy-Council-Door.jpg</init_from>
     </image>
   </library_images>
   <library_effects>

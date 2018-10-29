@@ -20,6 +20,12 @@ void Geometry::searchNodesRecursive(string modelDir, aiNode* node, const aiScene
 	aiString name = node->mName;
 	mat4x4 transform = convertMetrix(node->mTransformation);
 
+	cout << name.C_Str() << endl;
+	cout << transform[0][0] << " " << transform[0][1] << " " << transform[0][2] << " " << transform[0][3] << endl;
+	cout << transform[1][0] << " " << transform[1][1] << " " << transform[1][2] << " " << transform[1][3] << endl;
+	cout << transform[2][0] << " " << transform[2][1] << " " << transform[2][2] << " " << transform[2][3] << endl;
+	cout << transform[3][0] << " " << transform[3][1] << " " << transform[3][2] << " " << transform[3][3] << endl;
+
 	//cout << "NODE: " << name.data << endl;
 	//printMatGeometry(name.data, transform);
 	

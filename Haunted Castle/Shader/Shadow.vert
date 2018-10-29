@@ -18,8 +18,6 @@ uniform mat4 model;
 uniform mat4 meshTrans;
 uniform mat4 updateTrans;
 
-uniform sampler2D color_texture;
-
 void main(){
 	gl_Position =  depthMVP * vec4(vertexPosition_modelspace,1);
 }

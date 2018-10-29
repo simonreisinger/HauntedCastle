@@ -16,7 +16,7 @@ Chair1::Chair1(Shader* shader, float sposX, float sposY, float sposZ, float srot
 	this->rotz = srotZ;
 	this->scale = sscale;
 
-	const std::string& displayFile = "chair1/chair1.dae";
+	const std::string& displayFile = "woodchair1/woodchair1.dae";
 
 	glm::mat4& matrix = glm::mat4(1.0f);
 

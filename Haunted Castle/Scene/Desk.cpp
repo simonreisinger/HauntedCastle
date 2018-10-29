@@ -16,6 +16,7 @@ Desk::Desk(Shader* shader, float sposX, float sposY, float sposZ, float srotX, f
 	this->rotz = srotZ;
 	this->scale = sscale;
 
+	//const std::string& displayFile = "test/test.dae";
 	const std::string& displayFile = "desk/desk.dae";
 
 	glm::mat4& matrix = glm::mat4(1.0f);

@@ -24,6 +24,8 @@ Texture::Texture(const std::string& modelDir, const std::string& path)
 
 	const char * filename = pathWithDir.c_str();
 
+	cout << "FILENAME: " << filename << endl;
+
 	//cout << "filename " << filename << endl;
 
 
@@ -60,9 +62,17 @@ Texture::Texture(const std::string& modelDir, const std::string& path)
 
 	//retrieve the image data
 	bits = FreeImage_GetBits(dib);
+	if (bits == NULL)
+	{
+		cout << "!bits" << endl;
+		return;
+	}
 	//get the image width and height
 	width = FreeImage_GetWidth(dib);
 	height = FreeImage_GetHeight(dib);
+
+	cout << "width: " << width << endl;
+	cout << "height: " << height << endl;
 
 	/*
 	cout << "width" << width << endl;

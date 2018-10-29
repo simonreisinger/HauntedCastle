@@ -689,6 +689,10 @@ void init(GLFWwindow* window)
 
 	camera = new Camera();
 
+	torch1 = new Torch1(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	
+	desk = new Desk(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+
 	actor = new Actor(renderShader, 2.0f, -5.0f, 6.0f, 0.0f);
 	actor->setPhysX(gPhysicsSDK, gFoundation, gDefaultErrorCallback, gDefaultAllocatorCallback, gScene);
 	actor->initActor();
@@ -704,17 +708,14 @@ void init(GLFWwindow* window)
 
 	chair1 = new Chair1(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 	chair2 = new Chair2(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-
-	desk = new Desk(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-
+	
+	
 	frame = new Frame(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
 	commode = new Commode(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
-	torch1 = new Torch1(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-
 	torch2 = new Torch2(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-
+	
 
 	//ring->setPhysX(gPhysicsSDK, gFoundation, gDefaultErrorCallback, gDefaultAllocatorCallback, gScene);
 	//ring->initActor();
@@ -856,6 +857,9 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 		cull = true;
 	}
 
+
+	torch1->draw(drawShader, view, proj, camera_model, cull);
+	
 	// Room
 	room->draw(drawShader, view, proj, camera_model, cull);
 
@@ -878,10 +882,8 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 
 	commode->draw(drawShader, view, proj, camera_model, cull);
 
-	torch1->draw(drawShader, view, proj, camera_model, cull);
-
 	torch2->draw(drawShader, view, proj, camera_model, cull);
-
+	
 
 	// Actors
 	//actor->draw(drawShader, view, proj, camera_model, cull);

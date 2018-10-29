@@ -16,7 +16,7 @@ Torch2::Torch2(Shader* shader, float sposX, float sposY, float sposZ, float srot
 	this->rotz = srotZ;
 	this->scale = sscale;
 
-	const std::string& displayFile = "torch2/torch2.dae";
+	const std::string& displayFile = "torch4/torch4.dae";
 
 	glm::mat4& matrix = glm::mat4(1.0f);
 

@@ -43,6 +43,8 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 	material->Get(AI_MATKEY_COLOR_SPECULAR, specularColor);
 	specular = vec3(specularColor.r, specularColor.g, specularColor.b);
 
+
+
 	hasTexture = false;
 	if (material->GetTexture(aiTextureType_DIFFUSE, texIndex, &path) == AI_SUCCESS)
 	{
