@@ -20,20 +20,11 @@ void Geometry::searchNodesRecursive(string modelDir, aiNode* node, const aiScene
 	aiString name = node->mName;
 	mat4x4 transform = convertMetrix(node->mTransformation);
 
-	cout << name.C_Str() << endl;
-	cout << transform[0][0] << " " << transform[0][1] << " " << transform[0][2] << " " << transform[0][3] << endl;
-	cout << transform[1][0] << " " << transform[1][1] << " " << transform[1][2] << " " << transform[1][3] << endl;
-	cout << transform[2][0] << " " << transform[2][1] << " " << transform[2][2] << " " << transform[2][3] << endl;
-	cout << transform[3][0] << " " << transform[3][1] << " " << transform[3][2] << " " << transform[3][3] << endl;
-
 	//cout << "NODE: " << name.data << endl;
-	//printMatGeometry(name.data, transform);
+	printMatGeometry(name.data, transform);
 
 	if (node->mNumMeshes > 1) {
 		cout << "node->mNumMeshes:" << node->mNumMeshes << endl;
-		int x = 0;
-		cin >> x;
-		exit(0);
 	}
 	
 	for (int i = 0; i < node->mNumMeshes; i++)
@@ -167,15 +158,6 @@ void Geometry::draw(Shader* drawShader, mat4x4 view, glm::mat4x4 proj, mat4x4 ca
 
 	drawShader->useShader();
 
-	auto enableGlow_location = glGetUniformLocation(drawShader->programHandle, "enableGlow");
-	glUniform1i(enableGlow_location, enableGlow);
-
-	auto alpha_location = glGetUniformLocation(drawShader->programHandle, "alpha");
-	glUniform1f(alpha_location, alpha);
-
-	auto transparency_location = glGetUniformLocation(drawShader->programHandle, "enableTransparency");
-	glUniform1i(transparency_location, TRANSPARENCY ? 1 : 0);
-
 	mat4x4 globalPose = getGlobalPose();
 
 	for (int i = 0; i < meshCount; i++)
@@ -218,6 +200,14 @@ mat4 convertMetrix(const aiMatrix4x4 m)
 	return Matri;
 }
 
+void printMatGeometry(string name, mat4x4 mat)
+{
+	cout << name << endl;
+	cout << mat[0][0] << " " << mat[0][1] << " " << mat[0][2] << " " << mat[0][3] << endl;
+	cout << mat[1][0] << " " << mat[1][1] << " " << mat[1][2] << " " << mat[1][3] << endl;
+	cout << mat[2][0] << " " << mat[2][1] << " " << mat[2][2] << " " << mat[2][3] << endl;
+	cout << mat[3][0] << " " << mat[3][1] << " " << mat[3][2] << " " << mat[3][3] << endl;
+}
 
 void Geometry::setPhysX(PxPhysics* mPhysicsSDK, PxFoundation* mFoundation, PxDefaultErrorCallback mDefaultErrorCallback, PxDefaultAllocator mDefaultAllocatorCallback, PxScene* mScene)
 {
