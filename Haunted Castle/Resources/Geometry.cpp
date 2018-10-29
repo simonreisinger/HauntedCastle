@@ -21,9 +21,9 @@ void Geometry::searchNodesRecursive(string modelDir, aiNode* node, const aiScene
 	mat4x4 transform = convertMetrix(node->mTransformation);
 
 	//cout << "NODE: " << name.data << endl;
-	printMatGeometry(name.data, transform);
+	//printMatGeometry(name.data, transform);
 
-	cout << "node->mNumMeshes:" << node->mNumMeshes << endl;
+	//cout << "node->mNumMeshes:" << node->mNumMeshes << endl;
 	
 	for (int i = 0; i < node->mNumMeshes; i++)
 	{
@@ -86,9 +86,9 @@ void Geometry::init(const std::string& displayFile, mat4& matrix, Shader* _shade
 
 	string modelDir = displayFile.substr(0, displayFile.find("/"));
 
-	cout << "ModelDir:" << modelDir << endl;
+	//cout << "ModelDir:" << modelDir << endl;
 
-	cout << "ReadFile: " << datensatzDir + displayFile << endl;
+	//cout << "ReadFile: " << datensatzDir + displayFile << endl;
 
 	Assimp::Importer displayImporter;
 	const aiScene* scene = displayImporter.ReadFile(datensatzDir + displayFile, aiProcessPreset_TargetRealtime_Quality);
@@ -104,7 +104,8 @@ void Geometry::init(const std::string& displayFile, mat4& matrix, Shader* _shade
 
 	aiNode* rootNode = scene->mRootNode;
 
-	Node* node = new Node();
+	cout << "node" << endl;
+	Node* node = new Node(rootNode, scene);
 
 	//Node* node = new Node(rootNode);
 

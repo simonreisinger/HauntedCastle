@@ -1,10 +1,11 @@
 #pragma once
 
 #include <GL\glew.h>
-#include "../Resources/SceneObject.hpp"
-#include "../Resources/Shader.hpp"
-#include "../Resources/Texture.hpp"
-#include "../Resources/Mesh.hpp"
+#include "SceneObject.hpp"
+#include "Shader.hpp"
+#include "Texture.hpp"
+#include "Mesh.hpp"
+#include "Node.hpp"
 #include <iostream>
 
 #include "assimp/Importer.hpp"	//OO version Header!

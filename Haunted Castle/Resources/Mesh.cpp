@@ -22,7 +22,7 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 	this->updateTrans = mat4x4(1.0f);
 
 
-	cout << this->nameMesh << endl;
+	//cout << this->nameMesh << endl;
 
 	/*
 	applyUpdateTrans = false;
