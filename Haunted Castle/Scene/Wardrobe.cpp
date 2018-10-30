@@ -27,10 +27,6 @@ Wardrobe::Wardrobe(Shader* shader, float sposX, float sposY, float sposZ, float 
 
 	// Shader
 	shader->useShader();
-
-	defaultColor = vec3(1, 1, 1);
-	mesh[0]->diffuse = defaultColor;
-	wonColor;
 }
 
 Wardrobe::~Wardrobe()

@@ -3,7 +3,7 @@
 using namespace cgue;
 using namespace std;
 
-void printMatrix(string name, mat4x4 mat);
+void printMatrixOfNode(string name, mat4x4 mat);
 
 SceneNode::SceneNode(aiNode* aiNode, const aiScene* scene, string modelDir, Shader* shader)
 {
@@ -12,7 +12,7 @@ SceneNode::SceneNode(aiNode* aiNode, const aiScene* scene, string modelDir, Shad
 	name = aiNode->mName.data;
 	transform = convertMatrix(aiNode->mTransformation);
 
-	//printMatrix(name.data, transform);
+	printMatrixOfNode(name, transform);
 
 	size = countVertices(aiNode, scene);
 	positions = new float[size * 3];
@@ -48,6 +48,8 @@ SceneNode::SceneNode(aiNode* aiNode, const aiScene* scene, string modelDir, Shad
 	{
 		childNode[i] = new SceneNode(aiNode->mChildren[i], scene, modelDir, shader);
 	}
+
+	this->init = true;
 }
 
 SceneNode::~SceneNode() {
@@ -59,6 +61,26 @@ SceneNode::~SceneNode() {
 	delete mesh; mesh = nullptr;
 	delete childNode; childNode = nullptr;
 	delete mesh; mesh = nullptr;
+}
+
+void SceneNode::draw(Shader* drawShader, mat4x4 view, glm::mat4x4 proj, mat4x4 globalPose, bool cull)
+{
+	if (this->init)
+	{
+		//cout << "DRAW " << name << endl;
+
+		drawShader->useShader();
+
+		for (int i = 0; i < this->meshCount; i++)
+		{
+			mesh[i]->draw(drawShader, view, proj, globalPose * transform, cull);
+		}
+
+		for (int i = 0; i < childNodeCount; i++)
+		{
+			childNode[i]->draw(drawShader, view, proj, globalPose * transform, cull);
+		}
+	}
 }
 
 int SceneNode::countVertices(aiNode* node, const aiScene* scene)
@@ -105,7 +127,7 @@ mat4 SceneNode::convertMatrix(const aiMatrix4x4 m)
 	return Matri;
 }
 
-void printMatrix(string name, mat4x4 mat)
+void printMatrixOfNode(string name, mat4x4 mat)
 {
 	cout << name << endl;
 	cout << mat[0][0] << " " << mat[1][0] << " " << mat[2][0] << " " << mat[3][0] << endl;

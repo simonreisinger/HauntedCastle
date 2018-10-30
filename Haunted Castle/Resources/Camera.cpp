@@ -32,6 +32,6 @@ vec3 Camera::getCameraLookAt()
 
 vec3 Camera::getCameraUp()
 {
-	vec4 v = vec4(0, 1, 0, 1) * modelMatrix;
+	vec4 v = vec4(0, -1, 0, 1) * modelMatrix;
 	return vec3(v.x, v.y, v.z);
 }

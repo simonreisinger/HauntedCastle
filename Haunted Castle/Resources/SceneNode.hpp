@@ -22,6 +22,8 @@ namespace cgue
 		SceneNode(aiNode* aiNode, const aiScene* scene, string modelDir, Shader* shader);
 		virtual ~SceneNode();
 
+		void draw(Shader* drawShader, mat4x4 view, glm::mat4x4 proj, mat4x4 camera_model, bool cull);
+
 	private:
 
 		int countVertices(aiNode* node, const aiScene* scene);
@@ -37,10 +39,12 @@ namespace cgue
 		int childNodeCount;
 		SceneNode** childNode;
 
-		int meshCount;
+		int meshCount = 0;
 		Mesh** mesh;
 
 		string name;
 		mat4x4 transform;
+
+		bool init = false;
 	};
 }

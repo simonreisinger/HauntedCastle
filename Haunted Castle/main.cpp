@@ -693,11 +693,11 @@ void init(GLFWwindow* window)
 
 	camera = new Camera();
 
-	actor = new Actor(renderShader, 2.0f, -5.0f, 6.0f, 180.0f);
+	actor = new Actor(renderShader, 2.0f, 5.0f, 6.0f, 180.0f);
 	actor->setPhysX(gPhysicsSDK, gFoundation, gDefaultErrorCallback, gDefaultAllocatorCallback, gScene);
 	actor->initActor();
 
-	//room = new Room(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	room = new Room(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
 	if (renderObjects)
 	{
@@ -712,7 +712,6 @@ void init(GLFWwindow* window)
 		wardrobe = new Wardrobe(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
 		door = new Door(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-
 		*/
 
 		chair1 = new Chair1(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
@@ -723,7 +722,7 @@ void init(GLFWwindow* window)
 
 		frame = new Frame(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
-		commode = new Commode(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+		//commode = new Commode(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
 		torch2 = new Torch2(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
@@ -874,12 +873,12 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 
 
 	// Room
-	//room->draw(drawShader, view, proj, camera_model, cull);
+	room->draw(drawShader, view, proj, camera_model, cull);
 
 	if (renderObjects)
 	{
-
 		/*
+		
 		torch1->draw(drawShader, view, proj, camera_model, cull);
 
 		// Object
@@ -895,15 +894,15 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 
 		chair1->draw(drawShader, view, proj, camera_model, cull);
 
+		
 		/*
-
 		chair2->draw(drawShader, view, proj, camera_model, cull);
 
 		desk->draw(drawShader, view, proj, camera_model, cull);
 
 		frame->draw(drawShader, view, proj, camera_model, cull);
 
-		commode->draw(drawShader, view, proj, camera_model, cull);
+		//commode->draw(drawShader, view, proj, camera_model, cull);
 
 		torch2->draw(drawShader, view, proj, camera_model, cull);
 

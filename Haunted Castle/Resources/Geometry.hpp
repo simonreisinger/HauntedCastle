@@ -57,6 +57,8 @@ namespace cgue
 		GLuint positionBuffer, normalsBuffer, uvBuffer, indexBuffer;
 		Shader *shader;
 
+		SceneNode* sceneNode;
+
 		int meshIndex;
 		int meshCount;
 

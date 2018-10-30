@@ -28,10 +28,6 @@ Torch1::Torch1(Shader* shader, float sposX, float sposY, float sposZ, float srot
 
 	// Shader
 	shader->useShader();
-
-	defaultColor = vec3(1, 1, 1);
-	mesh[0]->diffuse = defaultColor;
-	wonColor;
 }
 
 Torch1::~Torch1()

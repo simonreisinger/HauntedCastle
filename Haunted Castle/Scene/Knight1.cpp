@@ -27,10 +27,6 @@ Knight1::Knight1(Shader* shader, float sposX, float sposY, float sposZ, float sr
 
 	// Shader
 	shader->useShader();
-
-	defaultColor = vec3(1, 1, 1);
-	mesh[0]->diffuse = defaultColor;
-	wonColor;
 }
 
 Knight1::~Knight1()

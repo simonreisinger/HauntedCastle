@@ -104,9 +104,10 @@ void Geometry::init(const std::string& displayFile, mat4& matrix, Shader* _shade
 
 	aiNode* rootNode = scene->mRootNode;
 
+	
 	cout << "node" << endl;
-	SceneNode* node = new SceneNode(rootNode, scene, modelDir, shader);
-
+	sceneNode = new SceneNode(rootNode, scene, modelDir, shader);
+	/*
 	//Node* node = new Node(rootNode);
 
 	// Notiz: Mit Blender ist wird jeder Eckpunkt 6-fach gespeichert, 2-mal je Seite
@@ -124,6 +125,7 @@ void Geometry::init(const std::string& displayFile, mat4& matrix, Shader* _shade
 	iVertices = 0;
 	meshIndex = 0;
 	Geometry::searchNodesRecursive(modelDir, rootNode, scene, initTrans, positions, normals, indices, uvs, mesh, shader);
+	*/
 }
 
 void Geometry::initActor()
@@ -133,18 +135,7 @@ void Geometry::initActor()
 
 Geometry::~Geometry()
 {
-	
-	glDeleteBuffers(1, &positionBuffer);
-	glDeleteBuffers(1, &normalsBuffer);
-	glDeleteBuffers(1, &indexBuffer);
-	glDeleteBuffers(1, &uvBuffer);
-	glDeleteVertexArrays(1, &vao);
-	
-	delete positions; positions = nullptr;
-	delete normals; normals = nullptr;
-	delete indices; indices = nullptr;
-	delete uvs; uvs = nullptr;
-	delete mesh; mesh = nullptr;
+	delete sceneNode; sceneNode = nullptr;
 }
 
 void Geometry::update(float time_delta, float time_abs)
@@ -157,14 +148,21 @@ void Geometry::update(float time_delta, float time_abs)
 
 void Geometry::draw(Shader* drawShader, mat4x4 view, glm::mat4x4 proj, mat4x4 camera_model, bool cull)
 {
+	//cout << "DRAW" << endl;
+
 	drawShader->useShader();
 
 	mat4x4 globalPose = getGlobalPose();
 
+	sceneNode->draw(drawShader, view, proj, globalPose, cull);
+
+	/*
 	for (int i = 0; i < meshCount; i++)
 	{
 		mesh[i]->draw(drawShader, view, proj, globalPose, cull);
 	}
+	*/
+	
 }
 
 mat4x4 Geometry::getGlobalPose()

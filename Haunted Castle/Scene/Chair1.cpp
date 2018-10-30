@@ -27,10 +27,6 @@ Chair1::Chair1(Shader* shader, float sposX, float sposY, float sposZ, float srot
 
 	// Shader
 	shader->useShader();
-
-	defaultColor = vec3(1, 1, 1);
-	mesh[0]->diffuse = defaultColor;
-	wonColor;
 }
 
 Chair1::~Chair1()
