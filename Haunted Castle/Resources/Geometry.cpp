@@ -105,27 +105,7 @@ void Geometry::init(const std::string& displayFile, mat4& matrix, Shader* _shade
 	aiNode* rootNode = scene->mRootNode;
 
 	
-	cout << "node" << endl;
 	sceneNode = new SceneNode(rootNode, scene, modelDir, shader);
-	/*
-	//Node* node = new Node(rootNode);
-
-	// Notiz: Mit Blender ist wird jeder Eckpunkt 6-fach gespeichert, 2-mal je Seite
-	size = countVerticesRecursive(rootNode, scene);
-	positions = new float[size * 3];
-	indices = new int[size];
-	normals = new float[size * 3];
-	uvs = new float[size * 2];
-
-
-	meshCount = scene->mNumMeshes;
-	mesh = new Mesh*[meshCount];
-	
-
-	iVertices = 0;
-	meshIndex = 0;
-	Geometry::searchNodesRecursive(modelDir, rootNode, scene, initTrans, positions, normals, indices, uvs, mesh, shader);
-	*/
 }
 
 void Geometry::initActor()
@@ -155,13 +135,6 @@ void Geometry::draw(Shader* drawShader, mat4x4 view, glm::mat4x4 proj, mat4x4 ca
 	mat4x4 globalPose = getGlobalPose();
 
 	sceneNode->draw(drawShader, view, proj, globalPose, cull);
-
-	/*
-	for (int i = 0; i < meshCount; i++)
-	{
-		mesh[i]->draw(drawShader, view, proj, globalPose, cull);
-	}
-	*/
 	
 }
 

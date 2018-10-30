@@ -701,7 +701,7 @@ void init(GLFWwindow* window)
 
 	if (renderObjects)
 	{
-		/*
+		
 		torch1 = new Torch1(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
 		desk = new Desk(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
@@ -712,22 +712,22 @@ void init(GLFWwindow* window)
 		wardrobe = new Wardrobe(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
 		door = new Door(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-		*/
+		
 
 		chair1 = new Chair1(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
-		/*
+		
 		chair2 = new Chair2(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
 
 		frame = new Frame(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
-		//commode = new Commode(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+		commode = new Commode(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
 		torch2 = new Torch2(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
 
 		chess = new Chess(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-		*/
+		
 	}
 	
 
@@ -877,7 +877,7 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 
 	if (renderObjects)
 	{
-		/*
+		
 		
 		torch1->draw(drawShader, view, proj, camera_model, cull);
 
@@ -890,25 +890,25 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 
 		door->draw(drawShader, view, proj, camera_model, cull);
 
-		*/
+		
 
 		chair1->draw(drawShader, view, proj, camera_model, cull);
 
 		
-		/*
+		
 		chair2->draw(drawShader, view, proj, camera_model, cull);
 
 		desk->draw(drawShader, view, proj, camera_model, cull);
 
 		frame->draw(drawShader, view, proj, camera_model, cull);
 
-		//commode->draw(drawShader, view, proj, camera_model, cull);
+		commode->draw(drawShader, view, proj, camera_model, cull);
 
 		torch2->draw(drawShader, view, proj, camera_model, cull);
 
 		chess->draw(drawShader, view, proj, camera_model, cull);
 
-		*/
+		
 
 	}
 	
@@ -943,15 +943,15 @@ void handleInput(GLFWwindow* window, float time_delta)
 		double mouseXPosDiff = mouseXPos - mouseXPosOld;
 		double mouseYPosDiff = mouseYPos - mouseYPosOld;
 		
-		actor->actor->addTorque(actor->actor->getGlobalPose().rotate(PxVec3(0, -MOVESPEED * mouseXPosDiff / 10 * time_delta * actor->getExtraSpeed(), 0)));
+		actor->actor->addTorque(actor->actor->getGlobalPose().rotate(PxVec3(0, MOVESPEED * mouseXPosDiff / 10 * time_delta * actor->getExtraSpeed(), 0)));
 
 		if (mouseYPosDiff > 0)
 		{
-			camera->rotateDown(-time_delta * mouseYPosDiff / 10);
+			camera->rotateDown(time_delta * mouseYPosDiff / 10);
 		}
 		if (mouseYPosDiff < 0)
 		{
-			camera->rotateUp(time_delta * mouseYPosDiff / 10);
+			camera->rotateUp(-time_delta * mouseYPosDiff / 10);
 		}
 	}
 
@@ -964,12 +964,12 @@ void handleInput(GLFWwindow* window, float time_delta)
 	if (glfwGetKey(window, GLFW_KEY_RIGHT))
 	{
 		//camera->rotateLeft(time_delta);
-		actor->actor->addTorque(actor->actor->getGlobalPose().rotate(PxVec3(0, MOVESPEED * time_delta * actor->getExtraSpeed(), 0)));
+		actor->actor->addTorque(actor->actor->getGlobalPose().rotate(PxVec3(0, -MOVESPEED * time_delta * actor->getExtraSpeed(), 0)));
 	}
 	if (glfwGetKey(window, GLFW_KEY_LEFT))
 	{
 		//camera->rotateRight(time_delta);
-		actor->actor->addTorque(actor->actor->getGlobalPose().rotate(PxVec3(0, -MOVESPEED * time_delta * actor->getExtraSpeed(), 0)));
+		actor->actor->addTorque(actor->actor->getGlobalPose().rotate(PxVec3(0, MOVESPEED * time_delta * actor->getExtraSpeed(), 0)));
 	}
 	if (glfwGetKey(window, GLFW_KEY_DOWN))
 	{
@@ -985,11 +985,11 @@ void handleInput(GLFWwindow* window, float time_delta)
 	// actor 0 - rotate
 	if (glfwGetKey(window, GLFW_KEY_A))
 	{
-		actor->actor->addTorque(actor->actor->getGlobalPose().rotate(PxVec3(0, -MOVESPEED * time_delta * actor->getExtraSpeed(), 0)));
+		actor->actor->addTorque(actor->actor->getGlobalPose().rotate(PxVec3(0, MOVESPEED * time_delta * actor->getExtraSpeed(), 0)));
 	}
 	if (glfwGetKey(window, GLFW_KEY_D))
 	{
-		actor->actor->addTorque(actor->actor->getGlobalPose().rotate(PxVec3(0, MOVESPEED * time_delta * actor->getExtraSpeed(), 0)));
+		actor->actor->addTorque(actor->actor->getGlobalPose().rotate(PxVec3(0, -MOVESPEED * time_delta * actor->getExtraSpeed(), 0)));
 	}
 	// actor 0 - move 
 	if (glfwGetKey(window, GLFW_KEY_Q))
