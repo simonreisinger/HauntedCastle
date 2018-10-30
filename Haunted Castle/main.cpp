@@ -105,8 +105,8 @@ float RING_HEIGHT_LOW = 10.0f;
 int width;
 int height;
 
-float MOVESPEED = 20000.0 * 2.0 * 1.2f;// 40.0;
-float ROTATESPEED = 2400.0 * 2.0 * 1.2f;
+float MOVESPEED = 80000.0f;
+float ROTATESPEED = 5000.0f;
 
 static PxPhysics*				gPhysicsSDK = NULL;			//Instance of PhysX SDK
 static PxFoundation*			gFoundation = NULL;			//Instance of singleton foundation SDK class
