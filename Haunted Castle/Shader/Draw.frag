@@ -55,7 +55,7 @@ void main(){
 	}
 
 
-	float AmbientIntensity = 0.5;
+	float AmbientIntensity = 0.1;
 	vec3 MaterialAmbientColor = AmbientIntensity * MaterialDiffuseColor;
 	vec3 MaterialSpecularColor = specularColor;
 
@@ -110,11 +110,11 @@ void main(){
 		// Specular Torch 1
 		MaterialSpecularColor * I1 * pow(cosAlpha1, 5) +
 
+		
 		// Diffuse Torch 2
 		MaterialDiffuseColor * I2 * cosTheta2 +
 		// Specular Torch 2
 		MaterialSpecularColor * I2 * pow(cosAlpha2, 5) +
-
 		// Window
 		MaterialDiffuseColor * visibility
 

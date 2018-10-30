@@ -18,9 +18,16 @@ mat4x4 Camera::getCameraModel()
 	return lookAt(getCameraPos(), getCameraLookAt(), getCameraUp());
 }
 
+mat4x4 Camera::getInverseCameraModel()
+{
+	//return modelMatrix;
+	//return glm::translate(mat4x4(1.0f), glm::vec3(0, 0, -15)) * modelMatrix;
+	return inverse(lookAt(getCameraPos(), getCameraLookAt(), getCameraUp()));
+}
+
 vec3 Camera::getCameraPos()
 {
-	vec4 v = vec4(0, 0, 0.1, 1) * modelMatrix;
+	vec4 v = vec4(changeAxis * vec3(0, -1, 0), 1) * modelMatrix;
 	return vec3(v.x, v.y, v.z);
 }
 
@@ -32,6 +39,6 @@ vec3 Camera::getCameraLookAt()
 
 vec3 Camera::getCameraUp()
 {
-	vec4 v = vec4(0, -1, 0, 1) * modelMatrix;
+	vec4 v = vec4(changeAxis * vec3(0, 0, -1), 1) * modelMatrix;
 	return vec3(v.x, v.y, v.z);
 }

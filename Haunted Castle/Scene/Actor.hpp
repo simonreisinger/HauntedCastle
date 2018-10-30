@@ -20,6 +20,9 @@ namespace cgue
 		PxRigidDynamic* actor;
 		mat4x4 getGlobalPose();
 
+		void PxRotate(float rx, float ry, float rz);
+		void PxTranslate(float tx, float ty, float tz);
+
 		float extraSpeed = 1.0f;
 
 		// if factor > 1 actor excelerate

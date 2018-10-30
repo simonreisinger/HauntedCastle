@@ -87,6 +87,9 @@
     <ClCompile Include="Resources\SceneNode.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="Scene\Coordinatesystem.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Resources\SceneObject.hpp">
@@ -156,6 +159,9 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="Resources\SceneNode.hpp">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\Coordinatesystem.hpp">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

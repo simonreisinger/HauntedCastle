@@ -78,7 +78,6 @@ namespace cgue
 		float zmax = 0.0;
 
 		string nameMesh;
-		mat4x4 meshTrans;
 		mat4x4 updateTrans;
 
 		PxCooking* mCooking;

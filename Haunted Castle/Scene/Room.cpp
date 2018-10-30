@@ -20,8 +20,8 @@ Room::Room(Shader* shader, float sposX, float sposY, float sposZ, float srotX, f
 
 	glm::mat4& matrix = glm::mat4(1.0f);
 
-	glm::mat4& initTrans = glm::rotate(glm::mat4(1.0f), PI / 2, glm::vec3(1, 0, 0));
-	initTrans = glm::rotate(initTrans, srotY / 180.0f * PI, glm::vec3(0, 0, 1));
+	glm::mat4& initTrans = mat4x4(1); /* glm::rotate(glm::mat4(1.0f), PI / 2, glm::vec3(1, 0, 0));
+	initTrans = glm::rotate(initTrans, srotY / 180.0f * PI, glm::vec3(0, 0, 1));*/
 
 	Geometry::init(displayFile, matrix, shader, initTrans);
 
@@ -36,10 +36,13 @@ Room::~Room()
 
 mat4x4 Room::getGlobalPose()
 {
+	/*
 	mat4x4 mScale = glm::scale(mat4x4(1), vec3(this->scale));
 	mat4x4 mRotX = glm::rotate(mScale, this->rotx, vec3(1, 0, 0));
 	mat4x4 mRotY = glm::rotate(mRotX, this->roty, vec3(0, 1, 0));
 	mat4x4 mRotZ = glm::rotate(mRotY, this->rotz, vec3(0, 0, 1));
 	return translate(mRotZ, vec3(this->posx, this->posy, this->posz));
+	*/
+	return mat4x4(1);
 }
 

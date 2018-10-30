@@ -45,8 +45,6 @@ extern GLuint depthTexture;
 extern glm::mat4 depthBiasMVP;
 extern glm::mat4 depthMVP;
 
-extern vec3 lightPos;
-
 extern vec3 torch1Pos;
 extern vec3 torch2Pos;
 
@@ -57,4 +55,12 @@ extern float hfar;
 extern float nearDist;
 extern float farDist;
 
+extern int iMeshesLoaded;
+extern int countMeshesLoading;
+
 extern FrustumG* frustumG;
+
+extern bool renderObjects;
+
+// Change the Axis from (x, z, y) to (x, z, -y)
+extern mat3x3 changeAxis;

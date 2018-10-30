@@ -15,7 +15,6 @@ uniform vec3 specularColor;
 uniform int hasTexture;
 
 uniform mat4 model;
-uniform mat4 meshTrans;
 uniform mat4 updateTrans;
 
 void main(){

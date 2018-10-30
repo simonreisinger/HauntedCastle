@@ -102,6 +102,7 @@
     <ClCompile Include="Scene\Chair2.cpp" />
     <ClCompile Include="Scene\Chess.cpp" />
     <ClCompile Include="Scene\Commode.cpp" />
+    <ClCompile Include="Scene\Coordinatesystem.cpp" />
     <ClCompile Include="Scene\Desk.cpp" />
     <ClCompile Include="Scene\Door.cpp" />
     <ClCompile Include="Scene\Frame.cpp" />
@@ -127,6 +128,7 @@
     <ClInclude Include="Scene\Chair2.hpp" />
     <ClInclude Include="Scene\Chess.hpp" />
     <ClInclude Include="Scene\Commode.hpp" />
+    <ClInclude Include="Scene\Coordinatesystem.hpp" />
     <ClInclude Include="Scene\Desk.hpp" />
     <ClInclude Include="Scene\Door.hpp" />
     <ClInclude Include="Scene\Frame.hpp" />

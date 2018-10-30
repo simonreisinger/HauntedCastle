@@ -41,21 +41,22 @@ PxMat44 glmToPxMat(mat4x4 mat)
 void printMatGeometry(mat4x4 mat)
 {
 	//*
-	cout << mat[0][0] << " " << mat[0][1] << " " << mat[0][2] << " " << mat[0][3] << endl;
-	cout << mat[1][0] << " " << mat[1][1] << " " << mat[1][2] << " " << mat[1][3] << endl;
-	cout << mat[2][0] << " " << mat[2][1] << " " << mat[2][2] << " " << mat[2][3] << endl;
-	cout << mat[3][0] << " " << mat[3][1] << " " << mat[3][2] << " " << mat[3][3] << endl;
+	cout << mat[0][0] << " " << mat[1][0] << " " << mat[2][0] << " " << mat[3][0] << endl;
+	cout << mat[0][1] << " " << mat[1][1] << " " << mat[2][1] << " " << mat[3][1] << endl;
+	cout << mat[0][2] << " " << mat[1][2] << " " << mat[2][2] << " " << mat[3][2] << endl;
+	cout << mat[0][3] << " " << mat[1][3] << " " << mat[2][3] << " " << mat[3][3] << endl;
 	//*/
 }
 
 GLuint depthTexture;
 glm::mat4 depthBiasMVP;
 glm::mat4 depthMVP;
-vec3 lightPos = vec3(9.8, -2, -8);
 
-// While inserting torch position interchange y and z and then invert y => Result (x, -z, y)
-vec3 torch1Pos = vec3(12.5634, -9.75919, -11.12736);
-vec3 torch2Pos = vec3(12.5634, -9.75919, 8.90968);
+// Change the Axis from (x, z, y) to (x, z, -y)
+mat3x3 changeAxis = mat3x3(1, 0, 0, 0, 0, -1, 0, 1, 0);
+
+vec3 torch1Pos = changeAxis * vec3(12.5634, -11.12736, 9.75919);
+vec3 torch2Pos = changeAxis * vec3(12.5634, 8.90968, 9.75919);
 
 float wnear = 0;
 float hnear = 0;
@@ -63,3 +64,8 @@ float wfar = 0;
 float hfar = 0;
 float nearDist = 0;
 float farDist = 0;
+
+int iMeshesLoaded = 0;
+int countMeshesLoading = 73;
+
+bool renderObjects = true;

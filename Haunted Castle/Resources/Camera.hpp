@@ -14,10 +14,11 @@ namespace cgue {
 		vec3 l;
 		vec3 u;
 
-		mat4x4 Camera::getCameraModel();
-		vec3 Camera::getCameraPos();
-		vec3 Camera::getCameraUp();
-		vec3 Camera::getCameraLookAt();
+		mat4x4 getCameraModel();
+		mat4x4 getInverseCameraModel();
+		vec3 getCameraPos();
+		vec3 getCameraUp();
+		vec3 getCameraLookAt();
 	private:
 	};
 }

@@ -7,12 +7,10 @@ void printMatrixOfNode(string name, mat4x4 mat);
 
 SceneNode::SceneNode(aiNode* aiNode, const aiScene* scene, string modelDir, Shader* shader)
 {
-	cout << "Node" << endl;
 
 	name = aiNode->mName.data;
 	transform = convertMatrix(aiNode->mTransformation);
 
-	printMatrixOfNode(name, transform);
 
 	size = countVertices(aiNode, scene);
 	positions = new float[size * 3];
@@ -20,17 +18,12 @@ SceneNode::SceneNode(aiNode* aiNode, const aiScene* scene, string modelDir, Shad
 	normals = new float[size * 3];
 	uvs = new float[size * 2];
 
-	cout << "size:" << size << endl;
-
-	cout << "aiNode->mNumMeshes:" << aiNode->mNumMeshes << endl;
 
 	meshCount = aiNode->mNumMeshes;
 	mesh = new Mesh*[meshCount];
 
 	for (int i = 0; i < aiNode->mNumMeshes; i++)
 	{
-		cout << "Mesh" << endl;
-
 		int iMesh = aiNode->mMeshes[i];
 		aiMesh* aiMesh = scene->mMeshes[iMesh];
 

@@ -18,25 +18,11 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 	this->shader = shader;
 	std::string str(nameMesh);
 	this->nameMesh = str;
-	this->meshTrans = initTrans * transform;
 	this->updateTrans = mat4x4(1.0f);
 
+	iMeshesLoaded++;
+	cout << "Loading Mesh " << iMeshesLoaded << " of " << countMeshesLoading << endl;
 
-	//cout << this->nameMesh << endl;
-
-	/*
-	applyUpdateTrans = false;
-	char* tuerMitte = "TuerMitte";
-	if (strcmp(nameMesh, tuerMitte) == 0)
-	{
-		applyUpdateTrans = true;
-	}
-	*/
-
-	//cout << "Mesh: " << nameMesh << "   " << applyUpdateTrans << endl;
-	//cout << "Mesh: "<< nameMesh << "   " << endl;
-	//printMatGeometry(meshTrans);
-	//name = mesh->mName.data;
 
 	int texIndex = 0;
 	aiString path;
@@ -150,28 +136,6 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 	sphereCenter = vec3((xmax - xmin) / 2, (ymax - ymin) / 2, (zmax - zmin) / 2);
 	sphereRadius = length(vec3(xmax, ymax, zmax) - sphereCenter);
 
-	/*
-	// center of faces
-	positionOfExtremValues[8] = vec4(xmin, 0, 0, 1);
-	positionOfExtremValues[9] = vec4(xmax, 0, 0, 1);
-	positionOfExtremValues[10] = vec4(0, ymin, 0, 1);
-	positionOfExtremValues[11] = vec4(0, ymax, 0, 1);
-	positionOfExtremValues[12] = vec4(0, 0, zmin, 1);
-	positionOfExtremValues[13] = vec4(0, 0, zmax, 1);
-
-	// edges
-	positionOfExtremValues[14] = vec4(xmin, 0, zmin, 1);
-	positionOfExtremValues[15] = vec4(xmin, 0, zmax, 1);
-	positionOfExtremValues[16] = vec4(xmax, 0, zmin, 1);
-	positionOfExtremValues[17] = vec4(xmax, 0, zmax, 1);
-	positionOfExtremValues[18] = vec4(0, ymin, zmin, 1);
-	positionOfExtremValues[19] = vec4(0, ymin, zmax, 1);
-	positionOfExtremValues[20] = vec4(0, ymax, zmin, 1);
-	positionOfExtremValues[21] = vec4(0, ymax, zmax, 1);
-	*/
-
-
-	//cout << "position: x:" << xmin << ", " << xmax << ", y " << ymin << ", " << ymax <<  ", z " << zmin << ", " << zmax << endl;
 
 
 	// Load into Graphics Card
@@ -252,10 +216,9 @@ Mesh::~Mesh()
 
 void Mesh::loadUniforms(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalPose)
 {
-	mat4x4 model = globalPose * meshTrans * updateTrans;
+	mat4x4 model = globalPose * updateTrans;
 	mat4x4 mv = view * model;
 	mat4x4 mvp = proj * mv;
-	vec3 LightPosition_worldspace = lightPos;
 
 	// Model
 	auto model_location = glGetUniformLocation(shader->programHandle, "M");
@@ -276,10 +239,6 @@ void Mesh::loadUniforms(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalP
 	GLuint depthMatrixID = glGetUniformLocation(shader->programHandle, "depthMVP");
 	glUniformMatrix4fv(depthMatrixID, 1, GL_FALSE, &mvp[0][0]);
 
-
-	// Light
-	auto LightPosition_worldspace_location = glGetUniformLocation(shader->programHandle, "LightPosition_worldspace");
-	glUniform3f(LightPosition_worldspace_location, LightPosition_worldspace.x, LightPosition_worldspace.y, LightPosition_worldspace.z);
 
 	// Torch1
 	auto Torch1Position_worldspace_location = glGetUniformLocation(shader->programHandle, "Torch1Position_worldspace");
@@ -312,14 +271,9 @@ void Mesh::loadUniforms(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalP
 	}
 }
 
-void Mesh::setMeshTrans(mat4x4 trans)
-{
-	this->meshTrans = trans;
-}
-
 void Mesh::draw(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalPose, bool cull)
 { 
-	if (!VIEWFRUSTUM_CULLING || !cull || isVisible(globalPose * meshTrans * updateTrans)){
+	if (!VIEWFRUSTUM_CULLING || !cull || isVisible(globalPose * updateTrans)){
 		loadUniforms(shader, view, proj, globalPose);
 
 		glBindVertexArray(vao);

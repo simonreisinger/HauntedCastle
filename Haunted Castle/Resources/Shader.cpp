@@ -76,7 +76,7 @@ void Shader::loadShader(const string& shader, GLenum shaderType, GLuint& handle 
 		GLchar* msg = new GLchar[logSize];
 		glGetShaderInfoLog(handle, logSize, nullptr, msg);
 
-		std::cout << msg << std::endl;
+		std::cout << "Msg:" << msg << std::endl;
 		system("PAUSE");
 
 		delete[] msg;
@@ -103,7 +103,7 @@ void Shader::link()
 		GLchar* msg = new GLchar[logSize];
 		glGetProgramInfoLog(programHandle, logSize, nullptr, msg);
 
-		std::cout << msg << std::endl;
+		std::cout << "msg:" << msg << std::endl;
 		system("PAUSE");
 
 		delete[] msg;
