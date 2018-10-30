@@ -5,8 +5,8 @@
       <author>Blender User</author>
       <authoring_tool>Blender 2.76.0 commit date:2015-11-03, commit time:10:56, hash:f337fea</authoring_tool>
     </contributor>
-    <created>2018-10-30T01:10:01</created>
-    <modified>2018-10-30T01:10:01</modified>
+    <created>2018-10-30T22:23:54</created>
+    <modified>2018-10-30T22:23:54</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
@@ -62,7 +62,7 @@
     <geometry id="leglow1_group_leglow1_pasted__polySurface74_leglow1_polySurface-mesh" name="leglow1:group leglow1:pasted__polySurface74 leglow1:polySurface">
       <mesh>
         <source id="leglow1_group_leglow1_pasted__polySurface74_leglow1_polySurface-mesh-positions">
-          <float_array id="leglow1_group_leglow1_pasted__polySurface74_leglow1_polySurface-mesh-positions-array" count="48">-0.2600532 -0.06980037 -2.758303 -0.08093118 -0.06756496 -2.756079 -0.2615295 0.00579071 -0.03527402 -0.08240795 0.008026123 -0.03305006 -0.08487272 0.2118797 -0.03940224 -0.08301877 0.105093 -2.761459 -0.2639942 0.2096443 -0.04162621 -0.2621408 0.1028575 -2.763683 -2.163565 -0.06980037 -2.758304 -2.16209 0.00579071 -0.03527426 -2.342687 -0.06756496 -2.75608 -2.341212 0.008026123 -0.03305053 -2.338747 0.2118797 -0.03940296 -2.3406 0.105092 -2.76146 -2.159626 0.2096443 -0.04162645 -2.161478 0.1028566 -2.763683</float_array>
+          <float_array id="leglow1_group_leglow1_pasted__polySurface74_leglow1_polySurface-mesh-positions-array" count="48">-0.2600527 -0.06980228 -2.758304 -0.0809307 -0.06756687 -2.75608 -0.261529 0.005788803 -0.03527426 -0.08240747 0.008024215 -0.03305029 -0.08487224 0.2118778 -0.03940248 -0.0830183 0.105091 -2.76146 -0.2639937 0.2096424 -0.04162645 -0.2621403 0.1028556 -2.763683 -2.163565 -0.06980228 -2.758304 -2.162089 0.005788803 -0.0352745 -2.342687 -0.06756687 -2.75608 -2.341211 0.008024215 -0.03305077 -2.338747 0.2118778 -0.0394032 -2.340599 0.1050901 -2.76146 -2.159625 0.2096424 -0.04162669 -2.161477 0.1028547 -2.763684</float_array>
           <technique_common>
             <accessor source="#leglow1_group_leglow1_pasted__polySurface74_leglow1_polySurface-mesh-positions-array" count="16" stride="3">
               <param name="X" type="float"/>
@@ -72,7 +72,7 @@
           </technique_common>
         </source>
         <source id="leglow1_group_leglow1_pasted__polySurface74_leglow1_polySurface-mesh-normals">
-          <float_array id="leglow1_group_leglow1_pasted__polySurface74_leglow1_polySurface-mesh-normals-array" count="48">0.01212948 -0.9995412 0.02775371 0.01212954 -0.9995412 0.02775377 0.9999269 0.0120964 2.06488e-4 0.9999269 0.01209646 2.06485e-4 -0.01198256 0.9991594 -0.03920531 -0.01198267 0.9991594 -0.03920531 -0.9999268 -0.0120964 -2.06312e-4 -0.9999269 -0.01209646 -2.06313e-4 -0.01212948 -0.9995412 0.02775371 -0.01212954 -0.9995412 0.02775371 -0.9999268 0.01209557 2.06028e-4 -0.9999268 0.01209592 2.05779e-4 0.01198267 0.9991594 -0.03920567 0.01198261 0.9991594 -0.03920561 0.9999269 -0.01209384 -2.05874e-4 0.9999268 -0.01209741 -2.05961e-4</float_array>
+          <float_array id="leglow1_group_leglow1_pasted__polySurface74_leglow1_polySurface-mesh-normals-array" count="48">0.01212954 -0.9995412 0.02775377 0.01212954 -0.9995412 0.02775377 0.9999269 0.0120964 2.06488e-4 0.9999268 0.0120964 2.06485e-4 -0.01198256 0.9991594 -0.03920531 -0.01198261 0.9991594 -0.03920531 -0.9999268 -0.0120964 -2.06312e-4 -0.9999269 -0.01209646 -2.06313e-4 -0.01212948 -0.9995412 0.02775371 -0.01212954 -0.9995412 0.02775371 -0.9999269 0.01209384 2.06028e-4 -0.9999269 0.01209759 2.05779e-4 0.01198261 0.9991594 -0.03920567 0.01198261 0.9991594 -0.03920567 0.9999269 -0.01209384 -2.05874e-4 0.9999269 -0.01209539 -2.05961e-4</float_array>
           <technique_common>
             <accessor source="#leglow1_group_leglow1_pasted__polySurface74_leglow1_polySurface-mesh-normals-array" count="16" stride="3">
               <param name="X" type="float"/>
@@ -161,7 +161,7 @@
           </bind_material>
         </instance_geometry>
         <node id="leglow1_group_leglow1_pasted__polySurface74_leglow1_polySurface" name="leglow1_group_leglow1_pasted__polySurface74_leglow1_polySurface" type="NODE">
-          <matrix sid="transform">0.9999999 0 0 9.53674e-7 0 0.9999999 0 -1.90735e-6 0 0 1 -4.76837e-7 0 0 0 1</matrix>
+          <matrix sid="transform">0.9999999 0 0 4.76837e-7 0 0.9999999 0 0 0 0 1 -2.38419e-7 0 0 0 1</matrix>
           <instance_geometry url="#leglow1_group_leglow1_pasted__polySurface74_leglow1_polySurface-mesh" name="leglow1_group_leglow1_pasted__polySurface74_leglow1_polySurface">
             <bind_material>
               <technique_common>

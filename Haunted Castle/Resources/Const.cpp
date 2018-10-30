@@ -55,8 +55,8 @@ glm::mat4 depthMVP;
 // Change the Axis from (x, z, y) to (x, z, -y)
 mat3x3 changeAxis = mat3x3(1, 0, 0, 0, 0, -1, 0, 1, 0);
 
-vec3 torch1Pos = changeAxis * vec3(12.5634, -11.12736, 9.75919);
-vec3 torch2Pos = changeAxis * vec3(12.5634, 8.90968, 9.75919);
+vec3 torch1Pos = changeAxis * vec3(12.5634, -11.12736, 9.75919 + 0.5);
+vec3 torch2Pos = changeAxis * vec3(12.5634, 8.90968, 9.75919 + 0.5);
 
 float wnear = 0;
 float hnear = 0;
