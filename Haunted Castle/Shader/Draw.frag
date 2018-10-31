@@ -55,7 +55,7 @@ void main(){
 	}
 
 
-	float AmbientIntensity = 0.1;
+	float AmbientIntensity = 0.2;
 	vec3 MaterialAmbientColor = AmbientIntensity * MaterialDiffuseColor;
 	vec3 MaterialSpecularColor = specularColor;
 
@@ -91,7 +91,7 @@ void main(){
 	float visibility=1.0;
 	
 	// Bias to get rid of Shadow acne
-	float bias = 0.002;//0.005;
+	float bias = 0.002;
 
 	
 	// PCF

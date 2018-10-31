@@ -11,13 +11,9 @@ namespace cgue
 	{
 	public:
 		// Constructor
-		Knight1(Shader* shader, float posX, float posY, float posZ, float rotX, float rotY, float rotZ, float scale);
+		Knight1(Shader* shader);
 		// Destructor
 		virtual ~Knight1();
-		mat4x4 getGlobalPose();
-
-		vec3 defaultColor;
-		vec3 wonColor;
 
 	private:
 

@@ -551,7 +551,7 @@ int main(int argc, char** argv)
 
 
 
-		nearDist = 0.1f;
+		nearDist = 1.0f;
 		farDist = 200.0f;
 		float fov = 100.0f;
 		float ratio = (float)width / (float)height;
@@ -716,44 +716,44 @@ void init()
 
 	camera = new Camera();
 
-	actor = new Actor(renderShader, 2.0f, 5.0f, 6.0f, 180.0f);
+	actor = new Actor(renderShader);
 	actor->setPhysX(gPhysicsSDK, gFoundation, gDefaultErrorCallback, gDefaultAllocatorCallback, gScene);
 	actor->initActor();
 
-	room = new Room(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	room = new Room(renderShader);
 
 	if (renderObjects)
 	{
 		
-		torch1 = new Torch1(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+		torch1 = new Torch1(renderShader);
 
-		desk = new Desk(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+		desk = new Desk(renderShader);
 
-		knight1 = new Knight1(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
-		knight2 = new Knight2(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+		knight1 = new Knight1(renderShader);
+		knight2 = new Knight2(renderShader);
 
-		wardrobe = new Wardrobe(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+		wardrobe = new Wardrobe(renderShader);
 
-		door = new Door(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+		door = new Door(renderShader);
 		
 
-		chair1 = new Chair1(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+		chair1 = new Chair1(renderShader);
 
 		
-		chair2 = new Chair2(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+		chair2 = new Chair2(renderShader);
 
 
-		frame = new Frame(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+		frame = new Frame(renderShader);
 
-		commode = new Commode(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+		commode = new Commode(renderShader);
 
-		torch2 = new Torch2(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+		torch2 = new Torch2(renderShader);
 
-		chess = new Chess(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+		chess = new Chess(renderShader);
 		
 	}
 
-	coordinatesystem = new Coordinatesystem(renderShader, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+	coordinatesystem = new Coordinatesystem(renderShader);
 	
 
 	//ring->setPhysX(gPhysicsSDK, gFoundation, gDefaultErrorCallback, gDefaultAllocatorCallback, gScene);

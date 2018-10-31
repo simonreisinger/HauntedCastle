@@ -11,13 +11,9 @@ namespace cgue
 	{
 	public:
 		// Constructor
-		Commode(Shader* shader, float posX, float posY, float posZ, float rotX, float rotY, float rotZ, float scale);
+		Commode(Shader* shader);
 		// Destructor
 		virtual ~Commode();
-		mat4x4 getGlobalPose();
-
-		vec3 defaultColor;
-		vec3 wonColor;
 
 	private:
 

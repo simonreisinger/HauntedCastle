@@ -9,21 +9,17 @@ using namespace cgue;
 using namespace std;
 using namespace glm;
 
-
-void printMatGeometry(string name, mat4x4 mat);
-mat4 convertMetrix(const aiMatrix4x4 m);
-
-int iVertices = 0;
-
 Geometry::Geometry()
 {
 
 }
 
-void Geometry::init(const std::string& displayFile, mat4& matrix, Shader* _shader, mat4x4 initTrans) {
-
-	modelMatrix = matrix;
+void Geometry::init(const std::string& displayFile, Shader* _shader)
+{
+	modelMatrix = mat4x4(1);
 	shader = _shader;
+
+	shader->useShader();
 
 	string datensatzDir = "Datensatz/";
 
@@ -70,11 +66,9 @@ void Geometry::update(float time_delta, float time_abs)
 
 void Geometry::draw(Shader* drawShader, mat4x4 view, glm::mat4x4 proj, mat4x4 camera_model, bool cull)
 {
-	//cout << "DRAW" << endl;
-
 	drawShader->useShader();
 
-	mat4x4 globalPose = mat4x4(1);// getGlobalPose();
+	mat4x4 globalPose = getGlobalPose();
 
 	sceneNode->draw(drawShader, view, proj, globalPose, cull);
 	
@@ -82,45 +76,12 @@ void Geometry::draw(Shader* drawShader, mat4x4 view, glm::mat4x4 proj, mat4x4 ca
 
 mat4x4 Geometry::getGlobalPose()
 {
-	return mat4x4(0.0f);
+	return mat4x4(1);
 }
 
 Shader* Geometry::getShader()
 {
 	return shader;
-}
-
-mat4 convertMetrix(const aiMatrix4x4 m)
-{
-	mat4 Matri;
-
-	Matri[0][0] = m.a1;
-	Matri[0][1] = m.b1;
-	Matri[0][2] = m.c1;
-	Matri[0][3] = m.d1;
-	Matri[1][0] = m.a2;
-	Matri[1][1] = m.b2;
-	Matri[1][2] = m.c2;
-	Matri[1][3] = m.d2;
-	Matri[2][0] = m.a3;
-	Matri[2][1] = m.b3;
-	Matri[2][2] = m.c3;
-	Matri[2][3] = m.d3;
-	Matri[3][0] = m.a4;
-	Matri[3][1] = m.b4;
-	Matri[3][2] = m.c4;
-	Matri[3][3] = m.d4;
-
-	return Matri;
-}
-
-void printMatGeometry(string name, mat4x4 mat)
-{
-	cout << name << endl;
-	cout << mat[0][0] << " " << mat[0][1] << " " << mat[0][2] << " " << mat[0][3] << endl;
-	cout << mat[1][0] << " " << mat[1][1] << " " << mat[1][2] << " " << mat[1][3] << endl;
-	cout << mat[2][0] << " " << mat[2][1] << " " << mat[2][2] << " " << mat[2][3] << endl;
-	cout << mat[3][0] << " " << mat[3][1] << " " << mat[3][2] << " " << mat[3][3] << endl;
 }
 
 void Geometry::setPhysX(PxPhysics* mPhysicsSDK, PxFoundation* mFoundation, PxDefaultErrorCallback mDefaultErrorCallback, PxDefaultAllocator mDefaultAllocatorCallback, PxScene* mScene)

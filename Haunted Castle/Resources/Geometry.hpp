@@ -15,6 +15,9 @@
 #include <PhysX\PxPhysicsAPI.h>
 
 using namespace physx;
+using namespace cgue;
+using namespace glm;
+using namespace std;
 
 namespace cgue
 {
@@ -23,7 +26,7 @@ namespace cgue
 	public:
 		Geometry();
 		virtual ~Geometry();
-		void init(const std::string& displayFile, glm::mat4& matrix, Shader* _shader, glm::mat4x4 initTrans);
+		void init(const std::string& displayFile, Shader* _shader);
 		void update(float time_delta, float time_abs);
 		void draw(Shader* shader, mat4x4 view, glm::mat4x4 proj, mat4x4 camera_model, bool cull);
 		Shader* getShader();
@@ -40,13 +43,13 @@ namespace cgue
 		PxScene*				gScene;
 
 		// Positions
-		float posx;
-		float posy;
-		float posz;
+		float posx = 0;
+		float posy = 0;
+		float posz = 0;
 
-		float rotx;
-		float roty;
-		float rotz;
+		float rotx = 0;
+		float roty = 0;
+		float rotz = 0;
 
 		float scale = 1.0;
 	private:

@@ -11,13 +11,9 @@ namespace cgue
 	{
 	public:
 		// Constructor
-		Torch2(Shader* shader, float posX, float posY, float posZ, float rotX, float rotY, float rotZ, float scale);
+		Torch2(Shader* shader);
 		// Destructor
 		virtual ~Torch2();
-		mat4x4 getGlobalPose();
-
-		vec3 defaultColor;
-		vec3 wonColor;
 
 	private:
 

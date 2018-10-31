@@ -11,13 +11,9 @@ namespace cgue
 	{
 	public:
 		// Constructor
-		Room(Shader* shader, float posX, float posY, float posZ, float rotX, float rotY, float rotZ, float scale);
+		Room(Shader* shader);
 		// Destructor
 		virtual ~Room();
-		mat4x4 getGlobalPose();
-
-		vec3 defaultColor;
-		vec3 wonColor;
 
 	private:
 
