@@ -491,9 +491,7 @@ int main(int argc, char** argv)
 
 
 		// Compute the MVP matrix from the light's point of view
-		//glm::mat4 depthProjectionMatrix = glm::perspective(90.0f, (float)width / (float)height, -20.0f, 20.0f);
 		glm::mat4 depthProjectionMatrix = glm::ortho<float>(-20, 20, 20, -20, -40.0f, 40.0f);
-		//glm::mat4 depthViewMatrix = camera->modelMatrix * pxMatToGlm(PxMat44(actor->actor->getGlobalPose().getInverse()));//
 		glm::mat4 depthViewMatrix = glm::lookAt(SunDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 		//lookAt
 		// or, for spot light :
@@ -593,10 +591,7 @@ int main(int argc, char** argv)
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
-		/*
-		int present = glfwJoystickPresent(GLFW_JOYSTICK_1);
-		std::cout << "Joystick/Gamepad 1 status: " << present << std::endl;
-		*/
+
 		if (glGetError() != GL_NO_ERROR)
 		{
 			cout << "ERROR: OpenGL Error" << endl;
@@ -604,10 +599,6 @@ int main(int argc, char** argv)
 
 		if (refreshTime > 1)
 		{
-			//printMat("GlobalPose", pxMatToGlm(PxMat44(actor->actor->getGlobalPose())));
-			//vec4 pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(0, 0, 0, 1);
-			//cout << "Balloon Position: " << pos.x << " " << pos.y << " " << pos.z << endl;
-
 			if (CGUE_DISPLAY_FRAME_TIME)
 			{
 				cout << "Frame time: " << (int)(time_delta * 1000) << "ms, Frame/sec: " << (int)(1.0f / time_delta) << " PhysX Static Actors: " << gScene->getNbActors(PxActorTypeFlag::eRIGID_STATIC) << endl;
@@ -615,12 +606,6 @@ int main(int argc, char** argv)
 			if (VIEWFRUSTUM_CULLING) {
 				cout << "Number of Culled Meshes: " << NUMBER_OF_CULLED_MESHES << endl;
 			}
-			/*
-			cout << "Rockets Status" << endl;
-			for (int i = 0; i < absolutNumberOfRockets; i++) {
-				cout << activeRockets[i] << " " << rocketHit[i] << " " << rocketDeleted[i] << endl;
-			}
-			*/
 
 			refreshTime = 0;
 		}
@@ -628,8 +613,6 @@ int main(int argc, char** argv)
 
 	// Close GLFW Window
 	glfwTerminate();
-
-	//system("PAUSE");
 
 	return EXIT_SUCCESS;
 }
@@ -652,8 +635,6 @@ void OnShutdown()
 	delete torch2; torch2 = nullptr;
 	delete chess; chess = nullptr;
 	delete coordinatesystem; coordinatesystem = nullptr;
-
-
 
 	delete renderShader; renderShader = nullptr;
 	delete shadowShader; shadowShader = nullptr;
@@ -723,7 +704,6 @@ void init()
 
 	if (renderObjects)
 	{
-		
 		torch1 = new Torch1(renderShader);
 
 		desk = new Desk(renderShader);
@@ -734,13 +714,10 @@ void init()
 		wardrobe = new Wardrobe(renderShader);
 
 		door = new Door(renderShader);
-		
 
 		chair1 = new Chair1(renderShader);
-
 		
 		chair2 = new Chair2(renderShader);
-
 
 		frame = new Frame(renderShader);
 
@@ -755,17 +732,8 @@ void init()
 	coordinatesystem = new Coordinatesystem(renderShader);
 	
 
-	//ring->setPhysX(gPhysicsSDK, gFoundation, gDefaultErrorCallback, gDefaultAllocatorCallback, gScene);
-	//ring->initActor();
-
-	//gScene->addActor(*ring->actor);
-
-
-
 	// 60° Open angle, aspect, near, far
 	proj = glm::perspective(100.0f, (float)width / (float)height, 0.1f, 200.0f);
-
-
 
 
 	initDirectionalShadows();
@@ -896,13 +864,10 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 	}
 
 
-	// Room
 	room->draw(drawShader, view, proj, camera_model, cull);
 
 	if (renderObjects)
 	{
-		
-		// Object
 		knight1->draw(drawShader, view, proj, camera_model, cull);
 
 		knight2->draw(drawShader, view, proj, camera_model, cull);
@@ -932,7 +897,7 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 	coordinatesystem->draw(drawShader, view, proj, camera_model, cull);
 	
 
-	// Actors
+	// Actor
 	//actor->draw(drawShader, view, proj, camera_model, cull);
 
 	glDisable(GL_CULL_FACE);
@@ -940,12 +905,8 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 
 void update(float time_delta, float time_abs) // TODO change time_delta to delta_time
 {
-	// Actors
-	//chair1->update(time_delta, time_abs);
-
 	if (gScene)
 		StepPhysX(time_delta);
-
 }
 
 void handleInput(GLFWwindow* window, float time_delta)
@@ -963,8 +924,7 @@ void handleInput(GLFWwindow* window, float time_delta)
 		double mouseYPosDiff = mouseYPos - mouseYPosOld;
 
 		actor->PxRotate(0, 0, ROTATESPEED * time_delta * mouseXPosDiff / 100);
-		//actor->actor->addTorque(actor->actor->getGlobalPose().rotate(PxVec3(0, MOVESPEED * mouseXPosDiff / 10 * time_delta * actor->getExtraSpeed(), 0)));
-
+		
 
 		if (mouseYPosDiff > 0)
 		{
@@ -993,50 +953,40 @@ void handleInput(GLFWwindow* window, float time_delta)
 	if (glfwGetKey(window, GLFW_KEY_DOWN))
 	{
 		actor->PxTranslate(0, -MOVESPEED * time_delta, 0);
-		//actor->actor->addForce(actor->actor->getGlobalPose().rotate(PxVec3(0, ROTATESPEED * 15 * time_delta * actor->getExtraSpeed(), 0)));
-		//camera->rotateDown(time_delta);
 	}
 	if (glfwGetKey(window, GLFW_KEY_UP))
 	{
 		actor->PxTranslate(0, MOVESPEED * time_delta, 0);
-		//actor->actor->addForce(actor->actor->getGlobalPose().rotate(PxVec3(0, -ROTATESPEED * 15 * time_delta * actor->getExtraSpeed(), 0)));
-		//camera->rotateUp(time_delta);
 	}
 
 	// actor 0 - rotate
 	if (glfwGetKey(window, GLFW_KEY_A))
 	{
 		actor->PxRotate(0, 0, ROTATESPEED * time_delta);
-		//actor->actor->addTorque(actor->actor->getGlobalPose().rotate(PxVec3(0, MOVESPEED * time_delta * actor->getExtraSpeed(), 0)));
 	}
 	if (glfwGetKey(window, GLFW_KEY_D))
 	{
 		actor->PxRotate(0, 0, -ROTATESPEED * time_delta);
-		//actor->actor->addTorque(actor->actor->getGlobalPose().rotate(PxVec3(0, -MOVESPEED * time_delta * actor->getExtraSpeed(), 0)));
 	}
 	// actor 0 - move 
 	if (glfwGetKey(window, GLFW_KEY_Q))
 	{
 		actor->PxTranslate(0, 0, -MOVESPEED * time_delta);
-		//actor->actor->addForce(actor->actor->getGlobalPose().rotate(PxVec3(0, -ROTATESPEED * 10 * time_delta * actor->getExtraSpeed(), 0)));
 	}
 	if (glfwGetKey(window, GLFW_KEY_E))
 	{
 		actor->PxTranslate(0, 0, MOVESPEED * time_delta);
-		//actor->actor->addForce(actor->actor->getGlobalPose().rotate(PxVec3(0, ROTATESPEED * 10 * time_delta * actor->getExtraSpeed(), 0)));
 	}
 	if (glfwGetKey(window, GLFW_KEY_W))
 	{
 		actor->PxTranslate(0, MOVESPEED * time_delta, 0);
-		//actor->actor->addForce(actor->actor->getGlobalPose().rotate(PxVec3(0, 0, -ROTATESPEED * 15 * time_delta * actor->getExtraSpeed())));
 	}
 	if (glfwGetKey(window, GLFW_KEY_S))
 	{
 		actor->PxTranslate(0, -MOVESPEED * time_delta, 0);
-		//actor->actor->addForce(actor->actor->getGlobalPose().rotate(PxVec3(0, 0, ROTATESPEED * 15 * time_delta * actor->getExtraSpeed())));
 	}
 
-// ESC - close game
+	// ESC - close game
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE))
 	{
 		glfwSetWindowShouldClose(window, true);
@@ -1239,13 +1189,5 @@ void handleInput(GLFWwindow* window, float time_delta)
 	{
 		CGUE_F9_PRESSED = false;
 	}
-
-	/*
-	PxVec3 pos = actor->actor->getGlobalPose().p;
-	PxVec3 velo = actor->actor->getLinearVelocity();
-	PxVec3 ang = actor->actor->getAngularVelocity();
-
-	//cout << "pos: " << pos.x << ", " << pos.y << ", " << pos.z << " velo: " << velo.x << ", " << velo.y << ", " << velo.z << " rot: " << ang.x << ", " << ang.y << ", " << ang.z << endl;
-	*/
 	
 }
