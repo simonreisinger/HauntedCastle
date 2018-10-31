@@ -164,6 +164,9 @@
     <ClInclude Include="Scene\Coordinatesystem.hpp">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="Resources\RenderBuffer.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shader\Shadow.vert" />

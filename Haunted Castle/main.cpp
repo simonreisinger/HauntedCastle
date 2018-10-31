@@ -262,16 +262,14 @@ static std::string FormatDebugOutput(GLenum source, GLenum type, GLuint id, GLen
 
 	if (type != GL_DEBUG_TYPE_OTHER)
 	{
-		/*
 		stringStream << "OpenGL Error: " << msg;
 		stringStream << " [Source = " << sourceString;
 		stringStream << ", Type = " << typeString;
 		stringStream << ", Severity = " << severityString;
 		stringStream << ", ID = " << id << "]";
-		*/
 	}
 
-	return stringStream.str();
+	return "Error" + stringStream.str();
 }
 
 static void APIENTRY DebugCallbackAMD(GLuint id, GLenum category, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam) {
@@ -281,6 +279,14 @@ static void APIENTRY DebugCallbackAMD(GLuint id, GLenum category, GLenum severit
 }
 
 static void APIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) {
+	if (type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB || type == GL_DEBUG_TYPE_OTHER_ARB) {
+		/*
+		Error "Buffer detailed info: Buffer object 1 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) 
+		will use VIDEO memory as the source for buffer object operations."
+		Can be ignored due to https://stackoverflow.com/questions/46771287/why-is-opengl-telling-me-ive-used-gl-static-draw-when-ive-specified-otherwise
+		*/
+		return; 
+	}
 	std::string error = FormatDebugOutput(source, type, id, severity, message);
 	std::cout << error;
 	std::cout << std::endl;
@@ -295,7 +301,6 @@ int main(int argc, char** argv)
 
 	// Parameters
 	if (argc == 3) {
-		cout << "you are executing '" << argv[0] << "'" << endl;
 		if ((stringstream(argv[1]) >> width).fail() || (stringstream(argv[2]) >> height).fail()){
 			cout << "ERROR: Invalid argument!" << endl;
 			system("PAUSE");
@@ -303,8 +308,7 @@ int main(int argc, char** argv)
 		}
 	}
 	else {
-		cout << "you are executing '" << argv[0] << "'" << endl;
-		cout << "Invalid parameters. Size is set to 800/600" << endl;
+		//cout << "Invalid parameters. Size is set to 800/600" << endl;
 	}
 
 	// Init GLFW
@@ -485,7 +489,7 @@ int main(int argc, char** argv)
 		// Use our shader
 		glUseProgram(shadowShader->programHandle);
 
-		glm::vec3 lightInvDir = glm::vec3(0.0, -1.0, -1.0);
+		glm::vec3 lightInvDir = changeAxis * glm::vec3(0.0, -1.0, 1.0);
 
 		// Compute the MVP matrix from the light's point of view
 		//glm::mat4 depthProjectionMatrix = glm::perspective(90.0f, (float)width / (float)height, -20.0f, 20.0f);

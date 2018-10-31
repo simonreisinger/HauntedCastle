@@ -11,6 +11,7 @@
 
 #include "Shader.hpp"
 #include "Mesh.hpp"
+#include "Const.hpp"
 
 using namespace glm;
 

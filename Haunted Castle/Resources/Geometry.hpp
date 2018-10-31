@@ -39,9 +39,6 @@ namespace cgue
 		PxDefaultAllocator		gDefaultAllocatorCallback;	//Instance of default implementation of the allocator interface required by the SDK
 		PxScene*				gScene;
 
-
-		Mesh** mesh;
-
 		// Positions
 		float posx;
 		float posy;
@@ -58,21 +55,6 @@ namespace cgue
 		Shader *shader;
 
 		SceneNode* sceneNode;
-
-		int meshIndex;
-		int meshCount;
-
-		void searchNodesRecursive(string modelDir, aiNode* node, const aiScene* scene, glm::mat4x4 initTrans, float* posi, float* norm, int* ind, float* u, Mesh** mesh, Shader* shader);
-
-		int size;
-		float* positions;
-		float* normals;
-		int* indices;
-		float* uvs;
-
-		int collisionSize;
-		float* collisionPositions;
-		int* collisionIndices;
 
 		PxRigidDynamic*	gRigid;
 

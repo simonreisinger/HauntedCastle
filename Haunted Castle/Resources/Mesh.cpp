@@ -21,7 +21,7 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 	this->updateTrans = mat4x4(1.0f);
 
 	iMeshesLoaded++;
-	cout << "Loading Mesh " << iMeshesLoaded << " of " << countMeshesLoading << endl;
+	//cout << "Loading Mesh " << iMeshesLoaded << " of " << countMeshesLoading << endl;
 
 
 	int texIndex = 0;
@@ -143,28 +143,24 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 	// Load Data to Buffer
 	glGenBuffers(1, &positionBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, positionBuffer);
-	glBufferData(GL_ARRAY_BUFFER, size * 3 * sizeof(float),
-		positions, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, size * 3 * sizeof(float), positions, GL_STATIC_DRAW); // Buffer detailed info: Buffer object 1 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
 
 	glGenBuffers(1, &indexBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * sizeof(unsigned int),
-		indices, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * sizeof(unsigned int), indices, GL_STATIC_DRAW); // Buffer detailed info: Buffer object 1 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	// TUT 4 part 3 min 3
 	glGenBuffers(1, &normalsBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, normalsBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER,
-		size * 3 * sizeof(float), normals, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * 3 * sizeof(float), normals, GL_STATIC_DRAW); // Buffer detailed info: Buffer object 1 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	// UV Buffer
 	glGenBuffers(1, &uvBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, uvBuffer);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * 2 * sizeof(float),
-		uvs, GL_STATIC_DRAW);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * 2 * sizeof(float), uvs, GL_STATIC_DRAW); // Buffer detailed info: Buffer object 1 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 

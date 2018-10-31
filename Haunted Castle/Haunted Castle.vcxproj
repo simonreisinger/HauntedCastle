@@ -121,6 +121,7 @@
     <ClInclude Include="Resources\Const.hpp" />
     <ClInclude Include="Resources\FrustumG.hpp" />
     <ClInclude Include="Resources\Mesh.hpp" />
+    <ClInclude Include="Resources\RenderBuffer.h" />
     <ClInclude Include="Resources\SceneNode.hpp" />
     <ClInclude Include="Resources\Texture.hpp" />
     <ClInclude Include="Scene\Actor.hpp" />

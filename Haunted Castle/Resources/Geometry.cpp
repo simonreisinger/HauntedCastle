@@ -15,63 +15,6 @@ mat4 convertMetrix(const aiMatrix4x4 m);
 
 int iVertices = 0;
 
-void Geometry::searchNodesRecursive(string modelDir, aiNode* node, const aiScene* scene, mat4x4 initTrans, float* positionsPointer, float* normalsPointer, int* indicesPointer, float* uvsPointer, Mesh** meshPointer, Shader* shader)
-{
-	aiString name = node->mName;
-	mat4x4 transform = convertMetrix(node->mTransformation);
-
-	//cout << "NODE: " << name.data << endl;
-	//printMatGeometry(name.data, transform);
-
-	//cout << "node->mNumMeshes:" << node->mNumMeshes << endl;
-	
-	for (int i = 0; i < node->mNumMeshes; i++)
-	{
-		int iMesh = node->mMeshes[i];
-		aiMesh* mesh = scene->mMeshes[iMesh];
-
-		// MATERIAL
-		int iMaterial = mesh->mMaterialIndex;
-		const aiMaterial* material = scene->mMaterials[iMaterial];
-
-		meshPointer[meshIndex++] = new Mesh(modelDir, name.data, mesh, material, initTrans, transform, shader);
-
-
-	}
-
-	//cout << endl;
-
-	for (int i = 0; i < node->mNumChildren; i++)
-	{
-		searchNodesRecursive(modelDir, node->mChildren[i], scene, initTrans, positionsPointer, normalsPointer, indicesPointer, uvsPointer, meshPointer, shader);
-	}
-}
-
-int countVerticesRecursive(aiNode* node, const aiScene* scene)
-{
-	int count = 0;
-	for (int i = 0; i < node->mNumMeshes; i++)
-	{
-		int iMesh = node->mMeshes[i];
-		aiMesh* mesh = scene->mMeshes[iMesh];
-		int iMeshFaces = mesh->mNumFaces;
-		for (int j = 0; j < iMeshFaces; j++)
-		{
-			const aiFace& face = mesh->mFaces[j];
-			for (int k = 0; k < face.mNumIndices; k++)
-			{
-				count++;
-			}
-		}
-	}
-	for (int i = 0; i < node->mNumChildren; i++)
-	{
-		count += countVerticesRecursive(node->mChildren[i], scene);
-	}
-	return count;
-}
-
-
 Geometry::Geometry()
 {
 
@@ -104,8 +47,10 @@ void Geometry::init(const std::string& displayFile, mat4& matrix, Shader* _shade
 
 	aiNode* rootNode = scene->mRootNode;
 
-	
 	sceneNode = new SceneNode(rootNode, scene, modelDir, shader);
+
+	iObjectsLoaded++;
+	cout << "Object " << iObjectsLoaded << " of " << countObjectsLoading << " loaded" << endl;
 }
 
 void Geometry::initActor()
@@ -120,10 +65,7 @@ Geometry::~Geometry()
 
 void Geometry::update(float time_delta, float time_abs)
 {
-	for (int i = 0; i < this->meshCount; i++)
-	{
-		mesh[i]->update(time_delta, time_abs);
-	}
+
 }
 
 void Geometry::draw(Shader* drawShader, mat4x4 view, glm::mat4x4 proj, mat4x4 camera_model, bool cull)
@@ -188,8 +130,4 @@ void Geometry::setPhysX(PxPhysics* mPhysicsSDK, PxFoundation* mFoundation, PxDef
 	gDefaultErrorCallback = mDefaultErrorCallback;
 	gDefaultAllocatorCallback = mDefaultAllocatorCallback;
 	gScene = mScene;
-
-	for (int i = 0; i < meshCount; i++) {
-		mesh[i]->setPhysX(gPhysicsSDK, gFoundation, gDefaultErrorCallback, gDefaultAllocatorCallback);
-	}
 }

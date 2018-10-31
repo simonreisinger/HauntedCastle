@@ -58,6 +58,9 @@ extern float farDist;
 extern int iMeshesLoaded;
 extern int countMeshesLoading;
 
+extern int iObjectsLoaded;
+extern int countObjectsLoading;
+
 extern FrustumG* frustumG;
 
 extern bool renderObjects;
