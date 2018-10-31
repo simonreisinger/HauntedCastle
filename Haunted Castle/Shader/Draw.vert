@@ -6,6 +6,7 @@ layout(location = 2) in vec3 vertexNormal_modelspace;
 
 out vec2 UV;
 out vec3 Position_worldspace;
+out vec3 Normal_worldspace;
 out vec3 Normal_cameraspace;
 out vec3 EyeDirection_cameraspace;
 out vec3 Torch1Direction_cameraspace;
@@ -18,6 +19,7 @@ uniform mat4 M;
 uniform mat4 depthVP;
 uniform vec3 Torch1Position_worldspace;
 uniform vec3 Torch2Position_worldspace;
+uniform vec3 SunDirection_worldspace;
 
 void main(){
 
@@ -40,6 +42,8 @@ void main(){
 	
 	vec3 Torch2Position_cameraspace = ( V * vec4(Torch2Position_worldspace,1)).xyz;
 	Torch2Direction_cameraspace = Torch2Position_cameraspace + EyeDirection_cameraspace;
+	
+	Normal_worldspace = ( M * vec4(vertexNormal_modelspace,0)).xyz;
 	
 	Normal_cameraspace = ( V * M * vec4(vertexNormal_modelspace,0)).xyz;
 	

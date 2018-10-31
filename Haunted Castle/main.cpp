@@ -489,13 +489,12 @@ int main(int argc, char** argv)
 		// Use our shader
 		glUseProgram(shadowShader->programHandle);
 
-		glm::vec3 lightInvDir = changeAxis * glm::vec3(0.0, -1.0, 1.0);
 
 		// Compute the MVP matrix from the light's point of view
 		//glm::mat4 depthProjectionMatrix = glm::perspective(90.0f, (float)width / (float)height, -20.0f, 20.0f);
 		glm::mat4 depthProjectionMatrix = glm::ortho<float>(-20, 20, 20, -20, -40.0f, 40.0f);
 		//glm::mat4 depthViewMatrix = camera->modelMatrix * pxMatToGlm(PxMat44(actor->actor->getGlobalPose().getInverse()));//
-		glm::mat4 depthViewMatrix = glm::lookAt(lightInvDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+		glm::mat4 depthViewMatrix = glm::lookAt(SunDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
 		//lookAt
 		// or, for spot light :
 		//glm::vec3 lightPos(5, 20, 20);

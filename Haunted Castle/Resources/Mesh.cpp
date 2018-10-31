@@ -235,6 +235,9 @@ void Mesh::loadUniforms(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalP
 	GLuint depthMatrixID = glGetUniformLocation(shader->programHandle, "depthMVP");
 	glUniformMatrix4fv(depthMatrixID, 1, GL_FALSE, &mvp[0][0]);
 
+	// Sun
+	auto SunDirection_worldspace_location = glGetUniformLocation(shader->programHandle, "SunDirection_worldspace");
+	glUniform3f(SunDirection_worldspace_location, SunDir.x, SunDir.y, SunDir.z);
 
 	// Torch1
 	auto Torch1Position_worldspace_location = glGetUniformLocation(shader->programHandle, "Torch1Position_worldspace");
@@ -279,37 +282,6 @@ void Mesh::draw(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalPose, boo
 	else {
 		NUMBER_OF_CULLED_MESHES++;
 	}
-}
-
-void Mesh::update(float time_delta, float time_abs)
-{
-	/*
-	cout << nameMesh << endl;
-	cout << time_abs << endl;
-	cout << updateTrans[3][1] << endl;
-	*/
-
-	if ((nameMesh.compare("polySurface105") == 0 || 
-		nameMesh.compare("leglow1_group_leglow1_pasted__polySurface74_leglow1_polySurface") == 0) && 
-		time_abs > 10 && updateTrans[3][1] > -2)
-	{
-		updateTrans = translate(this->updateTrans, vec3(0, -0.01, 0));
-	}
-
-	/*
-	char* tuerMitte = "TuerMitte";
-	if (strcmp(nameMesh, tuerMitte) == 0)
-	{
-
-	}
-	*/
-	/*
-	if (applyUpdateTrans)
-	{
-		//cout << nameMesh << endl;
-		this->updateTrans = rotate(this->updateTrans, 10.0f * time_delta, vec3(0, 0, 1));
-	}
-	*/
 }
 
 void Mesh::setPhysX(PxPhysics* mPhysicsSDK, PxFoundation* mFoundation, PxDefaultErrorCallback mDefaultErrorCallback, PxDefaultAllocator mDefaultAllocatorCallback)

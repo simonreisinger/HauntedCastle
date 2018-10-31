@@ -3,6 +3,7 @@
 // Interpolated values from the vertex shaders
 in vec2 UV;
 in vec3 Position_worldspace;
+in vec3 Normal_worldspace;
 in vec3 Normal_cameraspace;
 in vec3 EyeDirection_cameraspace;
 in vec3 Torch1Direction_cameraspace;
@@ -20,6 +21,7 @@ uniform int hasTexture;
 uniform vec3 diffuseColor;
 uniform vec3 specularColor;
 uniform sampler2DShadow shadowMap;
+uniform vec3 SunDirection_worldspace;
 
 vec2 disk[16] = vec2[]( 
    vec2( -0.94202634, -0.39907226 ), 
@@ -55,7 +57,7 @@ void main(){
 	}
 
 
-	float AmbientIntensity = 0.2;
+	float AmbientIntensity = 0.1;
 	vec3 MaterialAmbientColor = AmbientIntensity * MaterialDiffuseColor;
 	vec3 MaterialSpecularColor = specularColor;
 
@@ -99,6 +101,14 @@ void main(){
 	for (int i=0;i<4;i++){
 		visibility -= 0.25*(1.0-texture( shadowMap, vec3(ShadowCoord.xy + disk[i]/700.0,  (ShadowCoord.z-bias)/ShadowCoord.w) ));
 	}
+
+	
+	vec3 nV = normalize( Normal_worldspace );
+	vec3 lV = normalize( SunDirection_worldspace );
+	float visibilityPosible = dot( nV, lV ) >= 0 ? 1 : 0;
+
+	visibility = visibility * visibilityPosible;
+	
 
 	FragColor = vec4(
 	

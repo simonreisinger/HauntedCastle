@@ -48,6 +48,8 @@ extern glm::mat4 depthMVP;
 extern vec3 torch1Pos;
 extern vec3 torch2Pos;
 
+extern vec3 SunDir;
+
 extern float wnear;
 extern float hnear;
 extern float wfar;
@@ -67,3 +69,4 @@ extern bool renderObjects;
 
 // Change the Axis from (x, z, y) to (x, z, -y)
 extern mat3x3 changeAxis;
+extern mat3x3 changeAxisInverse;
