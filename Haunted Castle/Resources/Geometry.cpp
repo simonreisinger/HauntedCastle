@@ -30,10 +30,15 @@ void Geometry::init(const std::string& displayFile, Shader* _shader)
 	//cout << "ReadFile: " << datensatzDir + displayFile << endl;
 
 	Assimp::Importer displayImporter;
-	const aiScene* scene = displayImporter.ReadFile(datensatzDir + displayFile, aiProcessPreset_TargetRealtime_Quality);
+
+	string xxxxxxxx = datensatzDir + displayFile; //TODO edit here
+
+	const aiScene* scene = displayImporter.ReadFile(xxxxxxxx, aiProcessPreset_TargetRealtime_Quality);
+	std::cout << scene;
 	if (!scene)
 	{
-		std::cout << "Couldn't load model ";
+		string errorMsg = displayImporter.GetErrorString();
+		std::cout << "Couldn't load model: " << errorMsg;
 		glfwTerminate();
 		system("PAUSE");
 		exit(EXIT_FAILURE);

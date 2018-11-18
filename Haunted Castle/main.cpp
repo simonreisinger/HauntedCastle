@@ -693,7 +693,6 @@ void init()
 
 
 	glEnable(GL_DEPTH_TEST);
-
 	camera = new Camera();
 
 	actor = new Actor(renderShader);
@@ -702,8 +701,12 @@ void init()
 
 	room = new Room(renderShader);
 
+	frame = new Frame(renderShader);
+	commode = new Commode(renderShader);
+
 	if (renderObjects)
 	{
+
 		torch1 = new Torch1(renderShader);
 
 		desk = new Desk(renderShader);
@@ -719,9 +722,6 @@ void init()
 		
 		chair2 = new Chair2(renderShader);
 
-		frame = new Frame(renderShader);
-
-		commode = new Commode(renderShader);
 
 		torch2 = new Torch2(renderShader);
 
