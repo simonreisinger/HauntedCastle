@@ -72,6 +72,6 @@ int iMeshesLoaded = 0;
 int countMeshesLoading = 73;
 
 int iObjectsLoaded = 0;
-int countObjectsLoading = 15;
+int countObjectsLoading = 14;
 
 bool renderObjects = true;

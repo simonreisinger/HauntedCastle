@@ -31,10 +31,9 @@ void Geometry::init(const std::string& displayFile, Shader* _shader)
 
 	Assimp::Importer displayImporter;
 
-	string xxxxxxxx = datensatzDir + displayFile; //TODO edit here
+	string filePath = datensatzDir + displayFile; //TODO edit here
 
-	const aiScene* scene = displayImporter.ReadFile(xxxxxxxx, aiProcessPreset_TargetRealtime_Quality);
-	std::cout << scene;
+	const aiScene* scene = displayImporter.ReadFile(filePath, aiProcessPreset_TargetRealtime_Quality);
 	if (!scene)
 	{
 		string errorMsg = displayImporter.GetErrorString();

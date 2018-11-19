@@ -294,6 +294,8 @@ static void APIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum
 
 int main(int argc, char** argv)
 {
+	cout << "Loading..." << endl;
+
 	// TODO implement full screen 
 	width = 1024;
 	height = 768;
@@ -729,7 +731,7 @@ void init()
 		
 	}
 
-	coordinatesystem = new Coordinatesystem(renderShader);
+	//coordinatesystem = new Coordinatesystem(renderShader);
 	
 
 	// 60° Open angle, aspect, near, far
@@ -894,7 +896,7 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 
 	}
 
-	coordinatesystem->draw(drawShader, view, proj, camera_model, cull);
+	//coordinatesystem->draw(drawShader, view, proj, camera_model, cull);
 	
 
 	// Actor
