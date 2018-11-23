@@ -2,8 +2,7 @@
 
 Frame::Frame(Shader* shader)
 {
-	//const string displayFile = "frame/frame1.dae";
-	const string displayFile = "frame/frame2.dae";
+	const string displayFile = "frame/frame.dae";
 
 	Geometry::init(displayFile, shader);
 }

@@ -298,7 +298,7 @@ int main(int argc, char** argv)
 	cout << "Loading..." << endl;
 
 	// TODO implement full screen 
-	width = 1024;
+	width = 1280;
 	height = 768;
 	auto fullscreen = false;
 
@@ -374,7 +374,7 @@ int main(int argc, char** argv)
 
 
 	// Hide Cursor
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+	// glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN); // blends out curser if nescessary
 
 	// Set current
 	glfwMakeContextCurrent(window);
@@ -1060,25 +1060,27 @@ void handleInput(GLFWwindow* window, float time_delta)
 			cout << "Try to pass the parkour of knight1 faster than your opponent." << endl;
 			cout << "-------------------" << endl;
 			cout << "CONTROLS:" << endl;
-			cout << "CONTROLS    | FUNCTION" << endl;
-			cout << "W           | Accelerate" << endl;
-			cout << "S           | Decelerate/Backwards" << endl;
-			cout << "A           | Pan left" << endl;
-			cout << "D           | Pan right" << endl;
-			cout << "ARROW UP    | Camera up" << endl;
-			cout << "ARROW DOWN  | Camera down" << endl;
-			cout << "ARROW LEFT  | Camera left" << endl;
-			cout << "ARROW RIGHT | Camera right" << endl;
-			cout << "Q           | Go up" << endl;
-			cout << "E           | Go down" << endl;
+			cout << "CONTROLS                        | FUNCTION" << endl;
+			cout << "W, ARROW UP                     | Accelerate" << endl;
+			cout << "S, ARROW DOWN                   | Decelerate/Backwards" << endl;
+			cout << "A, ARROW LEFT, MOUSE DRAG RIGHT | Pan left" << endl;
+			cout << "D, ARROW RIGHT, MOUSE DRAG LEFT | Pan right" << endl;
+			cout << "ARROW UP                        | Camera up" << endl;
+			cout << "ARROW DOWN                      | Camera down" << endl;
+			cout << "ARROW LEFT                      | Camera left" << endl;
+			cout << "ARROW RIGHT                     | Camera right" << endl;
+			cout << "Q                               | Go down" << endl;
+			cout << "E                               | Go up" << endl;
+			cout << "MOUSE DRAG UP                   | Camera down" << endl;
+			cout << "MOUSE DRAG DOWN                 | Camera up" << endl;
 			cout << "-------------------" << endl;
-			cout << "F1 - Help" << endl;
+			cout << "F1 - Help / Show Controls" << endl;
 			cout << "F2 - Frame Time on/off" << endl;
 			cout << "F3 - Wire Frame on/off" << endl;
 			cout << "F4 - Textur-Sampling-Quality: Nearest Neighbor/Bilinear" << endl;
 			cout << "F5 - Mip Mapping-Quality: Off/Nearest Neighbor/Linear" << endl;
 			cout << "F8 - Viewfrustum-Culling on/off" << endl;
-			cout << "F9 - Transparency on/off" << endl;
+			//cout << "F9 - Transparency on/off" << endl;
 			cout << "ESC - Quit Game" << endl << endl;
 		}
 		CGUE_F1_PRESSED = true;
@@ -1183,29 +1185,6 @@ void handleInput(GLFWwindow* window, float time_delta)
 	}
 
 
-	// F - HDR
-	if (glfwGetKey(window, GLFW_KEY_F6)){
-		if (CGUE_F6_PRESSED == false)
-		{
-			if (EFFECT_HDR_ENABLED)
-			{
-				cout << "HDR: off" << endl;
-				EFFECT_HDR_ENABLED = false;
-			}
-			else
-			{
-				cout << "HDR: on" << endl;
-				EFFECT_HDR_ENABLED = true;
-			}
-		}
-		CGUE_F6_PRESSED = true;
-	}
-	else
-	{
-		CGUE_F6_PRESSED = false;
-	}
-
-
 	// F8 - Viewfrustum-Culling on/off
 	if (glfwGetKey(window, GLFW_KEY_F8)){
 		if (CGUE_F8_PRESSED == false)
@@ -1227,27 +1206,4 @@ void handleInput(GLFWwindow* window, float time_delta)
 	{
 		CGUE_F8_PRESSED = false;
 	}
-
-	// F9 - Transparency on / off
-	if (glfwGetKey(window, GLFW_KEY_F9)){
-		if (CGUE_F9_PRESSED == false)
-		{
-			if (!TRANSPARENCY)
-			{
-				cout << "Transparency on" << endl;
-				TRANSPARENCY = true;
-			}
-			else
-			{
-				cout << "Transparency off" << endl;
-				TRANSPARENCY = false;
-			}
-		}
-		CGUE_F9_PRESSED = true;
-	}
-	else
-	{
-		CGUE_F9_PRESSED = false;
-	}
-	
 }
