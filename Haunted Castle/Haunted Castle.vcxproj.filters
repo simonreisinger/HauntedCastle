@@ -90,6 +90,9 @@
     <ClCompile Include="Scene\Coordinatesystem.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="Resources\BezierEndPoint.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Resources\SceneObject.hpp">
@@ -165,6 +168,9 @@
       <Filter>Headerdateien</Filter>
     </ClInclude>
     <ClInclude Include="Resources\RenderBuffer.h">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
+    <ClInclude Include="Resources\BezierEndPoint.hpp">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

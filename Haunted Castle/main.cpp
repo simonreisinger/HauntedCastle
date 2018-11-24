@@ -12,6 +12,7 @@
 #include "Resources\RenderBuffer.h"
 #include "Resources\Const.hpp"
 #include "Resources\FrustumG.hpp"
+#include "Resources\BezierEndPoint.hpp"
 
 #include "Resources/Geometry.hpp"
 #include "Scene/Actor.hpp"
@@ -647,8 +648,65 @@ void OnShutdown()
 	gFoundation->release();			//Destroys the instance of foundation SDK
 }
 
+BezierEndPoint endPoints[] =
+{
+	BezierEndPoint(vec3(0, 0, 0), vec3(1, 0, 0), 0.5, 0.5),
+	BezierEndPoint(vec3(2, 1, 0), vec3(1, 0, 0), 0.5, 0.5),
+	BezierEndPoint(vec3(4, 0, 0), vec3(1, 0, 0), 0.5, 0.5),
+	BezierEndPoint(vec3(6, 0, 0), vec3(1, 0, 0), 0.5, 0.5)
+};
+
+void bezier(float t)
+{
+	vec3 pos;
+	vec3 dir;
+	
+	int indexLastEndPoint = (sizeof(endPoints) / sizeof(*endPoints)) - 1;
+	if (t >= indexLastEndPoint)
+	{
+		pos = endPoints[indexLastEndPoint].getPoint();
+		dir = endPoints[indexLastEndPoint].getDir();
+	}
+	else
+	{
+		int tfloor = (int)floor(t);
+		int tceil = (int)ceil(t);
+		if (tfloor == tceil) {
+			tceil += 1;
+		}
+
+		BezierEndPoint Start = endPoints[tfloor];
+		BezierEndPoint End = endPoints[tceil];
+
+		vec3 A = Start.getPoint();
+		vec3 B = Start.getPointAfter();
+		vec3 C = End.getPointBefore();
+		vec3 D = End.getPoint();
+
+		float s = 1 - (t - tfloor);
+		vec3 AB = A * s + B * (t - tfloor);
+		vec3 BC = B * s + C * (t - tfloor);
+		vec3 CD = C * s + D * (t - tfloor);
+		vec3 ABC = AB * s + BC * (t - tfloor);
+		vec3 BCD = BC * s + CD * (t - tfloor);
+
+		pos = ABC * s + BCD * (t - tfloor);
+		dir = normalize(BCD - ABC);
+	}
+
+	cout << t << ": Pos: " << pos.x << " " << pos.y << " " << pos.z << " Dir: " << dir.x << " " << dir.y << " " << dir.z << endl;
+}
+
 void init() 
 {
+
+
+	for (float t = 0; t < 3; t += 0.1)
+	{
+		bezier(t);
+	}
+
+	system("pause");
 
 
 	//* Source: Learning Physics Modeling with PhysX
