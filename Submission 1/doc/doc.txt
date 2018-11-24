@@ -1,0 +1,29 @@
+=== CONTROLS ===
+CONTROLS                         | FUNCTION
+W, ARROW UP                      | Accelerate
+S, ARROW DOWN                    | Decelerate/Backwards
+A, ARROW LEFT, MOUSE DRAG RIGHT  | Pan left
+D, ARROW RIGHT, MOUSE DRAG LEFT  | Pan right
+Q                                | Go down
+E                                | Go up
+MOUSE DRAG UP                    | Camera down
+MOUSE DRAG DOWN                  | Camera up
+-------------------
+F1 - Help/Show Controls
+F2 - Frame Time on/off
+F3 - Wire Frame on/off
+F4 - Textur-Sampling-Quality: Nearest Neighbor/Bilinear
+F5 - Mip Mapping-Quality: Off/Nearest Neighbor/Linear
+F8 - Viewfrustum-Culling on/off
+ESC - Quit Game
+
+=== DEVELOPMENT STATUS ===
+Implemented until now:
+- Bling-Phong illumination model
+- All models with textures
+- Debug camera (controls see above)
+
+=== EFFECTS ===
+Implemented until now:
+- Direction shadows with PCF from the sun 
+  (can be seen as the whole room except a part of the floor are in shadow)
