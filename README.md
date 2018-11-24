@@ -25,10 +25,8 @@ https://dl.acm.org/citation.cfm?id=37435
 * Bump Mapping: Kilgard, M. J. (2000, July). A practical and robust bump-mapping technique for today’s GPUs. In Game Developers Conference 2000 (pp. 1-39). https://www.cg.tuwien.ac.at/courses/Realtime/slides/VU.WS.2013/PracticalBumpMap.pdf
 
 ### 3D Models
-* [armchair](https://free3d.com/3d-model/armchair-2422.html)
 * [medieval door](https://free3d.com/3d-model/medieval-door-16986.html)
 * [knights](https://free3d.com/3d-model/knight-84265.html)
-* [Wardrobes](https://www.turbosquid.com/3d-models/set-corona-wardrobes-3ds-free/890180)
 * [Torch](https://www.yobi3d.com/q/3d-models-fire-torch)
 * [Chess](https://free3d.com/3d-model/chess-table-18114.html)
 
