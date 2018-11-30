@@ -90,7 +90,7 @@
     <ClCompile Include="Scene\Coordinatesystem.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="Resources\BezierEndPoint.cpp">
+    <ClCompile Include="Resources\CameraPoint.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>
@@ -170,7 +170,7 @@
     <ClInclude Include="Resources\RenderBuffer.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
-    <ClInclude Include="Resources\BezierEndPoint.hpp">
+    <ClInclude Include="Resources\CameraPoint.hpp">
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>

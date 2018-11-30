@@ -12,7 +12,6 @@
 #include "Resources\RenderBuffer.h"
 #include "Resources\Const.hpp"
 #include "Resources\FrustumG.hpp"
-#include "Resources\BezierEndPoint.hpp"
 
 #include "Resources/Geometry.hpp"
 #include "Scene/Actor.hpp"
@@ -549,13 +548,26 @@ int main(int argc, char** argv)
 
 
 
-		vec4 camera_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraPos(), 1);
+		vec4 camera_pos;
+		vec4 look_pos;
+		vec4 up_pos;
+		if (camera->getAutomaticCameraMovementActivated())
+		{
+			camera_pos = vec4(camera->getCameraPos(), 1);
+			look_pos = vec4(camera->getCameraLookAt(), 1);
+			up_pos = vec4(camera->getCameraUp(), 1);
+		}
+		else
+		{
+			camera_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraPos(), 1);
+			look_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraLookAt(), 1);
+			up_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraUp(), 1);
+		}
+
 		vec3 p = vec3(camera_pos.x, camera_pos.y, camera_pos.z);
 
-		vec4 look_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraLookAt(), 1);
 		vec3 l = vec3(look_pos.x, look_pos.y, look_pos.z);
 
-		vec4 up_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraUp(), 1);
 		vec3 u = vec3(up_pos.x, up_pos.y, up_pos.z);
 		u = u - p;
 		u = normalize(u);
@@ -631,65 +643,16 @@ void OnShutdown()
 	gFoundation->release();			//Destroys the instance of foundation SDK
 }
 
-BezierEndPoint endPoints[] =
-{
-	BezierEndPoint(vec3(0, 0, 0), vec3(1, 0, 0), 0.5, 0.5),
-	BezierEndPoint(vec3(2, 1, 0), vec3(1, 0, 0), 0.5, 0.5),
-	BezierEndPoint(vec3(4, 0, 0), vec3(1, 0, 0), 0.5, 0.5),
-	BezierEndPoint(vec3(6, 0, 0), vec3(1, 0, 0), 0.5, 0.5)
-};
-
-void bezier(float t)
-{
-	vec3 pos;
-	vec3 dir;
-	
-	int indexLastEndPoint = (sizeof(endPoints) / sizeof(*endPoints)) - 1;
-	if (t >= indexLastEndPoint)
-	{
-		pos = endPoints[indexLastEndPoint].getPoint();
-		dir = endPoints[indexLastEndPoint].getDir();
-	}
-	else
-	{
-		int tfloor = (int)floor(t);
-		int tceil = (int)ceil(t);
-		if (tfloor == tceil) {
-			tceil += 1;
-		}
-
-		BezierEndPoint Start = endPoints[tfloor];
-		BezierEndPoint End = endPoints[tceil];
-
-		vec3 A = Start.getPoint();
-		vec3 B = Start.getPointAfter();
-		vec3 C = End.getPointBefore();
-		vec3 D = End.getPoint();
-
-		float s = 1 - (t - tfloor);
-		vec3 AB = A * s + B * (t - tfloor);
-		vec3 BC = B * s + C * (t - tfloor);
-		vec3 CD = C * s + D * (t - tfloor);
-		vec3 ABC = AB * s + BC * (t - tfloor);
-		vec3 BCD = BC * s + CD * (t - tfloor);
-
-		pos = ABC * s + BCD * (t - tfloor);
-		dir = normalize(BCD - ABC);
-	}
-
-	cout << t << ": Pos: " << pos.x << " " << pos.y << " " << pos.z << " Dir: " << dir.x << " " << dir.y << " " << dir.z << endl;
-}
-
 void init() 
 {
 
-
+	/*
 	for (float t = 0; t < 3; t += 0.1)
 	{
 		bezier(t);
 	}
+	*/
 
-	system("pause");
 
 
 	//* Source: Learning Physics Modeling with PhysX
@@ -950,83 +913,104 @@ void update(float time_delta, float time_abs) // TODO change time_delta to delta
 {
 	if (gScene)
 		StepPhysX(time_delta);
+
+	camera->advance(time_delta);
 }
+
+bool c_pressed = false;
 
 void handleInput(GLFWwindow* window, float time_delta)
 {
 
-	// Mouse
-
-	double mouseXPos, mouseYPos;
-	glfwGetCursorPos(window, &mouseXPos, &mouseYPos);
-
-	int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-	if (state == GLFW_PRESS && (mouseXPos != mouseXPosOld || mouseYPos != mouseYPosOld))
+	if (!camera->getAutomaticCameraMovementActivated())
 	{
-		double mouseXPosDiff = mouseXPos - mouseXPosOld;
-		double mouseYPosDiff = mouseYPos - mouseYPosOld;
+		// Mouse
 
-		actor->PxRotate(0, 0, ROTATESPEED * time_delta * mouseXPosDiff / 100);
-		
+		double mouseXPos, mouseYPos;
+		glfwGetCursorPos(window, &mouseXPos, &mouseYPos);
 
-		if (mouseYPosDiff > 0)
+		int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+		if (state == GLFW_PRESS && (mouseXPos != mouseXPosOld || mouseYPos != mouseYPosOld))
 		{
-			camera->rotateDown(time_delta * mouseYPosDiff / 10);
+			double mouseXPosDiff = mouseXPos - mouseXPosOld;
+			double mouseYPosDiff = mouseYPos - mouseYPosOld;
+
+			actor->PxRotate(0, 0, ROTATESPEED * time_delta * mouseXPosDiff / 100);
+
+
+			if (mouseYPosDiff > 0)
+			{
+				camera->rotateDown(time_delta * mouseYPosDiff / 10);
+			}
+			if (mouseYPosDiff < 0)
+			{
+				camera->rotateUp(-time_delta * mouseYPosDiff / 10);
+			}
 		}
-		if (mouseYPosDiff < 0)
+
+		mouseXPosOld = mouseXPos;
+		mouseYPosOld = mouseYPos;
+
+
+		// camera - actor 0 
+
+		if (glfwGetKey(window, GLFW_KEY_RIGHT))
 		{
-			camera->rotateUp(-time_delta * mouseYPosDiff / 10);
+			actor->PxRotate(0, 0, -ROTATESPEED * time_delta);
+		}
+		if (glfwGetKey(window, GLFW_KEY_LEFT))
+		{
+			actor->PxRotate(0, 0, ROTATESPEED * time_delta);
+		}
+		if (glfwGetKey(window, GLFW_KEY_DOWN))
+		{
+			actor->PxTranslate(0, -MOVESPEED * time_delta, 0);
+		}
+		if (glfwGetKey(window, GLFW_KEY_UP))
+		{
+			actor->PxTranslate(0, MOVESPEED * time_delta, 0);
+		}
+
+		// actor 0 - rotate
+		if (glfwGetKey(window, GLFW_KEY_A))
+		{
+			actor->PxRotate(0, 0, ROTATESPEED * time_delta);
+		}
+		if (glfwGetKey(window, GLFW_KEY_D))
+		{
+			actor->PxRotate(0, 0, -ROTATESPEED * time_delta);
+		}
+		// actor 0 - move 
+		if (glfwGetKey(window, GLFW_KEY_Q))
+		{
+			actor->PxTranslate(0, 0, -MOVESPEED * time_delta);
+		}
+		if (glfwGetKey(window, GLFW_KEY_E))
+		{
+			actor->PxTranslate(0, 0, MOVESPEED * time_delta);
+		}
+		if (glfwGetKey(window, GLFW_KEY_W))
+		{
+			actor->PxTranslate(0, MOVESPEED * time_delta, 0);
+		}
+		if (glfwGetKey(window, GLFW_KEY_S))
+		{
+			actor->PxTranslate(0, -MOVESPEED * time_delta, 0);
 		}
 	}
 
-	mouseXPosOld = mouseXPos;
-	mouseYPosOld = mouseYPos;
-
-
-	// camera - actor 0 
-	
-	if (glfwGetKey(window, GLFW_KEY_RIGHT))
+	// C - close game
+	if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
 	{
-		actor->PxRotate(0, 0, -ROTATESPEED * time_delta);
+		if (!c_pressed)
+		{
+			camera->changeAutomaticCameraMovementActivatedState();
+			c_pressed = true;
+		}
 	}
-	if (glfwGetKey(window, GLFW_KEY_LEFT))
+	else
 	{
-		actor->PxRotate(0, 0, ROTATESPEED * time_delta);
-	}
-	if (glfwGetKey(window, GLFW_KEY_DOWN))
-	{
-		actor->PxTranslate(0, -MOVESPEED * time_delta, 0);
-	}
-	if (glfwGetKey(window, GLFW_KEY_UP))
-	{
-		actor->PxTranslate(0, MOVESPEED * time_delta, 0);
-	}
-
-	// actor 0 - rotate
-	if (glfwGetKey(window, GLFW_KEY_A))
-	{
-		actor->PxRotate(0, 0, ROTATESPEED * time_delta);
-	}
-	if (glfwGetKey(window, GLFW_KEY_D))
-	{
-		actor->PxRotate(0, 0, -ROTATESPEED * time_delta);
-	}
-	// actor 0 - move 
-	if (glfwGetKey(window, GLFW_KEY_Q))
-	{
-		actor->PxTranslate(0, 0, -MOVESPEED * time_delta);
-	}
-	if (glfwGetKey(window, GLFW_KEY_E))
-	{
-		actor->PxTranslate(0, 0, MOVESPEED * time_delta);
-	}
-	if (glfwGetKey(window, GLFW_KEY_W))
-	{
-		actor->PxTranslate(0, MOVESPEED * time_delta, 0);
-	}
-	if (glfwGetKey(window, GLFW_KEY_S))
-	{
-		actor->PxTranslate(0, -MOVESPEED * time_delta, 0);
+		c_pressed = false;
 	}
 
 	// ESC - close game
