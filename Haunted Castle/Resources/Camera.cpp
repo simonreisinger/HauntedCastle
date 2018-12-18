@@ -7,14 +7,14 @@ float eh = 6;
 
 CameraPoint cameraPoints[] =
 {
-	CameraPoint(vec3(0, 2, eh), vec3(0, -1, 0)),
-	CameraPoint(vec3(0, 1, eh), vec3(0, -1, 0)),
-	CameraPoint(vec3(0, 0, eh), vec3(0, -1, 0)),
-	CameraPoint(vec3(0, -1, eh), vec3(0, -1, 0)),
-	CameraPoint(vec3(0, -4, eh - 1), vec3(0, -1, -1)),
-	CameraPoint(vec3(0, -7, eh), vec3(0, -1, 0)),
-	CameraPoint(vec3(2, -9, eh), vec3(1, 0, 0)),
-	CameraPoint(vec3(3, -9, eh), vec3(1, 0, 0))
+	CameraPoint(vec3(0, 2, eh), vec3(0, -1, 0), 0),
+	CameraPoint(vec3(0, 1, eh), vec3(0, -1, 0), 1),
+	CameraPoint(vec3(0, 0, eh), vec3(0, -1, 0), 2),
+	CameraPoint(vec3(0, -1, eh), vec3(0, -1, 0), 3),
+	CameraPoint(vec3(0, -4, eh - 1), vec3(0, -1, -1), 4),
+	CameraPoint(vec3(0, -7, eh), vec3(0, -1, 0), 5),
+	CameraPoint(vec3(2, -9, eh), vec3(1, 0, 0), 6),
+	CameraPoint(vec3(3, -9, eh), vec3(1, 0, 0), 7)
 };
 
 Camera::Camera(){
@@ -159,7 +159,6 @@ void computePointCubicHermiteCurve(float t, vec3 &p, vec3 &d, vec3 p1, vec3 p2, 
 	d = p1 * dh0 + p2 * dh1 + d1 * dh2 + d2 * dh3;
 }
 
-
 void computePointLinearInterpolation(float t, vec3 &p, vec3 &d, vec3 p1, vec3 p2, vec3 d1, vec3 d2)
 {
 	p = p1 * (1 - t) + p2 * t;
@@ -167,10 +166,64 @@ void computePointLinearInterpolation(float t, vec3 &p, vec3 &d, vec3 p1, vec3 p2
 	d = d1 * (1 - t) + d2 * t;
 }
 
+float computeB(int i, int k, float x)
+{
+	int n = (sizeof(cameraPoints) / sizeof(*cameraPoints));
+	if (k == 0)
+	{
+		if (cameraPoints[i].getTime() <= x && x < cameraPoints[max(i+1, n-1)].getTime())
+		{
+			return 1;
+		}
+		else
+		{
+			return 0;
+		}
+	}
+	else
+	{
+
+		float a = 0;
+		if (i < n && i + k < n)
+		{
+			float t_i = cameraPoints[i].getTime();
+			float t_ik = cameraPoints[i + k].getTime();
+			a = (x - t_i) / (t_ik - t_i);
+		}
+		float b = 0;
+		if (i + 1 < n && i + k + 1 < n)
+		{
+			float t_ik1 = cameraPoints[i + k + 1].getTime();
+			float t_i1 = cameraPoints[i + 1].getTime();
+			b = (t_ik1 - x) / (t_ik1 - t_i1);
+		}
+
+		return (a == 0 ? 0 : a * computeB(i, k - 1, x)) + (b==0 ? 0 : b * computeB(i + 1, k - 1, x));
+	}
+}
+
+void computePointBSpline(float x)
+{
+	int n = (sizeof(cameraPoints) / sizeof(*cameraPoints));
+
+	vec3 point = vec3(0);
+	float weights = 0;
+	for (int i = 0; i < n; i++)
+	{
+		float weight = computeB(i, 2, x);
+		point += cameraPoints[i].getPoint() * weight;
+		weights += weight;
+	}
+	cout << "Weight: " << weights << " - Point: " << point.x << ", " << point.y << ", " << point.z << endl;
+}
+
 const int CURVE_LINEAR = 1;
 const int CURVE_HERMITE = 2;
 const int CURVE_CATMULL = 3;
 const int CURVE_BEZIER = 4;
+const int CURVE_BSPLINE = 5;
+
+int method = CURVE_BSPLINE;
 
 void Camera::advance(float time_delta)
 {
@@ -205,7 +258,6 @@ void Camera::advance(float time_delta)
 			float advance_t = (t - tfloor);
 
 
-			int method = CURVE_BEZIER;
 
 			switch (method)
 			{
@@ -230,12 +282,19 @@ void Camera::advance(float time_delta)
 			case CURVE_BEZIER:
 				computePointBezierCurve(advance_t, p, d, p1, p2, d1, d2);
 				break;
+			case CURVE_BSPLINE:
+				computePointBSpline(t);
+				break;
 			}
 			
 
-			if (method != CURVE_CATMULL)
+			if (method != CURVE_CATMULL && method != CURVE_BSPLINE)
 			{
 				t += 1 * time_delta / length(p1 - p2);
+			}
+			if (method == CURVE_BSPLINE)
+			{
+				t += 1 * time_delta;
 			}
 		}
 	}
