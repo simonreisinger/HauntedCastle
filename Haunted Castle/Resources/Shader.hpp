@@ -13,6 +13,7 @@ namespace cgue
 		// eine Variable fuer den Code des Fragmentshaders
 	public:
 		Shader(const std::string& vertexShader, const std::string& fragmentShader);
+		Shader(const std::string& vertexShader, const std::string& fragmentShader, const std::string& geometryShader);
 		// Destructor
 		~Shader();
 
@@ -28,6 +29,7 @@ namespace cgue
 
 		GLuint vertexHandle;
 		GLuint fragmentHandle;
+		GLuint geometryHandle = NULL;
 
 	};
 }

@@ -24,11 +24,31 @@ Shader::Shader(const string& vertexShader, const string& fragmentShader)
 	link();
 }
 
+Shader::Shader(const string& vertexShader, const string& fragmentShader, const string& geometryShader)
+	: programHandle(0), vertexHandle(0), fragmentHandle(0)
+{
+	programHandle = glCreateProgram();
+
+	if (programHandle == 0)
+	{
+		cout << "ERROR: Could not create Program." << endl;
+		system("PAUSE");
+		exit(EXIT_FAILURE);
+	}
+
+	loadShader(vertexShader, GL_VERTEX_SHADER, vertexHandle /* <-- OUT */);
+	loadShader(fragmentShader, GL_FRAGMENT_SHADER, fragmentHandle /* <-- OUT */);
+	loadShader(geometryShader, GL_GEOMETRY_SHADER, geometryHandle /* <-- OUT */);
+
+	link();
+}
+
 Shader::~Shader()
 {
 	glDeleteProgram(programHandle);
 	glDeleteShader(vertexHandle);
 	glDeleteShader(fragmentHandle);
+	glDeleteShader(geometryHandle);
 }
 
 void Shader::useShader() const
@@ -90,6 +110,10 @@ void Shader::link()
 	// combine vertexShader and fragmentShader to one shader program
 	glAttachShader(programHandle, vertexHandle);
 	glAttachShader(programHandle, fragmentHandle);
+	if (geometryHandle != NULL)
+	{
+		glAttachShader(programHandle, geometryHandle);
+	}
 
 	glLinkProgram(programHandle);
 
