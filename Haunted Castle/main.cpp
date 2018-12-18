@@ -61,6 +61,7 @@ void OnShutdown();
 mat4x4 pxMatToGlm(PxMat44 pxMat);
 void RenderQuad();
 void initDirectionalShadows();
+void initPointShadows();
 
 Shader* renderShader;
 Shader* shadowShader;
@@ -111,7 +112,7 @@ static PxFoundation*			gFoundation = NULL;			//Instance of singleton foundation 
 static PxDefaultErrorCallback	gDefaultErrorCallback;		//Instance of default implementation of the error callback
 static PxDefaultAllocator		gDefaultAllocatorCallback;	//Instance of default implementation of the allocator interface required by the SDK
 
-PxScene*						gScene = NULL;				//Instance of PhysX Scene				
+PxScene*						gScene = NULL;				//Instance of PhysX Scene //TODO delete this
 
 
 class SimulationEvents : public PxSimulationEventCallback
@@ -804,6 +805,30 @@ void initDirectionalShadows()
 	// - Tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
 	GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 	glDrawBuffers(2, attachments);
+}
+
+// source: https://learnopengl.com/Advanced-Lighting/Shadows/Point-Shadows
+void initPointShadows(){
+	unsigned int depthCubemap;
+	glGenTextures(1, &depthCubemap);
+	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+	for (unsigned int i = 0; i < 6; ++i){
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT,
+			SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+	}
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	/*
+	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemap, 0);
+	glDrawBuffer(GL_NONE);
+	glReadBuffer(GL_NONE);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
 }
 
 GLuint quadVAO = 0;
