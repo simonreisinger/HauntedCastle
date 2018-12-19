@@ -29,6 +29,7 @@
 #include "Scene/Torch2.hpp"
 #include "Scene/Chess.hpp"
 #include "Scene/Coordinatesystem.hpp"
+#include "Scene/Fire.hpp"
 
 
 
@@ -89,6 +90,7 @@ Torch1* torch1;
 Torch2* torch2;
 Chess* chess;
 Coordinatesystem* coordinatesystem;
+Fire* fire;
 
 
 
@@ -573,6 +575,12 @@ int main(int argc, char** argv)
 
 		draw(renderShader, lookAt, proj, camera_model);
 
+
+		auto time_particle_start = glfwGetTime();
+		fire->drawParticles(time_delta, view, proj);
+		auto time_particle_end = glfwGetTime();
+		auto time_particle_delta = (float)(time_particle_end - time_particle_start);
+		cout << "Particles - Frame time: " << (int)(time_particle_delta * 1000) << "ms, Frame/sec: " << (int)(1.0f / time_particle_delta) << endl;
 		
 
 		glfwSwapBuffers(window);
@@ -621,6 +629,7 @@ void OnShutdown()
 	delete torch2; torch2 = nullptr;
 	delete chess; chess = nullptr;
 	delete coordinatesystem; coordinatesystem = nullptr;
+	delete fire; fire = nullptr;
 
 	delete renderShader; renderShader = nullptr;
 	delete shadowShader; shadowShader = nullptr;
@@ -715,6 +724,9 @@ void init()
 		
 	}
 
+	fire = new Fire(renderShader, 0.0, 0.0, 0.0, 0.0, 90.0, 0.0);
+
+
 	//coordinatesystem = new Coordinatesystem(renderShader);
 	
 
@@ -760,7 +772,7 @@ void initDirectionalShadows()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-
+	
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
 
 	// No color output in the bound framebuffer, only depth.
@@ -903,6 +915,7 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 		chess->draw(drawShader, view, proj, camera_model, cull);
 
 	}
+
 
 	//coordinatesystem->draw(drawShader, view, proj, camera_model, cull);
 	
