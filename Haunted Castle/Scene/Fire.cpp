@@ -89,15 +89,17 @@ Fire::Fire(Shader* shader, float sposX, float sposY, float sposZ,
 
 	texture = new Texture("fire", "particle.png");
 
+	// Configure VAO and VBO
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 
 	glGenBuffers(1, &particles_position_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, particles_position_buffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(particlePos), NULL, GL_STREAM_DRAW);
-
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
+
+	// Unbind VAO
 	glBindVertexArray(0);
 
 
@@ -167,7 +169,6 @@ void Fire::drawParticles(float delta, mat4x4 view, mat4x4 proj)
 	glEnable(GL_BLEND); // activate blending
 	glDepthMask(GL_FALSE); // disable writing to depth buffer
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	//glBlendEquation(GL_MAX);
 
 	GLuint programID = particleShader->programHandle;
 	glUseProgram(programID);
@@ -201,15 +202,17 @@ void Fire::drawParticles(float delta, mat4x4 view, mat4x4 proj)
 	updateParticles(delta, CameraPosition);
 
 
+	glBindVertexArray(VAO);
 
 	glBindBuffer(GL_ARRAY_BUFFER, particles_position_buffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(particlePos), NULL, GL_STREAM_DRAW);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(particlePos), particlePos);
 
-	glBindVertexArray(VAO);
 	glDrawArrays(GL_POINTS, 0, ParticlesCount);
 
 
 	//glDisable(GL_BLEND);
-	glDepthMask(GL_TRUE);
+	glDepthMask(GL_TRUE);
+
+
 }
