@@ -22,7 +22,7 @@ void main() {
 
     vec3 P = gl_in[0].gl_Position.xyz;
 
-	float size = 0.1;
+	float size = 1;
 
 	vec3 va = P - (right + up) * size;
 	gl_Position = VP * vec4(va, 1.0);

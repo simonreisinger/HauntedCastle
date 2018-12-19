@@ -148,6 +148,7 @@
   <ItemGroup>
     <None Include="Shader\Draw.frag" />
     <None Include="Shader\Draw.vert" />
+    <None Include="Shader\FireParticle.comp" />
     <None Include="Shader\FireParticle.frag" />
     <None Include="Shader\FireParticle.vert" />
     <None Include="Shader\FireParticle.geom" />

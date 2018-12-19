@@ -580,7 +580,7 @@ int main(int argc, char** argv)
 		fire->drawParticles(time_delta, view, proj);
 		auto time_particle_end = glfwGetTime();
 		auto time_particle_delta = (float)(time_particle_end - time_particle_start);
-		cout << "Particles - Frame time: " << (int)(time_particle_delta * 1000) << "ms, Frame/sec: " << (int)(1.0f / time_particle_delta) << endl;
+		//cout << "Particles - Frame time: " << (int)(time_particle_delta * 1000) << "ms, Frame/sec: " << (int)(1.0f / time_particle_delta) << endl;
 		
 
 		glfwSwapBuffers(window);

@@ -14,7 +14,7 @@ namespace cgue
 	public:
 		Shader(const std::string& vertexShader, const std::string& fragmentShader);
 		Shader(const std::string& vertexShader, const std::string& fragmentShader, const std::string& geometryShader);
-		Shader(const std::string& vertexShader, const std::string& fragmentShader, const std::string& geometryShader, const std::string& computeShader);
+		Shader(const std::string& computeShader);
 		// Destructor
 		~Shader();
 

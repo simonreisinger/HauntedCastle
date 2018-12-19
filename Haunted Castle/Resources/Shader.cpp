@@ -21,6 +21,10 @@ Shader::Shader(const string& vertexShader, const string& fragmentShader)
 	loadShader(vertexShader, GL_VERTEX_SHADER, vertexHandle /* <-- OUT */);
 	loadShader(fragmentShader, GL_FRAGMENT_SHADER, fragmentHandle /* <-- OUT */);
 
+	// combine vertexShader and fragmentShader to one shader program
+	glAttachShader(programHandle, vertexHandle);
+	glAttachShader(programHandle, fragmentHandle);
+
 	link();
 }
 
@@ -39,11 +43,16 @@ Shader::Shader(const string& vertexShader, const string& fragmentShader, const s
 	loadShader(vertexShader, GL_VERTEX_SHADER, vertexHandle /* <-- OUT */);
 	loadShader(fragmentShader, GL_FRAGMENT_SHADER, fragmentHandle /* <-- OUT */);
 	loadShader(geometryShader, GL_GEOMETRY_SHADER, geometryHandle /* <-- OUT */);
+
+	// combine vertexShader and fragmentShader to one shader program
+	glAttachShader(programHandle, vertexHandle);
+	glAttachShader(programHandle, fragmentHandle);
+	glAttachShader(programHandle, geometryHandle);
 	
 	link();
 }
 
-Shader::Shader(const string& vertexShader, const string& fragmentShader, const string& geometryShader, const std::string& computeShader)
+Shader::Shader(const std::string& computeShader)
 	: programHandle(0), vertexHandle(0), fragmentHandle(0)
 {
 	programHandle = glCreateProgram();
@@ -55,10 +64,10 @@ Shader::Shader(const string& vertexShader, const string& fragmentShader, const s
 		exit(EXIT_FAILURE);
 	}
 
-	loadShader(vertexShader, GL_VERTEX_SHADER, vertexHandle /* <-- OUT */);
-	loadShader(fragmentShader, GL_FRAGMENT_SHADER, fragmentHandle /* <-- OUT */);
-	loadShader(geometryShader, GL_GEOMETRY_SHADER, geometryHandle /* <-- OUT */);
 	loadShader(computeShader, GL_COMPUTE_SHADER, computeHandle /* <-- OUT */);
+
+	// combine vertexShader and fragmentShader to one shader program
+	glAttachShader(programHandle, computeHandle);
 
 	link();
 }
@@ -128,18 +137,6 @@ void Shader::loadShader(const string shader, GLenum shaderType, GLuint& handle /
 
 void Shader::link()
 {
-	// combine vertexShader and fragmentShader to one shader program
-	glAttachShader(programHandle, vertexHandle);
-	glAttachShader(programHandle, fragmentHandle);
-	if (geometryHandle != NULL)
-	{
-		glAttachShader(programHandle, geometryHandle);
-	}
-	if (computeHandle != NULL)
-	{
-		glAttachShader(programHandle, computeHandle);
-	}
-
 	glLinkProgram(programHandle);
 
 	GLint succeeded;
