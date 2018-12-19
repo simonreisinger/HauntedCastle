@@ -23,6 +23,13 @@ uniform vec3 specularColor;
 uniform sampler2DShadow shadowMap;
 uniform vec3 SunDirection_worldspace;
 
+	//////////////// calculate point shadow ///////////////
+	uniform samplerCube depthMap;
+	uniform vec3 viewPos;
+	uniform vec3 lightPos;
+	uniform float far_plane;
+	//////////////////////////////////////////////////////
+
 vec2 disk[16] = vec2[]( 
    vec2( -0.94202634, -0.39907226 ), 
    vec2( 0.94558508, -0.76891735 ), 
@@ -42,6 +49,23 @@ vec2 disk[16] = vec2[](
    vec2( 0.14383159, -0.14100800 ) 
 );
 
+float ShadowCalculation(vec3 fragPos)
+{
+    // get vector between fragment position and light position
+    vec3 fragToLight = fragPos - lightPos;
+    // use the light to fragment vector to sample from the depth map    
+    float closestDepth = texture(depthMap, fragToLight).r;
+    // it is currently in linear range between [0,1]. Re-transform back to original value
+    closestDepth *= far_plane;
+    // now get current linear depth as the length between the fragment and light position
+    float currentDepth = length(fragToLight);
+    // now test for shadows
+    float bias = 0.05; 
+    float shadow = currentDepth -  bias > closestDepth ? 1.0 : 0.0;
+
+    return shadow;
+}
+
 void main(){
 	
 	// Use Texture or Material Color
@@ -56,8 +80,15 @@ void main(){
 		MaterialDiffuseColor = diffuseColor;
 	}
 
+	//////////////// calculate point shadow ///////////////
+	// float shadow = ShadowCalculation(fs_in.FragPos);
+	//float shadow /*= 0; //*/ ShadowCalculation(Position_worldspace);
+	float shadow = ShadowCalculation(Position_worldspace);
+	//////////////////////////////////////////////////////
+
 
 	float AmbientIntensity = 0.2;
+
 	vec3 MaterialAmbientColor = AmbientIntensity * MaterialDiffuseColor;
 	vec3 MaterialSpecularColor = specularColor;
 
@@ -109,11 +140,11 @@ void main(){
 
 	visibility = visibility * visibilityPosible;
 	
-
+	//FragColor = vec4((1.0 - shadow),(1.0 - shadow),(1.0 - shadow),1.0);
+	//*
 	FragColor = vec4(
-	
 		// Ambient
-		vec3(MaterialAmbientColor) + 
+		vec3(MaterialAmbientColor) * (1.0 - shadow) + // TODO is wrong here must be changed
 
 		// Diffuse Torch 1
 		MaterialDiffuseColor * I1 * cosTheta1 +
@@ -127,6 +158,6 @@ void main(){
 		MaterialSpecularColor * I2 * pow(cosAlpha2, 5) +
 		// Window
 		MaterialDiffuseColor * visibility
-
-		, 1);
+	, 1);
+	// */
 }

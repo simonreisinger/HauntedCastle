@@ -12,7 +12,6 @@ out vec3 EyeDirection_cameraspace;
 out vec3 Torch1Direction_cameraspace;
 out vec3 Torch2Direction_cameraspace;
 out vec4 ShadowCoord;
-
 uniform mat4 MVP;
 uniform mat4 V;
 uniform mat4 M;

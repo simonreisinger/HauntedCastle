@@ -173,5 +173,10 @@
     <None Include="Shader\Shadow.frag" />
     <None Include="Shader\Draw.vert" />
     <None Include="Shader\Draw.frag" />
+    <None Include="Shader\Depth.frag" />
+    <None Include="Shader\Depth.vert" />
+    <None Include="Shader\PointShadow.frag" />
+    <None Include="Shader\PointShadow.vert" />
+    <None Include="Shader\Depth.geo" />
   </ItemGroup>
 </Project>
