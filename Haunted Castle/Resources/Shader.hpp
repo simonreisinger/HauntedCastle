@@ -23,7 +23,7 @@ namespace cgue
 
 	private:
 		// Wird fuer jeden der beiden Shader einmal aufgerufen
-		void loadShader(const std::string& shader, GLenum shaderType, GLuint& handle /*<--OUT*/);
+		void loadShader(const std::string shader, GLenum shaderType, GLuint& handle /*<--OUT*/);
 		// haengt die beiden Shader-Objekts zu einem Programm zusammenhaengen
 		void link();
 

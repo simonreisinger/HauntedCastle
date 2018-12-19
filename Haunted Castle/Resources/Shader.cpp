@@ -39,7 +39,7 @@ Shader::Shader(const string& vertexShader, const string& fragmentShader, const s
 	loadShader(vertexShader, GL_VERTEX_SHADER, vertexHandle /* <-- OUT */);
 	loadShader(fragmentShader, GL_FRAGMENT_SHADER, fragmentHandle /* <-- OUT */);
 	loadShader(geometryShader, GL_GEOMETRY_SHADER, geometryHandle /* <-- OUT */);
-
+	
 	link();
 }
 
@@ -56,7 +56,7 @@ void Shader::useShader() const
 	glUseProgram(programHandle);
 }
 
-void Shader::loadShader(const string& shader, GLenum shaderType, GLuint& handle /*<-OUT*/)
+void Shader::loadShader(const string shader, GLenum shaderType, GLuint& handle /*<-OUT*/)
 {
 	ifstream shaderFile(shader.c_str());
 

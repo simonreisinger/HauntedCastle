@@ -90,6 +90,9 @@
     <ClCompile Include="Scene\Coordinatesystem.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
+    <ClCompile Include="Scene\Fire.cpp">
+      <Filter>Quelldateien</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Resources\SceneObject.hpp">
@@ -167,6 +170,9 @@
     <ClInclude Include="Resources\RenderBuffer.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+    <ClInclude Include="Scene\Fire.hpp">
+      <Filter>Headerdateien</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shader\Shadow.vert" />
@@ -178,5 +184,8 @@
     <None Include="Shader\PointShadow.frag" />
     <None Include="Shader\PointShadow.vert" />
     <None Include="Shader\Depth.geo" />
+    <None Include="Shader\FireParticle.geom" />
+    <None Include="Shader\FireParticle.vert" />
+    <None Include="Shader\FireParticle.frag" />
   </ItemGroup>
 </Project>

@@ -105,6 +105,7 @@
     <ClCompile Include="Scene\Coordinatesystem.cpp" />
     <ClCompile Include="Scene\Desk.cpp" />
     <ClCompile Include="Scene\Door.cpp" />
+    <ClCompile Include="Scene\Fire.cpp" />
     <ClCompile Include="Scene\Frame.cpp" />
     <ClCompile Include="Resources\Geometry.cpp" />
     <ClCompile Include="Resources\Shader.cpp" />
@@ -132,6 +133,7 @@
     <ClInclude Include="Scene\Coordinatesystem.hpp" />
     <ClInclude Include="Scene\Desk.hpp" />
     <ClInclude Include="Scene\Door.hpp" />
+    <ClInclude Include="Scene\Fire.hpp" />
     <ClInclude Include="Scene\Frame.hpp" />
     <ClInclude Include="Resources\Geometry.hpp" />
     <ClInclude Include="Resources\Shader.hpp" />
@@ -151,6 +153,10 @@
     <None Include="Shader\Depth.vert" />
     <None Include="Shader\PointShadow.frag" />
     <None Include="Shader\PointShadow.vert" />
+
+    <None Include="Shader\FireParticle.frag" />
+    <None Include="Shader\FireParticle.vert" />
+    <None Include="Shader\FireParticle.geom" />
     <None Include="Shader\Shadow.frag" />
     <None Include="Shader\Shadow.vert" />
   </ItemGroup>
