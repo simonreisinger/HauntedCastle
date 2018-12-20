@@ -57,7 +57,7 @@ using namespace glm;
 using namespace physx;
 
 void init();
-void draw(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 camera_model);
+void drawScene(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 camera_model);
 void update(float time_delta, float time_abs);
 void handleInput(GLFWwindow* window, float time_delta);
 void OnShutdown();
@@ -65,7 +65,8 @@ mat4x4 pxMatToGlm(PxMat44 pxMat);
 void RenderQuad();
 void initDirectionalShadows();
 void initPointShadows();
-void CreateDepthCubemap();
+void renderDepthCubemap();
+void renderDepthMap();
 
 Shader* renderShader;
 Shader* shadowShader;
@@ -472,8 +473,8 @@ int main(int argc, char** argv)
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		CreateDepthCubemap();
-
+		renderDepthCubemap();
+		renderDepthMap();
 
 		// Render to our framebuffer
 		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -509,7 +510,7 @@ int main(int argc, char** argv)
 		// in the "MVP" uniform
 
 		// Shadow
-		draw(shadowShader, depthViewMatrix, depthProjectionMatrix, mat4x4(1.0f));
+		drawScene(shadowShader, depthViewMatrix, depthProjectionMatrix, mat4x4(1.0f));
 
 
 
@@ -586,7 +587,7 @@ int main(int argc, char** argv)
 		frustumG->setCamInternals(fov, ratio, nearDist, farDist);
 		frustumG->setCamDef(p, l, u);
 		
-		draw(renderShader, lookAt, proj, camera_model);
+		drawScene(renderShader, lookAt, proj, camera_model);
 
 		for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++)
 		{
@@ -831,6 +832,10 @@ void initDirectionalShadows()
 	glDrawBuffers(2, attachments);
 }
 
+void renderDepthMap(){
+
+}
+
 // source: https://learnopengl.com/Advanced-Lighting/Shadows/Point-Shadows
 void initPointShadows(){
 	// Shadow Maps
@@ -892,7 +897,7 @@ void initPointShadows(){
 }
 
 // Creates the depth cubmap each render cycle
-void CreateDepthCubemap(){
+void renderDepthCubemap(){
 	// 1. render scene to depth cubemap
 	// --------------------------------
 
@@ -919,7 +924,7 @@ void CreateDepthCubemap(){
 	auto xyzac = glGetUniformLocation(depthShader->programHandle, "lightPos");
 	glUniform3f(xyzac, lightPos.x, lightPos.y, lightPos.z);
 
-	draw(depthShader, mat4x4(1.0f), mat4x4(1.0f), mat4x4(1.0f));
+	drawScene(depthShader, mat4x4(1.0f), mat4x4(1.0f), mat4x4(1.0f));
 }
 
 GLuint quadVAO = 0;
@@ -957,7 +962,7 @@ void StepPhysX(float time_delta)					//Stepping PhysX
 	gScene->fetchResults(true);		//Block until the simulation run is completed
 }
 
-void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
+void drawScene(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 {
 	bool cull = false;
 	if (drawShader == renderShader) {
@@ -965,31 +970,31 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 	}
 
 
-	room->draw(drawShader, view, proj, camera_model, cull);
-	knight1->draw(drawShader, view, proj, camera_model, cull);
+	room->renderGeometry(drawShader, view, proj, camera_model, cull);
+	knight1->renderGeometry(drawShader, view, proj, camera_model, cull);
 
 	if (renderObjects)
 	{
 		
-		torch1->draw(drawShader, view, proj, camera_model, cull);
-		torch2->draw(drawShader, view, proj, camera_model, cull);
+		torch1->renderGeometry(drawShader, view, proj, camera_model, cull);
+		torch2->renderGeometry(drawShader, view, proj, camera_model, cull);
 
-		chair1->draw(drawShader, view, proj, camera_model, cull);
-		chair2->draw(drawShader, view, proj, camera_model, cull);
+		chair1->renderGeometry(drawShader, view, proj, camera_model, cull);
+		chair2->renderGeometry(drawShader, view, proj, camera_model, cull);
 
-		knight2->draw(drawShader, view, proj, camera_model, cull);
+		knight2->renderGeometry(drawShader, view, proj, camera_model, cull);
 
-		wardrobe->draw(drawShader, view, proj, camera_model, cull);
+		wardrobe->renderGeometry(drawShader, view, proj, camera_model, cull);
 
-		desk->draw(drawShader, view, proj, camera_model, cull);
+		desk->renderGeometry(drawShader, view, proj, camera_model, cull);
 		
-		door->draw(drawShader, view, proj, camera_model, cull);
+		door->renderGeometry(drawShader, view, proj, camera_model, cull);
 
-		frame->draw(drawShader, view, proj, camera_model, cull);
+		frame->renderGeometry(drawShader, view, proj, camera_model, cull);
 
-		commode->draw(drawShader, view, proj, camera_model, cull);
+		commode->renderGeometry(drawShader, view, proj, camera_model, cull);
 
-		chess->draw(drawShader, view, proj, camera_model, cull);
+		chess->renderGeometry(drawShader, view, proj, camera_model, cull);
 		
 	}
 

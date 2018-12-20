@@ -28,7 +28,7 @@ namespace cgue
 		virtual ~Geometry();
 		void init(const std::string& displayFile, Shader* _shader);
 		void update(float time_delta, float time_abs);
-		void draw(Shader* shader, mat4x4 view, glm::mat4x4 proj, mat4x4 camera_model, bool cull);
+		void renderGeometry(Shader* shader, mat4x4 view, glm::mat4x4 proj, mat4x4 camera_model, bool cull);
 		Shader* getShader();
 		void setPhysX(PxPhysics* gPhysicsSDK, PxFoundation*	gFoundation, PxDefaultErrorCallback	gDefaultErrorCallback, PxDefaultAllocator gDefaultAllocatorCallback, PxScene* gScene);
 		virtual void initActor();
