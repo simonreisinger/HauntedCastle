@@ -1,12 +1,7 @@
 #include <iostream>
 #include <string>
 #include <sstream> // for: char**
-
-
-#include <vector> // Point shadow CHECK IF CORRECT
-// #include <glm/GTC/matrix_transform.hpp>
-
-
+#include <vector>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -311,8 +306,8 @@ int main(int argc, char** argv)
 	cout << "Loading..." << endl;
 
 	// TODO implement full screen 
-	width = 1280;
-	height = 768;
+	width = 1600;
+	height = 1600;
 	auto fullscreen = false;
 
 	// Parameters
@@ -982,7 +977,8 @@ void initPointShadows(){
 	glGenTextures(1, &depthCubemap);
 	int max = width > height ? width : height;
 	const unsigned int SHADOW_WIDTH = max, SHADOW_HEIGHT = max; // TODO change this line
-	
+	//const unsigned int SHADOW_WIDTH = width, SHADOW_HEIGHT = height; // TODO change this line
+
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
 	for (unsigned int i = 0; i < 6; ++i){
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT,
