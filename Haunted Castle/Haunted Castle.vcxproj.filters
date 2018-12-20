@@ -183,9 +183,9 @@
     <None Include="Shader\Depth.vert" />
     <None Include="Shader\PointShadow.frag" />
     <None Include="Shader\PointShadow.vert" />
-    <None Include="Shader\Depth.geo" />
     <None Include="Shader\FireParticle.geom" />
     <None Include="Shader\FireParticle.vert" />
     <None Include="Shader\FireParticle.frag" />
+    <None Include="Shader\Depth.geom" />
   </ItemGroup>
 </Project>

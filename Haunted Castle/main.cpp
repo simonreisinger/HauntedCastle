@@ -976,7 +976,7 @@ void initPointShadows(){
 	depthShader = new Shader(
 		"Shader/Depth.vert",
 		"Shader/Depth.frag",
-		"Shader/Depth.geo");
+		"Shader/Depth.geom");
 
 
 	glGenTextures(1, &depthCubemap);
