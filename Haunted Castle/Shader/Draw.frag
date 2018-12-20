@@ -157,7 +157,8 @@ void main(){
 
 	vec3 fragToLight = FragPos - lightPos;
 
-	vec3 fragToLight2 = vec3(fragToLight.z, fragToLight.x, fragToLight.y);
+	//vec3 fragToLight2 = vec3(fragToLight.z, fragToLight.x, fragToLight.y);
+	vec3 fragToLight2 = fragToLight;//vec3(fragToLight.x, fragToLight.z, fragToLight.y);
 
 
 	vec3 borderVec = fragToLight;
@@ -180,7 +181,7 @@ void main(){
 	float currentDepth = length(fragToLight2); 
 
 	float biasx = 0.001;//5; 
-	float xxxxxxx = currentDepth -  biasx > closestDepth ? 0.0 : 1.0; 
+	float xxxxxxx = (currentDepth - closestDepth) / currentDepth; // currentDepth -  biasx > closestDepth ? 0.0 : 1.0; 
 
 	//float xxxxxxx = texture(depthMap, Position_worldspace - lightPos).r;
 
@@ -191,7 +192,7 @@ void main(){
 	//*
 	FragColor = vec4(
 		// Ambient
-		MaterialAmbientColor + 0.3 * vec3(xxxxxxx) + 0.5 * borderColor // TODO is wrong here must be changed
+		MaterialAmbientColor + 0.5*vec3(closestDepth / far_plane) //  + 0.3 * vec3(xxxxxxx) + 0.5 * borderColor // TODO is wrong here must be changed
 		/*
 		vec3(MaterialAmbientColor* (1.0+3.0*xxxxxxx))
 
@@ -226,5 +227,7 @@ void main(){
     
     FragColor = vec4(lighting, 1.0);
 	*/
+
+	
 
 }
