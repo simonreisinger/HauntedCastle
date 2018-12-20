@@ -805,6 +805,8 @@ void initDirectionalShadows()
 	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+	// TODO Still do not know what this FBO and Texture are for,
+	// but they are needed.
 	// Set up floating point framebuffer to render scene to
 	glGenFramebuffers(1, &hdrFBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
@@ -823,15 +825,7 @@ void initDirectionalShadows()
 		);
 	}
 
-	// - Create and attach depth buffer (renderbuffer)
-	GLuint rboDepth;
-	glGenRenderbuffers(1, &rboDepth);
-	glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
-	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
-	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
-	// - Tell OpenGL which color attachments we'll use (of this framebuffer) for rendering 
-	GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
-	glDrawBuffers(2, attachments);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void renderDepthMap(){
