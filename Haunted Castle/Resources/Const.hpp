@@ -41,7 +41,7 @@ extern mat4x4 pxMatToGlm(PxMat44 pxMat);
 extern PxMat44 glmToPxMat(mat4x4 mat);
 extern void printMatGeometry(mat4x4 mat);
 
-extern GLuint depthTexture;
+extern GLuint directionalShadowsDepthMap;
 extern glm::mat4 depthBiasMVP;
 extern glm::mat4 depthMVP;
 

@@ -49,7 +49,7 @@ void printMatGeometry(mat4x4 mat)
 	//*/
 }
 
-GLuint depthTexture;
+GLuint directionalShadowsDepthMap;
 glm::mat4 depthBiasMVP;
 glm::mat4 depthMVP;
 
@@ -78,4 +78,4 @@ int countMeshesLoading = 73;
 int iObjectsLoaded = 0;
 int countObjectsLoading = 14;
 
-bool renderObjects = true;
+bool renderObjects = false;

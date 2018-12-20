@@ -72,13 +72,13 @@ Shader* shadowShader;
 Shader* pointShadowShader;
 Shader* depthShader;
 
-GLuint FramebufferName = 0;
+GLuint directionalShadowsFBO = 0;
 GLuint hdrFBO;
 GLuint colorBuffers[2];
 GLuint pingpongFBO[2];
 GLuint pingpongColorbuffers[2];
 
-unsigned int depthMapFBO;
+unsigned int pointShadowsFBO;
 unsigned int depthCubemap;
 
 std::vector<glm::mat4> shadowTransforms;
@@ -111,8 +111,6 @@ float farDist = 200.0f;
 float fov = 100.0f;
 float near_plane = 0.1; // = 1.0f;
 float far_plane = 50.0f; // = farDist; //
-
-
 ///////////////////////////////////////////
 
 FrustumG* frustumG;
@@ -477,12 +475,10 @@ int main(int argc, char** argv)
 		CreateDepthCubemap();
 
 
-
 		// Render to our framebuffer
 		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+		glBindFramebuffer(GL_FRAMEBUFFER, directionalShadowsFBO);
 		glViewport(0, 0, width, height); // Render on the whole framebuffer, complete from the lower left corner to the upper right
-		//glViewport(0, 0, 1024, 1024);  // Render on the whole framebuffer, complete from the lower left corner to the upper right
 
 		// We don't use bias in the shader, but instead we draw back faces, 
 		// which are already separated from the front faces by a small distance 
@@ -543,21 +539,19 @@ int main(int argc, char** argv)
 
 
 		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, depthTexture);
+		glBindTexture(GL_TEXTURE_2D, directionalShadowsDepthMap);
 		GLuint ShadowMapID = glGetUniformLocation(renderShader->programHandle, "shadowMap");
 		glUniform1i(ShadowMapID, 2);
 
 
 		///////////////////////////////////POINT SHADER///////////////////////////////////////////
-		//shader.setInt("diffuseTexture", 0);
-		//glUniform1i(glGetUniformLocation(renderShader->programHandle, "diffuseTexture"), 0);
 		//shader.setInt("depthMap", 1);
 		glUniform1i(glGetUniformLocation(renderShader->programHandle, "depthMap"), 1);
 		// shader.setFloat("far_plane", far_plane);
 		glUniform1f(glGetUniformLocation(renderShader->programHandle, "far_plane"), far_plane);
 
-		auto xyzabc = glGetUniformLocation(renderShader->programHandle, "lightPos");
-		glUniform3f(xyzabc, lightPos.x, lightPos.y, lightPos.z);
+		//auto xyzabc = ;
+		glUniform3f(glGetUniformLocation(renderShader->programHandle, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
 		//cout << lightPos.x << " " << lightPos.y << " " << lightPos.z << endl;
 
 		glActiveTexture(GL_TEXTURE1);
@@ -572,14 +566,6 @@ int main(int argc, char** argv)
 
 		
 		proj = glm::perspective(fov, ratio, nearDist, farDist);
-
-		//TODO delete this thing
-		//hnear = abs(2 * tan(fov / 2) * nearDist);
-		//wnear = abs(hnear * ratio);
-
-		//hfar = abs(2 * tan(fov / 2) * farDist);
-		//wfar = abs(hfar * ratio);
-
 
 
 		vec4 camera_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraPos(), 1);
@@ -722,13 +708,9 @@ void init()
 	actor->initActor();
 
 	room = new Room(renderShader);
+	knight1 = new Knight1(renderShader);
 
-	//commode = new Commode(renderShader);
-
-
-	if (renderObjects)
-	{
-		
+	if (renderObjects) {
 		wardrobe = new Wardrobe(renderShader);
 
 		torch1 = new Torch1(renderShader);
@@ -741,7 +723,6 @@ void init()
 		chair1 = new Chair1(renderShader);
 		chair2 = new Chair2(renderShader);
 
-		knight1 = new Knight1(renderShader);
 		knight2 = new Knight2(renderShader);
 
 		door = new Door(renderShader);
@@ -749,7 +730,6 @@ void init()
 		chess = new Chess(renderShader);
 
 		frame = new Frame(renderShader);
-		
 	}
 
 	fire = new Fire*[sizeof(torchPos) / sizeof(*torchPos)];
@@ -791,14 +771,13 @@ void initDirectionalShadows()
 		"Shader/Shadow.frag");
 
 	// The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
-	glGenFramebuffers(1, &FramebufferName);
-	glBindFramebuffer(GL_FRAMEBUFFER, FramebufferName);
+	glGenFramebuffers(1, &directionalShadowsFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, directionalShadowsFBO);
 
 	// Depth texture. Slower than a depth buffer, but you can sample it later in your shader
-	glGenTextures(1, &depthTexture);
-	glBindTexture(GL_TEXTURE_2D, depthTexture);
+	glGenTextures(1, &directionalShadowsDepthMap);
+	glBindTexture(GL_TEXTURE_2D, directionalShadowsDepthMap);
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -806,7 +785,7 @@ void initDirectionalShadows()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
 	
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthTexture, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, directionalShadowsDepthMap, 0);
 
 	// No color output in the bound framebuffer, only depth.
 	glDrawBuffer(GL_NONE);
@@ -866,8 +845,8 @@ void initPointShadows(){
 		"Shader/Depth.geom");
 
 	// Create and bind FBO
-	glGenFramebuffers(1, &depthMapFBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	glGenFramebuffers(1, &pointShadowsFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, pointShadowsFBO);
 
 	// Create cubemap textures
 	glGenTextures(1, &depthCubemap);
@@ -918,7 +897,7 @@ void CreateDepthCubemap(){
 	// --------------------------------
 
 	// Loads the FBO with the bound cubemap as output
-	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, pointShadowsFBO);
 	glUseProgram(depthShader->programHandle);
 
 
@@ -987,7 +966,7 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 
 
 	room->draw(drawShader, view, proj, camera_model, cull);
-	//commode->draw(drawShader, view, proj, camera_model, cull);
+	knight1->draw(drawShader, view, proj, camera_model, cull);
 
 	if (renderObjects)
 	{
@@ -998,7 +977,6 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 		chair1->draw(drawShader, view, proj, camera_model, cull);
 		chair2->draw(drawShader, view, proj, camera_model, cull);
 
-		knight1->draw(drawShader, view, proj, camera_model, cull);
 		knight2->draw(drawShader, view, proj, camera_model, cull);
 
 		wardrobe->draw(drawShader, view, proj, camera_model, cull);
@@ -1015,9 +993,6 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 		
 	}
 
-
-	//coordinatesystem->draw(drawShader, view, proj, camera_model, cull);
-	
 
 	// Actor
 	//actor->draw(drawShader, view, proj, camera_model, cull);
