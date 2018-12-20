@@ -56,22 +56,25 @@ using namespace cgue;
 using namespace glm;
 using namespace physx;
 
-void init();
-void drawScene(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 camera_model);
+void renderScene(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 camera_model);
 void update(float time_delta, float time_abs);
 void handleInput(GLFWwindow* window, float time_delta);
 void OnShutdown();
 mat4x4 pxMatToGlm(PxMat44 pxMat);
 void RenderQuad();
+void init();
+void initPhysics();
+void initScene();
 void initDirectionalShadows();
 void initPointShadows();
 void renderDepthCubemap();
 void renderDepthMap();
 
+GLFWwindow* window;
+
 Shader* renderShader;
-Shader* shadowShader;
-Shader* pointShadowShader;
-Shader* depthShader;
+Shader* directionalShadowsShader;
+Shader* pointShadowsShader;
 
 GLuint directionalShadowsFBO = 0;
 GLuint hdrFBO;
@@ -318,6 +321,7 @@ int main(int argc, char** argv)
 	// TODO implement full screen 
 	width = 1600;
 	height = 1600;
+	ratio = (float)width / (float)height;
 	auto fullscreen = false;
 
 	// Parameters
@@ -354,10 +358,10 @@ int main(int argc, char** argv)
 
 
 	// Refresh rate
-	int refresh_rate = 60;
+	int refresh_rate = 120; // 60
 	glfwWindowHint(GLFW_REFRESH_RATE, refresh_rate);
 
-	GLFWwindow* window;
+
 	if (fullscreen)
 	{
 		const GLFWvidmode * mode = glfwGetVideoMode(glfwGetPrimaryMonitor());
@@ -490,7 +494,7 @@ int main(int argc, char** argv)
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		// Use our shader
-		glUseProgram(shadowShader->programHandle);
+		glUseProgram(directionalShadowsShader->programHandle);
 
 
 		// Compute the MVP matrix from the light's point of view
@@ -510,9 +514,7 @@ int main(int argc, char** argv)
 		// in the "MVP" uniform
 
 		// Shadow
-		drawScene(shadowShader, depthViewMatrix, depthProjectionMatrix, mat4x4(1.0f));
-
-
+		renderScene(directionalShadowsShader, depthViewMatrix, depthProjectionMatrix, mat4x4(1.0f));
 
 
 		// 1. Render scene into floating point framebuffer
@@ -587,7 +589,7 @@ int main(int argc, char** argv)
 		frustumG->setCamInternals(fov, ratio, nearDist, farDist);
 		frustumG->setCamDef(p, l, u);
 		
-		drawScene(renderShader, lookAt, proj, camera_model);
+		renderScene(renderShader, lookAt, proj, camera_model);
 
 		for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++)
 		{
@@ -644,9 +646,8 @@ void OnShutdown()
 	delete fire; fire = nullptr;
 
 	delete renderShader; renderShader = nullptr;
-	delete shadowShader; shadowShader = nullptr;
-	delete depthShader; depthShader = nullptr;
-	delete pointShadowShader; pointShadowShader = nullptr;
+	delete directionalShadowsShader; directionalShadowsShader = nullptr;
+	delete pointShadowsShader; pointShadowsShader = nullptr;
 
 	delete frustumG; frustumG = nullptr;
 
@@ -656,8 +657,28 @@ void OnShutdown()
 
 void init() 
 {
+	
 
+	glEnable(GL_DEPTH_TEST);
 
+	initPhysics();
+	initScene();
+	initDirectionalShadows();
+	initPointShadows();
+
+	// Always check that our framebuffer is ok
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cout << "Couldn't load frame buffer ";
+		glfwTerminate();
+		system("PAUSE");
+		exit(EXIT_FAILURE);
+	}
+
+	
+}
+
+void initPhysics(){
 	//* Source: Learning Physics Modeling with PhysX
 	//---------------------------PHYSX-----------------------------]
 	//Creating foundation for PhysX
@@ -685,7 +706,6 @@ void init()
 	sceneDesc.flags |= PxSceneFlag::eENABLE_CCD;					//Set flag to enable CCD (Continuous Collision Detection) 
 
 	gScene = gPhysicsSDK->createScene(sceneDesc);					//Creates a scene 
-
 	//*/This will enable basic visualization of PhysX objects like- actors collision shapes and their axes. 
 	//The function PxScene::getRenderBuffer() is used to render any active visualization for scene.
 	gScene->setVisualizationParameter(PxVisualizationParameter::eSCALE, 1.0);	//Global visualization scale which gets multiplied with the individual scales
@@ -695,13 +715,16 @@ void init()
 	//Creating PhysX material (staticFriction, dynamicFriction, restitution)
 	PxMaterial* material = gPhysicsSDK->createMaterial(0.5f, 0.5f, 0.5f);
 
-	renderShader = new Shader("Shader/Draw.vert", "Shader/Draw.frag");
+}
 
-	
+void initScene(){
+
+	renderShader = new Shader("Shader/Screen.vert", "Shader/Screen.frag");
+
+
+	// 60° Open angle, aspect, near, far
+	//proj = glm::perspective(100.0f, (float)width / (float)height, 0.1f, 200.0f);
 	frustumG = new FrustumG();
-
-
-	glEnable(GL_DEPTH_TEST);
 	camera = new Camera();
 
 	actor = new Actor(renderShader);
@@ -716,7 +739,7 @@ void init()
 
 		torch1 = new Torch1(renderShader);
 		torch2 = new Torch2(renderShader);
-		
+
 		desk = new Desk(renderShader);
 
 		commode = new Commode(renderShader);
@@ -741,35 +764,14 @@ void init()
 
 
 	//coordinatesystem = new Coordinatesystem(renderShader);
-	
-
-	// 60° Open angle, aspect, near, far
-	//proj = glm::perspective(100.0f, (float)width / (float)height, 0.1f, 200.0f);
-
-	ratio = (float)width / (float)height;
-
-	initDirectionalShadows();
-	initPointShadows();
-
-
-	// Always check that our framebuffer is ok
-	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-	{
-		std::cout << "Couldn't load frame buffer ";
-		glfwTerminate();
-		system("PAUSE");
-		exit(EXIT_FAILURE);
-	}
-
-	
 }
 
 void initDirectionalShadows()
 {
 	// Shadow Maps
-	shadowShader = new Shader(
-		"Shader/Shadow.vert",
-		"Shader/Shadow.frag");
+	directionalShadowsShader = new Shader(
+		"Shader/DirectionalShadows.vert",
+		"Shader/DirectionalShadows.frag");
 
 	// The framebuffer, which regroups 0, 1, or more textures, and 0 or 1 depth buffer.
 	glGenFramebuffers(1, &directionalShadowsFBO);
@@ -838,16 +840,11 @@ void renderDepthMap(){
 
 // source: https://learnopengl.com/Advanced-Lighting/Shadows/Point-Shadows
 void initPointShadows(){
-	// Shadow Maps
-	/*
-	pointShadowShader = new Shader(
-		"Shader/PointShadow.vert",
-		"Shader/PointShadow.frag"); // */
 
-	depthShader = new Shader(
-		"Shader/Depth.vert",
-		"Shader/Depth.frag",
-		"Shader/Depth.geom");
+	pointShadowsShader = new Shader(
+		"Shader/PointShadows.vert",
+		"Shader/PointShadows.frag",
+		"Shader/PointShadows.geom");
 
 	// Create and bind FBO
 	glGenFramebuffers(1, &pointShadowsFBO);
@@ -903,28 +900,28 @@ void renderDepthCubemap(){
 
 	// Loads the FBO with the bound cubemap as output
 	glBindFramebuffer(GL_FRAMEBUFFER, pointShadowsFBO);
-	glUseProgram(depthShader->programHandle);
+	glUseProgram(pointShadowsShader->programHandle);
 
 
 	glViewport(0, 0, width, height);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	// Use our shader
 	glm:mat4 model = mat4(1);
-	auto model_location = glGetUniformLocation(depthShader->programHandle, "model");
+	auto model_location = glGetUniformLocation(pointShadowsShader->programHandle, "model");
 	glUniformMatrix4fv(model_location, 1, GL_FALSE, value_ptr(model));
 
 	for (unsigned int i = 0; i < 6; ++i){
 		string nameString = "shadowMatrices[" + std::to_string(i) + "]";
-		auto DepthVPID = glGetUniformLocation(depthShader->programHandle, nameString.c_str());
+		auto DepthVPID = glGetUniformLocation(pointShadowsShader->programHandle, nameString.c_str());
 		glUniformMatrix4fv(DepthVPID, 1, GL_FALSE, &shadowTransforms[i][0][0]);
 	}
 
-	glUniform1f(glGetUniformLocation(depthShader->programHandle, "far_plane"), far_plane);
+	glUniform1f(glGetUniformLocation(pointShadowsShader->programHandle, "far_plane"), far_plane);
 
-	auto xyzac = glGetUniformLocation(depthShader->programHandle, "lightPos");
+	auto xyzac = glGetUniformLocation(pointShadowsShader->programHandle, "lightPos");
 	glUniform3f(xyzac, lightPos.x, lightPos.y, lightPos.z);
 
-	drawScene(depthShader, mat4x4(1.0f), mat4x4(1.0f), mat4x4(1.0f));
+	renderScene(pointShadowsShader, mat4x4(1.0f), mat4x4(1.0f), mat4x4(1.0f));
 }
 
 GLuint quadVAO = 0;
@@ -962,7 +959,7 @@ void StepPhysX(float time_delta)					//Stepping PhysX
 	gScene->fetchResults(true);		//Block until the simulation run is completed
 }
 
-void drawScene(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
+void renderScene(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 {
 	bool cull = false;
 	if (drawShader == renderShader) {

@@ -175,16 +175,16 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shader\Shadow.vert" />
-    <None Include="Shader\Shadow.frag" />
-    <None Include="Shader\Draw.vert" />
-    <None Include="Shader\Draw.frag" />
-    <None Include="Shader\Depth.frag" />
-    <None Include="Shader\Depth.vert" />
     <None Include="Shader\FireParticle.geom" />
     <None Include="Shader\FireParticle.vert" />
     <None Include="Shader\FireParticle.frag" />
     <None Include="Shader\FireParticle.comp" />
-    <None Include="Shader\Depth.geom" />
+    <None Include="Shader\DirectionalShadows.frag" />
+    <None Include="Shader\DirectionalShadows.vert" />
+    <None Include="Shader\PointShadows.frag" />
+    <None Include="Shader\PointShadows.geom" />
+    <None Include="Shader\PointShadows.vert" />
+    <None Include="Shader\Screen.frag" />
+    <None Include="Shader\Screen.vert" />
   </ItemGroup>
 </Project>
