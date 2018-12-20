@@ -241,11 +241,11 @@ void Mesh::loadUniforms(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalP
 
 	// Torch1
 	auto Torch1Position_worldspace_location = glGetUniformLocation(shader->programHandle, "Torch1Position_worldspace");
-	glUniform3f(Torch1Position_worldspace_location, torch1Pos.x, torch1Pos.y, torch1Pos.z);
+	glUniform3f(Torch1Position_worldspace_location, torchPos[0].x, torchPos[0].y, torchPos[0].z);
 
 	// Torch2
 	auto Torch2Position_worldspace_location = glGetUniformLocation(shader->programHandle, "Torch2Position_worldspace");
-	glUniform3f(Torch2Position_worldspace_location, torch2Pos.x, torch2Pos.y, torch2Pos.z);
+	glUniform3f(Torch2Position_worldspace_location, torchPos[1].x, torchPos[1].y, torchPos[1].z);
 
 	// Diffuse
 	auto diffuseColor = glGetUniformLocation(shader->programHandle, "diffuseColor");

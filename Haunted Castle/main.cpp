@@ -98,8 +98,7 @@ Torch1* torch1;
 Torch2* torch2;
 Chess* chess;
 Coordinatesystem* coordinatesystem;
-Fire* fire1;
-Fire* fire2;
+Fire** fire;
 
 
 
@@ -457,7 +456,7 @@ int main(int argc, char** argv)
 	// lighting info
 	// -------------
 	//glm::vec3 lightPos(0.0f, 0.0f, 0.0f);
-	glm::vec3 lightPos = torch1Pos + 0.5f * flameDir;
+	glm::vec3 lightPos = torchPos[0] + 0.5f * flameDir;
 
 
 	// move light position over time //TODO should be removed
@@ -674,10 +673,10 @@ int main(int argc, char** argv)
 		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap); //TODO kann man das da hintun
 		draw(renderShader, lookAt, proj, camera_model);
 
-		
-		fire1->drawParticles(time_delta, view, proj);
-		fire2->drawParticles(time_delta, view, proj);
-		
+		for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++)
+		{
+			fire[i]->drawParticles(time_delta, view, proj);
+		}
 
 		
 		glfwSwapBuffers(window);
@@ -726,8 +725,7 @@ void OnShutdown()
 	delete torch2; torch2 = nullptr;
 	delete chess; chess = nullptr;
 	delete coordinatesystem; coordinatesystem = nullptr;
-	delete fire1; fire1 = nullptr;
-	delete fire2; fire2 = nullptr;
+	delete fire; fire = nullptr;
 
 	delete renderShader; renderShader = nullptr;
 	delete shadowShader; shadowShader = nullptr;
@@ -825,9 +823,11 @@ void init()
 		
 	}
 
-
-	fire1 = new Fire(renderShader, torch1Pos, flameDir);
-	fire2 = new Fire(renderShader, torch2Pos, flameDir);
+	fire = new Fire*[sizeof(torchPos) / sizeof(*torchPos)];
+	for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++)
+	{
+		fire[i] = new Fire(renderShader, torchPos[i], flameDir);
+	}
 
 
 	//coordinatesystem = new Coordinatesystem(renderShader);

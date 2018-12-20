@@ -45,8 +45,7 @@ extern GLuint depthTexture;
 extern glm::mat4 depthBiasMVP;
 extern glm::mat4 depthMVP;
 
-extern vec3 torch1Pos;
-extern vec3 torch2Pos;
+extern vec3 torchPos[2];
 
 extern vec3 flameDir;
 
