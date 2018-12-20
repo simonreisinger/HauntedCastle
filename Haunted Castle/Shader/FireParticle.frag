@@ -3,23 +3,29 @@ out vec4 FragColor;
 
 in vec2 UV;
 in vec4 Color;
+in float TTL;
 
 uniform sampler2D fireTexture;
 
+vec2 spriteUV()
+{
+	int rows = 5;
+	int cols = 5;
+
+	int texIndex = int(TTL*float(rows*cols));
+	
+    int col = texIndex % cols;
+    int row = texIndex / rows;
+	float textXOffset = float(col) / float(cols);
+    float textYOffset = float(row) / float(rows);
+
+	return vec2(UV.x / float(cols) + textXOffset, UV.y / float(rows) + textYOffset);
+}
+
 void main()
 {
-	/*
-	float sigma = 0.4;
-	vec2 mu = vec2(0.5, 0.5);
-	vec2 x = 2*(UV - mu);
-	float gaussian = exp(-dot(x, x)/(2*sigma*sigma));
+	vec2 spriteUV = spriteUV();
 	
-	vec3 tex = texture( fireTexture, UV ).r * Color.rgb;
-	
-	FragColor = vec4(tex.rgb, gaussian);
-	*/
-	
-	vec3 color = texture( fireTexture, UV ).rgb;
-	float alpha = length(color);
-	FragColor = vec4(color, alpha*0.1);
+	vec3 color = texture( fireTexture, spriteUV ).rgb;
+	FragColor = vec4(color, 0.04 * TTL);
 }  

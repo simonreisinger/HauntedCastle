@@ -21,6 +21,10 @@ Shader::Shader(const string& vertexShader, const string& fragmentShader)
 	loadShader(vertexShader, GL_VERTEX_SHADER, vertexHandle /* <-- OUT */);
 	loadShader(fragmentShader, GL_FRAGMENT_SHADER, fragmentHandle /* <-- OUT */);
 
+	// combine vertexShader and fragmentShader to one shader program
+	glAttachShader(programHandle, vertexHandle);
+	glAttachShader(programHandle, fragmentHandle);
+
 	link();
 }
 
@@ -39,7 +43,32 @@ Shader::Shader(const string& vertexShader, const string& fragmentShader, const s
 	loadShader(vertexShader, GL_VERTEX_SHADER, vertexHandle /* <-- OUT */);
 	loadShader(fragmentShader, GL_FRAGMENT_SHADER, fragmentHandle /* <-- OUT */);
 	loadShader(geometryShader, GL_GEOMETRY_SHADER, geometryHandle /* <-- OUT */);
+
+	// combine vertexShader and fragmentShader to one shader program
+	glAttachShader(programHandle, vertexHandle);
+	glAttachShader(programHandle, fragmentHandle);
+	glAttachShader(programHandle, geometryHandle);
 	
+	link();
+}
+
+Shader::Shader(const std::string& computeShader)
+	: programHandle(0), vertexHandle(0), fragmentHandle(0)
+{
+	programHandle = glCreateProgram();
+
+	if (programHandle == 0)
+	{
+		cout << "ERROR: Could not create Program." << endl;
+		system("PAUSE");
+		exit(EXIT_FAILURE);
+	}
+
+	loadShader(computeShader, GL_COMPUTE_SHADER, computeHandle /* <-- OUT */);
+
+	// combine vertexShader and fragmentShader to one shader program
+	glAttachShader(programHandle, computeHandle);
+
 	link();
 }
 
@@ -49,6 +78,7 @@ Shader::~Shader()
 	glDeleteShader(vertexHandle);
 	glDeleteShader(fragmentHandle);
 	glDeleteShader(geometryHandle);
+	glDeleteShader(computeHandle);
 }
 
 void Shader::useShader() const
@@ -107,14 +137,6 @@ void Shader::loadShader(const string shader, GLenum shaderType, GLuint& handle /
 
 void Shader::link()
 {
-	// combine vertexShader and fragmentShader to one shader program
-	glAttachShader(programHandle, vertexHandle);
-	glAttachShader(programHandle, fragmentHandle);
-	if (geometryHandle != NULL)
-	{
-		glAttachShader(programHandle, geometryHandle);
-	}
-
 	glLinkProgram(programHandle);
 
 	GLint succeeded;
