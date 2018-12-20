@@ -181,8 +181,6 @@
     <None Include="Shader\Draw.frag" />
     <None Include="Shader\Depth.frag" />
     <None Include="Shader\Depth.vert" />
-    <None Include="Shader\PointShadow.frag" />
-    <None Include="Shader\PointShadow.vert" />
     <None Include="Shader\FireParticle.geom" />
     <None Include="Shader\FireParticle.vert" />
     <None Include="Shader\FireParticle.frag" />

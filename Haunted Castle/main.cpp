@@ -516,11 +516,12 @@ int main(int argc, char** argv)
 		draw(shadowShader, depthViewMatrix, depthProjectionMatrix, mat4x4(1.0f));
 
 
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK); // Cull back-facing triangles -> draw only front-facing triangles
+
 
 		// 1. Render scene into floating point framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glUseProgram(renderShader->programHandle);
+
 		glViewport(0, 0, width, height);
 
 		glEnable(GL_CULL_FACE);
@@ -529,7 +530,6 @@ int main(int argc, char** argv)
 		// Clear screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		glUseProgram(renderShader->programHandle);
 
 		glm::mat4 biasMatrix(
 			0.5, 0.0, 0.0, 0.0,
@@ -550,7 +550,7 @@ int main(int argc, char** argv)
 
 		///////////////////////////////////POINT SHADER///////////////////////////////////////////
 		//shader.setInt("diffuseTexture", 0);
-		glUniform1i(glGetUniformLocation(renderShader->programHandle, "diffuseTexture"), 0);
+		//glUniform1i(glGetUniformLocation(renderShader->programHandle, "diffuseTexture"), 0);
 		//shader.setInt("depthMap", 1);
 		glUniform1i(glGetUniformLocation(renderShader->programHandle, "depthMap"), 1);
 		// shader.setFloat("far_plane", far_plane);
@@ -559,6 +559,9 @@ int main(int argc, char** argv)
 		auto xyzabc = glGetUniformLocation(renderShader->programHandle, "lightPos");
 		glUniform3f(xyzabc, lightPos.x, lightPos.y, lightPos.z);
 		//cout << lightPos.x << " " << lightPos.y << " " << lightPos.z << endl;
+
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
 
 
 		////////SIMON WAS HERE //////////////////////////////////////////////////////////////////
@@ -570,11 +573,12 @@ int main(int argc, char** argv)
 		
 		proj = glm::perspective(fov, ratio, nearDist, farDist);
 
-		hnear = abs(2 * tan(fov / 2) * nearDist);
-		wnear = abs(hnear * ratio);
+		//TODO delete this thing
+		//hnear = abs(2 * tan(fov / 2) * nearDist);
+		//wnear = abs(hnear * ratio);
 
-		hfar = abs(2 * tan(fov / 2) * farDist);
-		wfar = abs(hfar * ratio);
+		//hfar = abs(2 * tan(fov / 2) * farDist);
+		//wfar = abs(hfar * ratio);
 
 
 
@@ -593,14 +597,9 @@ int main(int argc, char** argv)
 
 		mat4x4 lookAt = glm::lookAt(p, l, u);
 		
-
-			
 		frustumG->setCamInternals(fov, ratio, nearDist, farDist);
 		frustumG->setCamDef(p, l, u);
 		
-		glActiveTexture(GL_TEXTURE1);
-		//glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap); //TODO kann man das da hintun
 		draw(renderShader, lookAt, proj, camera_model);
 
 		for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++)
@@ -866,7 +865,11 @@ void initPointShadows(){
 		"Shader/Depth.frag",
 		"Shader/Depth.geom");
 
+	// Create and bind FBO
+	glGenFramebuffers(1, &depthMapFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 
+	// Create cubemap textures
 	glGenTextures(1, &depthCubemap);
 	const unsigned int SHADOW_WIDTH = 1600, SHADOW_HEIGHT = 1600; // TODO change this line
 	
@@ -881,11 +884,12 @@ void initPointShadows(){
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	// attach depth texture as FBO's depth buffer
-	glGenFramebuffers(1, &depthMapFBO);
 
-	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	// attach depth texture as FBO's depth buffer
+	// (tells GPU that this texture should be the output of current bound FBO)
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemap, 0);
+
+
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -912,12 +916,15 @@ void initPointShadows(){
 void CreateDepthCubemap(){
 	// 1. render scene to depth cubemap
 	// --------------------------------
-	glViewport(0, 0, width, height);
-	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	// Loads the FBO with the bound cubemap as output
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	glUseProgram(depthShader->programHandle);
+
+
+	glViewport(0, 0, width, height);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	// Use our shader
-	glUseProgram(depthShader->programHandle);
 	glm:mat4 model = mat4(1);
 	auto model_location = glGetUniformLocation(depthShader->programHandle, "model");
 	glUniformMatrix4fv(model_location, 1, GL_FALSE, value_ptr(model));
@@ -929,12 +936,9 @@ void CreateDepthCubemap(){
 	}
 
 	glUniform1f(glGetUniformLocation(depthShader->programHandle, "far_plane"), far_plane);
-	// depthShader.setVec3("lightPos", lightPos);
-	//glUniform3fv(glGetUniformLocation(depthShader->programHandle, "lightPos"), 1, &lightPos[0]);
 
 	auto xyzac = glGetUniformLocation(depthShader->programHandle, "lightPos");
 	glUniform3f(xyzac, lightPos.x, lightPos.y, lightPos.z);
-	//cout << lightPos.x << " " << lightPos.y << " " << lightPos.z << endl;
 
 	draw(depthShader, mat4x4(1.0f), mat4x4(1.0f), mat4x4(1.0f));
 }

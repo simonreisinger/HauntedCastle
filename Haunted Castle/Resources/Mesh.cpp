@@ -262,8 +262,8 @@ void Mesh::loadUniforms(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalP
 
 		texture->bind(3);
 
-		auto myTextureSampler_location = glGetUniformLocation(shader->programHandle, "myTextureSampler");
-		glUniform1i(myTextureSampler_location, 3);
+		auto modelTexture_location = glGetUniformLocation(shader->programHandle, "modelTexture");
+		glUniform1i(modelTexture_location, 3);
 	}
 	else {
 		glUniform1i(tex_enabled, 0);

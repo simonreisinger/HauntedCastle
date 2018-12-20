@@ -14,7 +14,7 @@ in vec4 ShadowCoord;
 layout (location = 0) out vec4 FragColor;
 
 // Values that stay constant for the whole mesh.
-uniform sampler2D myTextureSampler;
+uniform sampler2D modelTexture; // modelTexture
 uniform vec3 Torch1Position_worldspace;
 uniform vec3 Torch2Position_worldspace;
 uniform int hasTexture;
@@ -121,7 +121,7 @@ void main(){
 	
 	if(hasTexture == 1)
 	{
-		MaterialDiffuseColor = texture( myTextureSampler, UV ).rgb;
+		MaterialDiffuseColor = texture( modelTexture, UV ).rgb;
 	}
 	else
 	{
