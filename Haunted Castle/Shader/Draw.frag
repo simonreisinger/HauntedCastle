@@ -155,9 +155,23 @@ void main(){
 	*/
 
 
-	vec3 fragToLight = FragPos - lightPos; 
+	vec3 fragToLight = FragPos - lightPos;
 
 	vec3 fragToLight2 = vec3(fragToLight.z, fragToLight.x, fragToLight.y);
+
+
+	vec3 borderVec = fragToLight;
+
+	vec3 borderColor = vec3(0);
+	borderColor = borderVec.x > abs(borderVec.y) && borderVec.x > abs(borderVec.z) && borderVec.x > 0 ? vec3(1,0,0) + borderColor : borderColor;
+	borderColor = borderVec.y > abs(borderVec.x) && borderVec.y > abs(borderVec.z) && borderVec.y > 0 ? vec3(0,1,0) + borderColor : borderColor;
+	borderColor = borderVec.z > abs(borderVec.x) && borderVec.z > abs(borderVec.y) && borderVec.z > 0 ? vec3(0,0,1) + borderColor : borderColor;
+
+	
+	borderColor = borderVec.x < -abs(borderVec.y) && borderVec.x < -abs(borderVec.z) && borderVec.x < 0 ? vec3(1,0,0) + borderColor : borderColor;
+	borderColor = borderVec.y < -abs(borderVec.x) && borderVec.y < -abs(borderVec.z) && borderVec.y < 0 ? vec3(0,1,0) + borderColor : borderColor;
+	borderColor = borderVec.z < -abs(borderVec.x) && borderVec.z < -abs(borderVec.y) && borderVec.z < 0 ? vec3(0,0,1) + borderColor : borderColor;
+
 
 	//vec3 fragToLight2 = vec3(fragToLight.x, fragToLight.z, fragToLight.y);
 
@@ -177,7 +191,7 @@ void main(){
 	//*
 	FragColor = vec4(
 		// Ambient
-		MaterialAmbientColor + 0.5 * vec3(xxxxxxx) // TODO is wrong here must be changed
+		MaterialAmbientColor + 0.3 * vec3(xxxxxxx) + 0.5 * borderColor // TODO is wrong here must be changed
 		/*
 		vec3(MaterialAmbientColor* (1.0+3.0*xxxxxxx))
 
