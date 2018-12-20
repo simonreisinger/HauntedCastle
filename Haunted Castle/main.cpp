@@ -311,8 +311,8 @@ int main(int argc, char** argv)
 	cout << "Loading..." << endl;
 
 	// TODO implement full screen 
-	width = 1600;
-	height = 1600;
+	width = 1280;
+	height = 768;
 	auto fullscreen = false;
 
 	// Parameters
@@ -980,7 +980,9 @@ void initPointShadows(){
 
 
 	glGenTextures(1, &depthCubemap);
-	const unsigned int SHADOW_WIDTH = width, SHADOW_HEIGHT = height; // TODO change this line
+	int max = width > height ? width : height;
+	const unsigned int SHADOW_WIDTH = max, SHADOW_HEIGHT = max; // TODO change this line
+	
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
 	for (unsigned int i = 0; i < 6; ++i){
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT,
