@@ -54,20 +54,19 @@ float ShadowCalculation(vec3 fragPos)
 {
     // get vector between fragment position and light position
     vec3 fragToLight = fragPos - lightPos;
-    // use the light to fragment vector to sample from the depth map    
-    //float closestDepth = texture(depthMap, fragToLight).r;
-    //float closestDepth = texture(depthMap, vec3(gl_FragCoord.xy / vec2(1600,1600),1)).r;
-    float closestDepth = texture(depthMap, vec3(0.5,0.3,1)).r;
-
-    // it is currently in linear range between [0,1]. Re-transform back to original value
+    // ise the fragment to light vector to sample from the depth map    
+    float closestDepth = texture(depthMap, fragToLight).r;
+    // it is currently in linear range between [0,1], let's re-transform it back to original depth value
     closestDepth *= far_plane;
     // now get current linear depth as the length between the fragment and light position
     float currentDepth = length(fragToLight);
-    // now test for shadows
-    float bias = 0.05; 
-    float shadow = currentDepth/far_plane; // -  bias > closestDepth ? 1.0 : 0.0;
-    //return shadow;
-    return closestDepth/ 255.0;
+    // test for shadows
+    float bias = 0.05; // we use a much larger bias since depth is now in [near_plane, far_plane] range
+    float shadow = currentDepth -  bias > closestDepth ? 1.0 : 0.0;        
+    // display closestDepth as debug (to visualize depth cubemap)
+    // FragColor = vec4(vec3(closestDepth / far_plane), 1.0);    
+        
+    return shadow;
 }
 
 void main(){
@@ -85,13 +84,10 @@ void main(){
 	}
 
 	//////////////// calculate point shadow ///////////////
-	// float shadow = ShadowCalculation(fs_in.FragPos);
-	//float shadow /*= 0; //*/ ShadowCalculation(Position_worldspace);
-	float shadow = ShadowCalculation(FragPos); //TODO error
+	float shadow = ShadowCalculation(FragPos);
 	//////////////////////////////////////////////////////
 
-
-	float AmbientIntensity = 0.1;
+	float AmbientIntensity = 0.3;
 
 	vec3 MaterialAmbientColor = AmbientIntensity * MaterialDiffuseColor;
 	vec3 MaterialSpecularColor = specularColor;
@@ -121,10 +117,6 @@ void main(){
 
 	float I2 = 1 / distance( Torch2Position_worldspace, Position_worldspace );
 
-	
-
-
-
 	float visibility=1.0;
 	
 	// Bias to get rid of Shadow acne
@@ -144,59 +136,11 @@ void main(){
 
 	visibility = visibility * visibilityPosible;
 	
-
-	
-	/*
-	vec3 fragToLight = FragPos - lightPos;
-
-	float currentDepth = length(fragToLight);
-
-	float closestDepth = texture(depthMap, fragToLight).r;
-	*/
-
-
-	vec3 fragToLight = FragPos - lightPos;
-
-	//vec3 fragToLight2 = vec3(fragToLight.z, fragToLight.x, fragToLight.y);
-	vec3 fragToLight2 = fragToLight;//vec3(fragToLight.x, fragToLight.z, fragToLight.y);
-
-
-	vec3 borderVec = fragToLight;
-
-	vec3 borderColor = vec3(0);
-	borderColor = borderVec.x > abs(borderVec.y) && borderVec.x > abs(borderVec.z) && borderVec.x > 0 ? vec3(1,0,0) + borderColor : borderColor;
-	borderColor = borderVec.y > abs(borderVec.x) && borderVec.y > abs(borderVec.z) && borderVec.y > 0 ? vec3(0,1,0) + borderColor : borderColor;
-	borderColor = borderVec.z > abs(borderVec.x) && borderVec.z > abs(borderVec.y) && borderVec.z > 0 ? vec3(0,0,1) + borderColor : borderColor;
-
-	
-	borderColor = borderVec.x < -abs(borderVec.y) && borderVec.x < -abs(borderVec.z) && borderVec.x < 0 ? vec3(1,0,0) + borderColor : borderColor;
-	borderColor = borderVec.y < -abs(borderVec.x) && borderVec.y < -abs(borderVec.z) && borderVec.y < 0 ? vec3(0,1,0) + borderColor : borderColor;
-	borderColor = borderVec.z < -abs(borderVec.x) && borderVec.z < -abs(borderVec.y) && borderVec.z < 0 ? vec3(0,0,1) + borderColor : borderColor;
-
-
-	//vec3 fragToLight2 = vec3(fragToLight.x, fragToLight.z, fragToLight.y);
-
-    float closestDepth = texture(depthMap, fragToLight2).r;
-	closestDepth *= far_plane;
-	float currentDepth = length(fragToLight2); 
-
-	float biasx = 0.001;//5; 
-	float xxxxxxx = (currentDepth - closestDepth) / currentDepth; // currentDepth -  biasx > closestDepth ? 0.0 : 1.0; 
-
-	//float xxxxxxx = texture(depthMap, Position_worldspace - lightPos).r;
-
-	//vec4 FragColorShadow = vec4(vec3(closestDepth / far_plane), 1.0);  
-
-
-
-	//*
 	FragColor = vec4(
 		// Ambient
-		MaterialAmbientColor + 0.5*vec3(closestDepth / far_plane) //  + 0.3 * vec3(xxxxxxx) + 0.5 * borderColor // TODO is wrong here must be changed
-		/*
-		vec3(MaterialAmbientColor* (1.0+3.0*xxxxxxx))
+		vec3(MaterialAmbientColor) +
 
-		(1.0 - shadow) * 		
+		(1.0-shadow) *	
 		(// Diffuse Torch 1
 		MaterialDiffuseColor * I1 * cosTheta1 +
 		// Specular Torch 1
@@ -209,25 +153,5 @@ void main(){
 		MaterialSpecularColor * I2 * pow(cosAlpha2, 5)) +
 		// Window
 		MaterialDiffuseColor * visibility
-		*/
 	, 1);
-	// */
-	//FragColor = vec4(lightPos.xyz,1);
-	//     //float closestDepth = texture(depthMap, vec3(gl_FragCoord.xy / vec2(1600,1600),1)).r;
-
-
-	/*
-	float xxxxxxx = texture(depthMap, FragPos - lightPos).r;// texture(depthMap, vec3(gl_FragCoord.xy / vec2(1600.0,1600.0),1)).r/2.0;
-
-	FragColor = vec4(xxxxxxx, xxxxxxx, xxxxxxx, 1.0);
-	*/
-	/*
-	float shadowX = ShadowCalculation(FragPos);                      
-    vec3 lighting = (MaterialAmbientColor * (1.0 - shadowX));    
-    
-    FragColor = vec4(lighting, 1.0);
-	*/
-
-	
-
 }
