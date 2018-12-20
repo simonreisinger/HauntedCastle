@@ -317,7 +317,7 @@ int main(int argc, char** argv)
 
 	// Parameters
 	if (argc == 3) {
-		if ((stringstream(argv[1]) >> width).fail() || (stringstream(argv[2]) >> height).fail()){
+		if ((stringstream(argv[1]) >> width).fail() || (stringstream(argv[2]) >> height).fail()) {
 			cout << "ERROR: Invalid argument!" << endl;
 			system("PAUSE");
 			exit(EXIT_FAILURE);
@@ -466,10 +466,12 @@ int main(int argc, char** argv)
 	// move light position over time //TODO should be removed
 	//lightPos.z = sin(glfwGetTime() * 0.5) * 3.0;
 
+	//glm::vec3 lightPos2 = vec3(-torch1Pos.z, torch1Pos.y, torch1Pos.x);
+
 	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, near_plane, far_plane);
 
 	std::vector<glm::mat4> shadowTransforms;
-	
+
 	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
 	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
 	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
@@ -540,9 +542,9 @@ int main(int argc, char** argv)
 		// TODO wird zwei mal berechnet koennte mit unterer version zusammengefasst werden
 		//glm::mat4 depthModelMatrix1 = glm::mat4(1.0);
 		//glm::mat4 depthProjectionMatrix1 = glm::ortho<float>(-20, 20, 20, -20, -40.0f, 40.0f);
-		proj = glm::perspective(90.0f, (float)width / (float)height, 0.1f, 20.0f);
+		//proj = glm::perspective(90.0f, (float)width / (float)height, 0.1f, 20.0f);
 
-		glm::mat4 depthViewMatrix1 = glm::lookAt(lightPos, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0));
+		//glm::mat4 depthViewMatrix1 = glm::lookAt(lightPos, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0));
 		//glm::mat4 depthVP1 = depthProjectionMatrix1;// *depthViewMatrix1;
 		//glm::mat4 depthMVP1 = depthProjectionMatrix1 /* * depthViewMatrix1 */* depthModelMatrix1;
 
@@ -846,31 +848,26 @@ void init()
 
 	if (renderObjects)
 	{
-		/*
+		
 		wardrobe = new Wardrobe(renderShader);
 
 		frame = new Frame(renderShader);
-		//*/
-		desk = new Desk(renderShader);
-		torch1 = new Torch1(renderShader);
-
-		torch2 = new Torch2(renderShader);
-		/*
-
 		
-		knight2 = new Knight2(renderShader);
+		desk = new Desk(renderShader);
+
+		torch1 = new Torch1(renderShader);
+		torch2 = new Torch2(renderShader);
+
+		chair1 = new Chair1(renderShader);
+		chair2 = new Chair2(renderShader);
+
 		knight1 = new Knight1(renderShader);
+		knight2 = new Knight2(renderShader);
 
 		door = new Door(renderShader);
 
-		chair1 = new Chair1(renderShader);
-		
-		chair2 = new Chair2(renderShader);
-
-
-
 		chess = new Chess(renderShader);
-		//*/
+		
 	}
 
 	//fire = new Fire(renderShader, 0.0, 0.0, 0.0, 0.0, 90.0, 0.0);
@@ -1054,7 +1051,7 @@ void StepPhysX(float time_delta)					//Stepping PhysX
 void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 {
 	bool cull = false;
-	if (drawShader == renderShader || drawShader == depthShader) {
+	if (drawShader == renderShader) {
 		cull = true;
 	}
 
@@ -1064,30 +1061,26 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 
 	if (renderObjects)
 	{
-		/*
+		
 		wardrobe->draw(drawShader, view, proj, camera_model, cull);
 
-
-		//*/
-
 		desk->draw(drawShader, view, proj, camera_model, cull);
-		torch1->draw(drawShader, view, proj, camera_model, cull);
-
-		torch2->draw(drawShader, view, proj, camera_model, cull);
-		/*
-		knight1->draw(drawShader, view, proj, camera_model, cull);
-		knight2->draw(drawShader, view, proj, camera_model, cull);
-		door->draw(drawShader, view, proj, camera_model, cull);
 
 		chair1->draw(drawShader, view, proj, camera_model, cull);
-
 		chair2->draw(drawShader, view, proj, camera_model, cull);
+
+		knight1->draw(drawShader, view, proj, camera_model, cull);
+		knight2->draw(drawShader, view, proj, camera_model, cull);
+
+		torch1->draw(drawShader, view, proj, camera_model, cull);
+		torch2->draw(drawShader, view, proj, camera_model, cull);
+		
+		door->draw(drawShader, view, proj, camera_model, cull);
 
 		frame->draw(drawShader, view, proj, camera_model, cull);
 
-
 		chess->draw(drawShader, view, proj, camera_model, cull);
-		//*/
+		
 	}
 
 
