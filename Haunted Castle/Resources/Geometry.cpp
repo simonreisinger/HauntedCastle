@@ -45,12 +45,16 @@ void Geometry::init(const std::string& displayFile, Shader* _shader)
 	
 	
 
+	auto time_start = glfwGetTime();
+
 	aiNode* rootNode = scene->mRootNode;
 
 	sceneNode = new SceneNode(rootNode, scene, modelDir, shader);
 
+	auto time_end = glfwGetTime();
+
 	iObjectsLoaded++;
-	cout << "Object " << iObjectsLoaded << " of " << countObjectsLoading << " loaded" << endl;
+	cout << "Object " << iObjectsLoaded << " of " << countObjectsLoading << " loaded (Model: " << modelDir << ", Time: " << time_end - time_start << "ms)" << endl;
 }
 
 void Geometry::initActor()
@@ -73,6 +77,7 @@ void Geometry::draw(Shader* drawShader, mat4x4 view, glm::mat4x4 proj, mat4x4 ca
 	drawShader->useShader();
 
 	mat4x4 globalPose = mat4x4(1);
+	//mat4x4 globalPose = getGlobalPose();
 
 	sceneNode->draw(drawShader, view, proj, globalPose, cull);
 	

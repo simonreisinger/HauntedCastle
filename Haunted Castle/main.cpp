@@ -98,7 +98,8 @@ Torch1* torch1;
 Torch2* torch2;
 Chess* chess;
 Coordinatesystem* coordinatesystem;
-Fire* fire;
+Fire* fire1;
+Fire* fire2;
 
 
 
@@ -446,7 +447,6 @@ int main(int argc, char** argv)
 	float fov = 100.0f;
 	float ratio = (float)width / (float)height;
 
-
 	// 1. first render to depth cubemap
 	//ConfigureShaderAndMatrices
 	float aspect = ratio; // (float)width / (float)height;
@@ -456,8 +456,10 @@ int main(int argc, char** argv)
 	// Point shadow
 	// lighting info
 	// -------------
-	//glm::vec3 lightPos(0.0f, 0.0f, 0.0f); //*/
-	glm::vec3 lightPos = torch1Pos;
+	//glm::vec3 lightPos(0.0f, 0.0f, 0.0f);
+	glm::vec3 lightPos = torch1Pos + 0.5f * flameDir;
+
+
 	// move light position over time //TODO should be removed
 	//lightPos.z = sin(glfwGetTime() * 0.5) * 3.0;
 
@@ -473,7 +475,7 @@ int main(int argc, char** argv)
 	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
 	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
 	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-
+	
 	
 
 
@@ -532,55 +534,12 @@ int main(int argc, char** argv)
 
 
 
-		//renderScene(simpleDepthShader);
-
-		// TODO wird zwei mal berechnet koennte mit unterer version zusammengefasst werden
-		//glm::mat4 depthModelMatrix1 = glm::mat4(1.0);
-		//glm::mat4 depthProjectionMatrix1 = glm::ortho<float>(-20, 20, 20, -20, -40.0f, 40.0f);
-		//proj = glm::perspective(90.0f, (float)width / (float)height, 0.1f, 20.0f);
-
-		//glm::mat4 depthViewMatrix1 = glm::lookAt(lightPos, glm::vec3(0, 0, 0), glm::vec3(0, 0, 0));
-		//glm::mat4 depthVP1 = depthProjectionMatrix1;// *depthViewMatrix1;
-		//glm::mat4 depthMVP1 = depthProjectionMatrix1 /* * depthViewMatrix1 */* depthModelMatrix1;
-
-		//draw(depthShader, depthViewMatrix1, depthProjectionMatrix1, mat4x4(1.0f));
 		draw(depthShader, mat4x4(1.0f), mat4x4(1.0f), mat4x4(1.0f));
 
 
 
 		////////////////////////
 
-
-		//*
-
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-		// 2. then render scene as normal with shadow mapping (using depth cubemap)
-		//glViewport(0, 0, width, height);
-		//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//ConfigureShaderAndMatrices()
-		//shader.use()
-		//glUseProgram(shadowShader->programHandle);
-		// TODO send uniforms to shader (including light's far_plane value)
-		//glm::mat4 projection = glm::ortho<float>(-20, 20, 20, -20, -40.0f, 40.0f);
-		//glm::mat4 view = glm::lookAt(SunDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-		//pointShadowShader.setMat4("projection", projection);
-
-		//pointShadowShader.setMat4("view", view);
-
-		// set lighting uniforms
-		// pointShadowShader.setVec3("lightPos", lightPos);
-		// pointShadowShader.setVec3("viewPos", camera.Position);
-		// pointShadowShader.setInt("shadows", shadows); // enable/disable shadows by pressing 'SPACE'
-		// pointShadowShader.setFloat("far_plane", far_plane);
-
-		//glActiveTexture(GL_TEXTURE0);
-		//glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-		// TODO bind other textures
-
-		//RenderScene();
-
-		////////////////////////////////////////////////////////////////////
 
 
 		//cout << "frametime: " << time_delta * 1000 << "ms" << " = " << 1.0 / time_delta << " fps" << endl;
@@ -669,14 +628,17 @@ int main(int argc, char** argv)
 
 
 		////////SIMON WAS HERE //////////////////////////////////////////////////////////////////
-
+		
 		mat4x4 camera_model = camera->getCameraModel();
 
 		mat4x4 view = camera_model * pxMatToGlm(PxMat44(actor->actor->getGlobalPose().getInverse()));
 
-
-
-
+		/*
+		nearDist = 1.0f;
+		farDist = 200.0f;
+		float fov = 100.0f;
+		float ratio = (float)width / (float)height;
+		*/
 		proj = glm::perspective(fov, ratio, nearDist, farDist);
 
 		hnear = abs(2 * tan(fov / 2) * nearDist);
@@ -706,23 +668,18 @@ int main(int argc, char** argv)
 			
 		frustumG->setCamInternals(fov, ratio, nearDist, farDist);
 		frustumG->setCamDef(p, l, u);
-			
-
+		
 		glActiveTexture(GL_TEXTURE1);
 		//glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap); //TODO kann man das da hintun
 		draw(renderShader, lookAt, proj, camera_model);
 
-
-		auto time_particle_start = glfwGetTime();
-		//fire->drawParticles(time_delta, view, proj); // TODO einblenden
-		auto time_particle_end = glfwGetTime();
-		auto time_particle_delta = (float)(time_particle_end - time_particle_start);
-		//cout << "Particles - Frame time: " << (int)(time_particle_delta * 1000) << "ms, Frame/sec: " << (int)(1.0f / time_particle_delta) << endl;
+		
+		fire1->drawParticles(time_delta, view, proj);
+		fire2->drawParticles(time_delta, view, proj);
 		
 
-		//*/
-
+		
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
@@ -769,7 +726,8 @@ void OnShutdown()
 	delete torch2; torch2 = nullptr;
 	delete chess; chess = nullptr;
 	delete coordinatesystem; coordinatesystem = nullptr;
-	delete fire; fire = nullptr;
+	delete fire1; fire1 = nullptr;
+	delete fire2; fire2 = nullptr;
 
 	delete renderShader; renderShader = nullptr;
 	delete shadowShader; shadowShader = nullptr;
@@ -846,12 +804,12 @@ void init()
 		
 		wardrobe = new Wardrobe(renderShader);
 
-		frame = new Frame(renderShader);
+		torch1 = new Torch1(renderShader);
+		torch2 = new Torch2(renderShader);
 		
 		desk = new Desk(renderShader);
 
-		torch1 = new Torch1(renderShader);
-		torch2 = new Torch2(renderShader);
+		commode = new Commode(renderShader);
 
 		chair1 = new Chair1(renderShader);
 		chair2 = new Chair2(renderShader);
@@ -862,17 +820,21 @@ void init()
 		door = new Door(renderShader);
 
 		chess = new Chess(renderShader);
+
+		frame = new Frame(renderShader);
 		
 	}
 
-	//fire = new Fire(renderShader, 0.0, 0.0, 0.0, 0.0, 90.0, 0.0);
+
+	fire1 = new Fire(renderShader, torch1Pos, flameDir);
+	fire2 = new Fire(renderShader, torch2Pos, flameDir);
 
 
 	//coordinatesystem = new Coordinatesystem(renderShader);
 	
 
 	// 60° Open angle, aspect, near, far
-	proj = glm::perspective(90.0f, (float)width / (float)height, 0.1f, 200.0f);
+	//proj = glm::perspective(100.0f, (float)width / (float)height, 0.1f, 200.0f);
 
 
 	initDirectionalShadows();
@@ -905,8 +867,8 @@ void initDirectionalShadows()
 	// Depth texture. Slower than a depth buffer, but you can sample it later in your shader
 	glGenTextures(1, &depthTexture);
 	glBindTexture(GL_TEXTURE_2D, depthTexture);
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 1024, 1024, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -975,10 +937,8 @@ void initPointShadows(){
 
 
 	glGenTextures(1, &depthCubemap);
-	int max = width > height ? width : height;
-	const unsigned int SHADOW_WIDTH = max, SHADOW_HEIGHT = max; // TODO change this line
-	//const unsigned int SHADOW_WIDTH = width, SHADOW_HEIGHT = height; // TODO change this line
-
+	const unsigned int SHADOW_WIDTH = 1600, SHADOW_HEIGHT = 1600; // TODO change this line
+	
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
 	for (unsigned int i = 0; i < 6; ++i){
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT,
@@ -1060,9 +1020,8 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 	if (renderObjects)
 	{
 		
-		wardrobe->draw(drawShader, view, proj, camera_model, cull);
-
-		desk->draw(drawShader, view, proj, camera_model, cull);
+		torch1->draw(drawShader, view, proj, camera_model, cull);
+		torch2->draw(drawShader, view, proj, camera_model, cull);
 
 		chair1->draw(drawShader, view, proj, camera_model, cull);
 		chair2->draw(drawShader, view, proj, camera_model, cull);
@@ -1070,12 +1029,15 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 		knight1->draw(drawShader, view, proj, camera_model, cull);
 		knight2->draw(drawShader, view, proj, camera_model, cull);
 
-		torch1->draw(drawShader, view, proj, camera_model, cull);
-		torch2->draw(drawShader, view, proj, camera_model, cull);
+		wardrobe->draw(drawShader, view, proj, camera_model, cull);
+
+		desk->draw(drawShader, view, proj, camera_model, cull);
 		
 		door->draw(drawShader, view, proj, camera_model, cull);
 
 		frame->draw(drawShader, view, proj, camera_model, cull);
+
+		commode->draw(drawShader, view, proj, camera_model, cull);
 
 		chess->draw(drawShader, view, proj, camera_model, cull);
 		
