@@ -457,7 +457,9 @@ int main(int argc, char** argv)
 	// lighting info
 	// -------------
 	//glm::vec3 lightPos(0.0f, 0.0f, 0.0f);
-	glm::vec3 lightPos = torch1Pos;
+	glm::vec3 lightPos = torch1Pos + 0.5f * flameDir;
+
+
 	// move light position over time //TODO should be removed
 	//lightPos.z = sin(glfwGetTime() * 0.5) * 3.0;
 
