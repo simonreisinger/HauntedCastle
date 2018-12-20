@@ -82,7 +82,7 @@ Fire::Fire(Shader* shader, vec3 flame_pos, vec3 flame_dir) {
 
 	particleShader->useShader();
 
-	texture = new Texture("fire", "sprite-explosion-3.jpg");
+	texture = new Texture("fire", "sprite-explosion.jpg");
 
 	
 

@@ -1,2 +1,1 @@
-http://csdrive.srru.ac.th/56122420123/texture/sprite-explosion.png
 http://www.opengl-tutorial.org/assets/images/tuto-particules/ParticleAtlas.png
