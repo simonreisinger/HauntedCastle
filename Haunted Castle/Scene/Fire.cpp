@@ -21,11 +21,14 @@ Fire::Fire(Shader* shader, vec3 flame_pos, vec3 flame_dir) {
 		glGenBuffers(1, &ssbo_pos[i]);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo_pos[i]);
 		glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_PARTICLES *
-			sizeof(glm::vec4), NULL, GL_DYNAMIC_DRAW);
+			sizeof(glm::vec4), NULL, GL_DYNAMIC_DRAW);
+
 		glGenBuffers(1, &ssbo_vel[i]);
 		glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo_vel[i]);
 		glBufferData(GL_SHADER_STORAGE_BUFFER, MAX_PARTICLES *
-			sizeof(glm::vec4), NULL, GL_DYNAMIC_DRAW);	}
+			sizeof(glm::vec4), NULL, GL_DYNAMIC_DRAW);
+
+	}
 
 	glGenBuffers(1, &atomic_counter);
 	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomic_counter);
@@ -33,13 +36,16 @@ Fire::Fire(Shader* shader, vec3 flame_pos, vec3 flame_dir) {
 		GL_DYNAMIC_DRAW);
 	GLuint value = 0;
 	glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &value);
-	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);	// Because of a performance warning when reading the atomic counter, we
+	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
+
+	// Because of a performance warning when reading the atomic counter, we
 	// create a buffer to move-to and read-from instead.
 	glGenBuffers(1, &temp_buffer);
 	glBindBuffer(GL_COPY_WRITE_BUFFER, temp_buffer);
 	glBufferData(GL_COPY_WRITE_BUFFER, sizeof(GLuint), NULL,
 		GL_DYNAMIC_READ);
-	glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
+	glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
+
 
 
 	vector<vec4> positions;
@@ -55,7 +61,9 @@ Fire::Fire(Shader* shader, vec3 flame_pos, vec3 flame_dir) {
 
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo_vel[0]);
 	glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0,
-		particle_count * sizeof(velocities[0]), &velocities[0]);
+		particle_count * sizeof(velocities[0]), &velocities[0]);
+
+
 
 	const GLuint position_layout = 0;
 	glGenVertexArrays(2, vaos);
@@ -65,7 +73,9 @@ Fire::Fire(Shader* shader, vec3 flame_pos, vec3 flame_dir) {
 		glBindVertexArray(vaos[i]);
 		glBindBuffer(GL_ARRAY_BUFFER, ssbo_pos[i]);
 		glEnableVertexAttribArray(position_layout);
-		glVertexAttribPointer(position_layout, 4, GL_FLOAT, GL_FALSE, 0, 0);	}
+		glVertexAttribPointer(position_layout, 4, GL_FLOAT, GL_FALSE, 0, 0);
+	}
+
 
 
 	particleShader = new Shader("Shader/FireParticle.vert", "Shader/FireParticle.frag", "Shader/FireParticle.geom");
@@ -145,7 +155,9 @@ void Fire::calculate(double deltaTime)
 	glDispatchCompute(groups, 1, 1);
 	
 	
-	glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);	// Read atomic counter through a temporary buffer
+	glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
+
+	// Read atomic counter through a temporary buffer
 	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomic_counter);
 	glBindBuffer(GL_COPY_WRITE_BUFFER, temp_buffer);
 	// from atomic counter to temp buffer:
@@ -161,7 +173,13 @@ void Fire::calculate(double deltaTime)
 	glCopyBufferSubData(GL_COPY_WRITE_BUFFER, GL_ATOMIC_COUNTER_BUFFER, 0, 0,
 		sizeof(GLuint));
 	// memory barrier, to make sure everything from the compute shader is written
-	glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);		//cout << "particle_count: " << particle_count << endl;
+	glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+
+
+	
+
+	//cout << "particle_count: " << particle_count << endl;
+
 	//cout << "End calculate" << endl;
 }
 

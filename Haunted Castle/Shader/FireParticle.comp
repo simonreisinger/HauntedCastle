@@ -59,7 +59,7 @@ void main(void)
 	if(idx >= LastCount) return;
 	
 	vec3 forces = normalize(flamePos + flameTop - Position_In[idx].xyz);
-	vec3 velocity = normalize(Velocity_In[idx].xyz + DeltaT * forces * 0.1);
+	vec3 velocity = normalize(Velocity_In[idx].xyz + DeltaT * forces);
 	float invMass = Velocity_In[idx].w;
 	vec3 pos = Position_In[idx].xyz + DeltaT * velocity * invMass;
 	float TTL = Position_In[idx].w - DeltaT;
@@ -81,10 +81,12 @@ void main(void)
 		float rand_y = 1.0;//u1 + 2.5f;
 		
 
-		vec3 posNew = flamePos + vec3(rand_x, 0, rand_z);
-		vec3 velNew = normalize(vec3(0.5*rand_x, rand_y, 0.5*rand_z));
+		vec3 dir_1 = normalize(cross(flameDir, vec3(0, 1, 0)));
+		vec3 dir_2 = normalize(cross(flameDir, dir_1));
 
-		velNew = normalize(flameDir + velNew);
+		//vec3 posNew = flamePos + vec3(rand_x, 0, rand_z);
+		vec3 posNew = flamePos + dir_1 * rand_x + dir_2 * rand_z;
+		vec3 velNew = normalize(flameDir + dir_1 * 0.5*rand_x + dir_2 * 0.5*rand_z);
 
 		float TTL_init = 1;
 		float InvMass_init = 0.8 + 0.4 * abs(sin(dot(pos.xy ,vec2(12.9898,78.233))));
