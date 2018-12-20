@@ -45,12 +45,16 @@ void Geometry::init(const std::string& displayFile, Shader* _shader)
 	
 	
 
+	auto time_start = glfwGetTime();
+
 	aiNode* rootNode = scene->mRootNode;
 
 	sceneNode = new SceneNode(rootNode, scene, modelDir, shader);
 
+	auto time_end = glfwGetTime();
+
 	iObjectsLoaded++;
-	cout << "Object " << iObjectsLoaded << " of " << countObjectsLoading << " loaded" << endl;
+	cout << "Object " << iObjectsLoaded << " of " << countObjectsLoading << " loaded (Model: " << modelDir << ", Time: " << time_end - time_start << "ms)" << endl;
 }
 
 void Geometry::initActor()

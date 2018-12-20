@@ -90,7 +90,8 @@ Torch1* torch1;
 Torch2* torch2;
 Chess* chess;
 Coordinatesystem* coordinatesystem;
-Fire* fire;
+Fire* fire1;
+Fire* fire2;
 
 
 
@@ -576,11 +577,8 @@ int main(int argc, char** argv)
 		draw(renderShader, lookAt, proj, camera_model);
 
 
-		auto time_particle_start = glfwGetTime();
-		fire->drawParticles(time_delta, view, proj);
-		auto time_particle_end = glfwGetTime();
-		auto time_particle_delta = (float)(time_particle_end - time_particle_start);
-		//cout << "Particles - Frame time: " << (int)(time_particle_delta * 1000) << "ms, Frame/sec: " << (int)(1.0f / time_particle_delta) << endl;
+		fire1->drawParticles(time_delta, view, proj);
+		fire2->drawParticles(time_delta, view, proj);
 		
 
 		glfwSwapBuffers(window);
@@ -629,7 +627,8 @@ void OnShutdown()
 	delete torch2; torch2 = nullptr;
 	delete chess; chess = nullptr;
 	delete coordinatesystem; coordinatesystem = nullptr;
-	delete fire; fire = nullptr;
+	delete fire1; fire1 = nullptr;
+	delete fire2; fire2 = nullptr;
 
 	delete renderShader; renderShader = nullptr;
 	delete shadowShader; shadowShader = nullptr;
@@ -703,7 +702,9 @@ void init()
 	{
 
 		torch1 = new Torch1(renderShader);
+		torch2 = new Torch2(renderShader);
 
+		
 		desk = new Desk(renderShader);
 
 		knight1 = new Knight1(renderShader);
@@ -718,13 +719,14 @@ void init()
 		chair2 = new Chair2(renderShader);
 
 
-		torch2 = new Torch2(renderShader);
 
 		chess = new Chess(renderShader);
 		
 	}
 
-	fire = new Fire(renderShader, 0.0, 0.0, 0.0, 0.0, 90.0, 0.0);
+
+	fire1 = new Fire(renderShader, torch1Pos, flameDir);
+	fire2 = new Fire(renderShader, torch2Pos, flameDir);
 
 
 	//coordinatesystem = new Coordinatesystem(renderShader);
@@ -890,6 +892,11 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 
 	if (renderObjects)
 	{
+		torch1->draw(drawShader, view, proj, camera_model, cull);
+
+		torch2->draw(drawShader, view, proj, camera_model, cull);
+
+		
 		knight1->draw(drawShader, view, proj, camera_model, cull);
 
 		knight2->draw(drawShader, view, proj, camera_model, cull);
@@ -908,12 +915,8 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 
 		commode->draw(drawShader, view, proj, camera_model, cull);
 
-		torch1->draw(drawShader, view, proj, camera_model, cull);
-
-		torch2->draw(drawShader, view, proj, camera_model, cull);
-
 		chess->draw(drawShader, view, proj, camera_model, cull);
-
+		
 	}
 
 

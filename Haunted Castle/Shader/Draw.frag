@@ -57,7 +57,7 @@ void main(){
 	}
 
 
-	float AmbientIntensity = 0.2;
+	float AmbientIntensity = 0.01;
 	vec3 MaterialAmbientColor = AmbientIntensity * MaterialDiffuseColor;
 	vec3 MaterialSpecularColor = specularColor;
 

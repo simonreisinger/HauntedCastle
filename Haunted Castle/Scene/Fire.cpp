@@ -4,78 +4,12 @@
 #include "Fire.hpp"
 #include "../Resources/Const.hpp"
 
-// CPU representation of a particle
-struct Particle {
-	glm::vec3 pos, dir;
-	float cameradistance; // *Squared* distance to the camera. if dead : -1.0f
-	float life; // Remaining life of the particle. if <0 : dead and unused.
 
-	bool operator<(const Particle& that) const {
-		// Sort in reverse order : far particles drawn first.
-		return this->cameradistance > that.cameradistance;
-	}
-};
-
-const int MAX_PARTICLES = 1000;
-Particle ParticlesContainer[MAX_PARTICLES];
-int LastUsedParticle = 0;
-
-vec3 flameTop = vec3(0, 5, 0);
-
-// Finds a Particle in ParticlesContainer which isn't used yet.
-// (i.e. life < 0);
-int FindUnusedParticle() {
-
-	for (int i = LastUsedParticle; i < MAX_PARTICLES; i++) {
-		if (ParticlesContainer[i].life < 0.0f) {
-			LastUsedParticle = i;
-			return i;
-		}
-	}
-
-	for (int i = 0; i < LastUsedParticle; i++) {
-		if (ParticlesContainer[i].life < 0.0f) {
-			LastUsedParticle = i;
-			return i;
-		}
-	}
-
-	return 0; // All particles are taken, override the first one
-}
-
-void SortParticles() {
-	std::sort(&ParticlesContainer[0], &ParticlesContainer[MAX_PARTICLES]);
-}
-
-float particlePos[MAX_PARTICLES*3];
-
-float randFloat(float LO, float HI)
-{
-	return LO + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (HI - LO)));
-}
-
-float randPos()
-{
-	return (rand() % 20 - 10) / 100.0f;
-}
-
-void initParticle(int particleIndex)
-{
-	float u1 = randFloat(0.0f, 1.0f);
-	float u2 = randFloat(0.0f, 1.0f);
-
-	float rand_x = sqrt(-2 * log(u1)) * cos(2 * PI * u2) / 10.0f;
-	float rand_z = sqrt(-2 * log(u1)) * sin(2 * PI * u2) / 10.0f;
-	float rand_y = 1;// ((rand() % 10) / 10.0f) + 0.5f;
-	ParticlesContainer[particleIndex].pos = vec3(rand_x, 0, rand_z) + vec3(0, 3, 0);
-	ParticlesContainer[particleIndex].dir = normalize(vec3(rand_x, rand_y, rand_z));
-	ParticlesContainer[particleIndex].life = randFloat(0.5f, 1.0f);
-}
-
-Fire::Fire(Shader* shader, float sposX, float sposY, float sposZ,
-							   float srotX, float srotY, float srotZ) {
+Fire::Fire(Shader* shader, vec3 flame_pos, vec3 flame_dir) {
 	
 
+	flamePos = flame_pos;
+	flameDir = flame_dir;
 
 	computeShader = new Shader("Shader/FireParticle.comp");
 
@@ -110,10 +44,8 @@ Fire::Fire(Shader* shader, float sposX, float sposY, float sposZ,
 
 	vector<vec4> positions;
 	vector<vec4> velocities;
-	positions.push_back(vec4(0, 0, 0, TTL));
-	//positions.push_back(vec4(0, 2, 0, TTL));
-	velocities.push_back(vec4(0, 0, 0, 0)); // no velocity
-	//velocities.push_back(vec4(0, 0, 0, 0));
+	positions.push_back(vec4(0, 0, 0, 1));
+	velocities.push_back(vec4(0, 1, 0, 1));
 	particle_count = positions.size();
 
 	// copy the data to the SSBO:
@@ -123,15 +55,7 @@ Fire::Fire(Shader* shader, float sposX, float sposY, float sposZ,
 
 	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo_vel[0]);
 	glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0,
-		particle_count * sizeof(velocities[0]), &velocities[0]);
-	/*
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo_pos[1]);
-	glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0,
-		particle_count * sizeof(positions[0]), &positions[0]);
-
-	glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo_vel[1]);
-	glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0,
-		particle_count * sizeof(velocities[0]), &velocities[0]);	*/	
+		particle_count * sizeof(velocities[0]), &velocities[0]);
 
 	const GLuint position_layout = 0;
 	glGenVertexArrays(2, vaos);
@@ -148,35 +72,9 @@ Fire::Fire(Shader* shader, float sposX, float sposY, float sposZ,
 
 	particleShader->useShader();
 
-	texture = new Texture("fire", "particle.png");
-
-	/*
-	
-	for (int i = 0; i < MAX_PARTICLES; i++) {
-		int particleIndex = i;
-		ParticlesContainer[particleIndex].life = -1.0f;
-	}
-	
-
-
-	// Configure VAO and VBO
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
+	texture = new Texture("fire", "sprite-explosion-3.jpg");
 
 	
-	glGenBuffers(1, &particles_position_buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, particles_position_buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(particlePos), NULL, GL_STREAM_DRAW);
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
-
-
-	*/
-
-	
-
-
-
 
 	// Unbind VAO
 	glBindVertexArray(0);
@@ -196,54 +94,6 @@ int ParticlesCount = 0;
 float deltaSum = 0.0f;
 float creationThreshold = 0.001f;
 
-void updateParticles(float delta, vec3 CameraPosition)
-{
-	/*
-	deltaSum += delta;
-
-
-	while (deltaSum > creationThreshold) {
-		int particleIndex = FindUnusedParticle();
-		initParticle(particleIndex);
-
-		deltaSum -= creationThreshold;
-	}
-
-	ParticlesCount = 0;
-	for (int i = 0; i < MAX_PARTICLES; i++) {
-		Particle& p = ParticlesContainer[i]; // shortcut
-
-		if (p.life > 0.0f) {
-
-			// Decrease life
-			p.life -= delta;
-			if (p.life > 0.0f) {
-
-				vec3 dirCorr = normalize(flameTop - p.pos);
-
-				p.dir = normalize(p.dir + 0.05f * dirCorr);
-
-				p.pos += p.dir * delta;
-
-				p.cameradistance = glm::length(p.pos - CameraPosition);
-
-				particlePos[3 * ParticlesCount + 0] = p.pos.x;
-				particlePos[3 * ParticlesCount + 1] = p.pos.y;
-				particlePos[3 * ParticlesCount + 2] = p.pos.z;
-
-				ParticlesCount++;
-			}
-			else {
-				// Died particles
-				p.cameradistance = -1.0f;
-			}
-		}
-	}
-
-	SortParticles();
-	*/
-}
-
 void Fire::calculate(double deltaTime)
 {
 	//cout << "Start calculate" << endl;
@@ -260,6 +110,15 @@ void Fire::calculate(double deltaTime)
 	
 	auto DeltaT_location = glGetUniformLocation(programID, "DeltaT");
 	glUniform1f(DeltaT_location, deltaTime);
+
+	auto flameTop_location = glGetUniformLocation(programID, "flameTop");
+	glUniform3f(flameTop_location, flameTop.x, flameTop.y, flameTop.z);
+
+	auto flamePos_location = glGetUniformLocation(programID, "flamePos");
+	glUniform3f(flamePos_location, flamePos.x, flamePos.y, flamePos.z);
+
+	auto flameDir_location = glGetUniformLocation(programID, "flameDir");
+	glUniform3f(flameDir_location, flameDir.x, flameDir.y, flameDir.z);
 
 
 	particles_to_spawn += spawnRatePerSecond * deltaTime;
@@ -295,6 +154,7 @@ void Fire::calculate(double deltaTime)
 	GLuint *counterValue = (GLuint*)glMapBufferRange(GL_COPY_WRITE_BUFFER, 0,
 		sizeof(GLuint), GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
 	particle_count = counterValue[0];
+	//cout << "Particles: " << particle_count << endl;
 	counterValue[0] = 0; // reset atomic counter in temp buffer
 	glUnmapBuffer(GL_COPY_WRITE_BUFFER); // stop writing to temp buffer
 	// copy temp buffer to atomic counter:
@@ -309,7 +169,7 @@ void Fire::draw(mat4x4 view, mat4x4 proj)
 {
 	glEnable(GL_BLEND); // activate blending
 	glDepthMask(GL_FALSE); // disable writing to depth buffer
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE);
 
 	particleShader->useShader(); // program with VS -> GS -> FS
 
@@ -346,6 +206,7 @@ void Fire::draw(mat4x4 view, mat4x4 proj)
 	glUseProgram(0);
 
 	glDepthMask(GL_TRUE);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void Fire::drawParticles(float delta, mat4x4 view, mat4x4 proj)
@@ -355,54 +216,4 @@ void Fire::drawParticles(float delta, mat4x4 view, mat4x4 proj)
 
 	draw(view, proj);
 
-	/*
-	glEnable(GL_BLEND); // activate blending
-	glDepthMask(GL_FALSE); // disable writing to depth buffer
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	particleShader->useShader();
-
-	GLuint programID = particleShader->programHandle;
-	// Transform
-	GLuint ViewMatrixID = glGetUniformLocation(programID, "V");
-	glUniformMatrix4fv(ViewMatrixID, 1, GL_FALSE, &view[0][0]);
-
-	GLuint ViewProjectionMatrixID = glGetUniformLocation(programID, "VP");
-	glm::mat4 ViewProjectionMatrix = proj * view;
-
-	glUniformMatrix4fv(ViewProjectionMatrixID, 1, GL_FALSE, &ViewProjectionMatrix[0][0]);
-
-	glm::mat4 ViewMatrix = view;
-	glm::vec3 CameraPosition(glm::inverse(ViewMatrix)[3]);
-
-	GLuint CameraRight_worldspace_ID = glGetUniformLocation(programID, "CameraRight_worldspace");
-	GLuint CameraUp_worldspace_ID = glGetUniformLocation(programID, "CameraUp_worldspace");
-
-	// Texture
-	texture->bind(4);
-	auto fireTexture_location = glGetUniformLocation(programID, "fireTexture");
-	glUniform1i(fireTexture_location, 4);
-
-
-	glUniform3f(CameraRight_worldspace_ID, ViewMatrix[0][0], ViewMatrix[1][0], ViewMatrix[2][0]);
-	glUniform3f(CameraUp_worldspace_ID, ViewMatrix[0][1], ViewMatrix[1][1], ViewMatrix[2][1]);
-
-
-
-	updateParticles(delta, CameraPosition);
-
-
-	glBindVertexArray(VAO);
-
-	glBindBuffer(GL_ARRAY_BUFFER, particles_position_buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(particlePos), NULL, GL_STREAM_DRAW);
-	glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(particlePos), particlePos);
-
-	glDrawArrays(GL_POINTS, 0, ParticlesCount);
-
-
-	//glDisable(GL_BLEND);
-	glDepthMask(GL_TRUE);
-	
-	*/
 }

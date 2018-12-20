@@ -14,7 +14,7 @@ namespace cgue
 	{
 	public:
 		// Constructor
-		Fire(Shader* shader, float posX, float posY, float posZ, float srotX, float srotY, float srotZ);
+		Fire(Shader* shader, vec3 flame_pos, vec3 flame_dir);
 		// Destructor
 		virtual ~Fire();
 
@@ -43,8 +43,13 @@ namespace cgue
 
 		void draw(mat4x4 view, mat4x4 proj);
 
-		const float TTL = 1.0f; // time-to-live in seconds
-		const float spawnRatePerSecond = 100.0f;
+		const int MAX_PARTICLES = 100000;
+
+		const float TTL_INIT = 1.0f; // time-to-live in seconds
+		const float spawnRatePerSecond = 1000.0f;
 		float particles_to_spawn = 0.0f;
+		vec3 flameTop = vec3(0, 2, 0);
+		vec3 flamePos = vec3(0, 0, 0);
+		vec3 flameDir = vec3(0, 0, 0);
 	};
 }

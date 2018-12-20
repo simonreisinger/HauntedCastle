@@ -1,5 +1,7 @@
 #version 430 core
 
+#define PI 3.1415926535897932384626433832795
+
 layout(local_size_x=16,
 	local_size_y=16,
 	local_size_z=1) in;
@@ -28,11 +30,15 @@ uniform uint LastCount;
 uniform uint MaximumCount;
 uniform float DeltaT;
 
+uniform vec3 flameTop;
+uniform vec3 flamePos;
+uniform vec3 flameDir;
+
 uniform uint spawnCount;
 
 const vec3 GRAVITY = vec3(0, 0.01f, 0);
 
-void addParticleToOutputList(vec3 pos, vec3 vel, float TTL) {
+void addParticleToOutputList(vec3 pos, vec3 vel, float TTL, float InvMass) {
 	// increment the atomic counter and use its previous value:
 	
 	uint nr = atomicCounterIncrement(Count);
@@ -43,7 +49,7 @@ void addParticleToOutputList(vec3 pos, vec3 vel, float TTL) {
 	}
 	
 	Position_Out[nr] = vec4(pos, TTL);
-	Velocity_Out[nr] = vec4(vel, 0);
+	Velocity_Out[nr] = vec4(vel, InvMass);
 }
 
 void main(void)
@@ -52,18 +58,38 @@ void main(void)
 	uint idx = gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * gl_NumWorkGroups.x * gl_WorkGroupSize.x;
 	if(idx >= LastCount) return;
 	
-	vec3 forces = GRAVITY;
-	forces += vec3(-0.001f, 0, 0); // add wind or other forces
-	vec3 velocity = Velocity_In[idx].xyz;// + DeltaT * forces;
-	vec3 pos = Position_In[idx].xyz + vec3(0, 0.1, 0);// + DeltaT * velocity;
+	vec3 forces = normalize(flamePos + flameTop - Position_In[idx].xyz);
+	vec3 velocity = normalize(Velocity_In[idx].xyz + DeltaT * forces * 0.1);
+	float invMass = Velocity_In[idx].w;
+	vec3 pos = Position_In[idx].xyz + DeltaT * velocity * invMass;
 	float TTL = Position_In[idx].w - DeltaT;
 
 	if (TTL > 0) { // particle‘s still alive
-		addParticleToOutputList(pos, velocity, TTL);
+		addParticleToOutputList(pos, velocity, TTL, invMass);
 	}
 
-	if(idx == 0 && spawnCount > 0)
+	if(spawnCount > idx)
 	{
-		addParticleToOutputList(vec3(0, 0, 0), vec3(0, 0, 0), 1);
+		float u1 = abs(sin(dot(pos.xy ,vec2(12.9898,78.233))));
+		float u2 = abs(sin(dot(pos.yz ,vec2(12.9898,78.233))));
+
+		float u1log = sqrt(abs(-2.0 * log(u1)));
+		u1log = u1log > 1.0 ? 1.0 : u1log;
+
+		float rand_x = u1log * cos(2.0 * PI * u2)/10.0f;
+		float rand_z = u1log * sin(2.0 * PI * u2)/10.0f;
+		float rand_y = 1.0;//u1 + 2.5f;
+		
+
+		vec3 posNew = flamePos + vec3(rand_x, 0, rand_z);
+		vec3 velNew = normalize(vec3(0.5*rand_x, rand_y, 0.5*rand_z));
+
+		velNew = normalize(flameDir + velNew);
+
+		float TTL_init = 1;
+		float InvMass_init = 0.8 + 0.4 * abs(sin(dot(pos.xy ,vec2(12.9898,78.233))));
+		
+		addParticleToOutputList(posNew, velNew, TTL_init, InvMass_init);
+
 	}
 }

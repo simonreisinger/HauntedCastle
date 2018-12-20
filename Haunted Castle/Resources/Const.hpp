@@ -48,6 +48,8 @@ extern glm::mat4 depthMVP;
 extern vec3 torch1Pos;
 extern vec3 torch2Pos;
 
+extern vec3 flameDir;
+
 extern vec3 SunDir;
 
 extern float wnear;

@@ -56,8 +56,10 @@ glm::mat4 depthMVP;
 mat3x3 changeAxis = mat3x3(1, 0, 0, 0, 0, -1, 0, 1, 0);
 mat3x3 changeAxisInverse = mat3x3(1, 0, 0, 0, 0, 1, 0, -1, 0);
 
-vec3 torch1Pos = changeAxis * vec3(12.5634, -11.12736, 9.75919 + 0.5);
-vec3 torch2Pos = changeAxis * vec3(12.5634, 8.90968, 9.75919 + 0.5);
+vec3 flameDir = normalize(vec3(-0.3, 1, 0));
+
+vec3 torch1Pos = (changeAxis * vec3(12.5634, -11.12736, 9.75919) + flameDir * 0.01f);
+vec3 torch2Pos = (changeAxis * vec3(12.5634, 8.90968, 9.75919) + flameDir * 0.01f);
 
 vec3 SunDir = changeAxis * vec3(0.0, -1.0, 1.0);
 
@@ -74,4 +76,4 @@ int countMeshesLoading = 73;
 int iObjectsLoaded = 0;
 int countObjectsLoading = 14;
 
-bool renderObjects = false;
+bool renderObjects = true;
