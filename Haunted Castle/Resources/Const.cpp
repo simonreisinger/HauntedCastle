@@ -2,6 +2,7 @@
 
 float PI = 3.14159265358979323846f;
 
+
 bool CGUE_F1_PRESSED = false;
 bool CGUE_F2_PRESSED = false;
 bool CGUE_DISPLAY_FRAME_TIME = false;
@@ -70,8 +71,6 @@ float wnear = 0;
 float hnear = 0;
 float wfar = 0;
 float hfar = 0;
-float nearDist = 0;
-float farDist = 0;
 
 int iMeshesLoaded = 0;
 int countMeshesLoading = 73;

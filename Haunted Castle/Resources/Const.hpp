@@ -55,8 +55,6 @@ extern float wnear;
 extern float hnear;
 extern float wfar;
 extern float hfar;
-extern float nearDist;
-extern float farDist;
 
 extern int iMeshesLoaded;
 extern int countMeshesLoading;

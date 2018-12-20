@@ -65,7 +65,7 @@ mat4x4 pxMatToGlm(PxMat44 pxMat);
 void RenderQuad();
 void initDirectionalShadows();
 void initPointShadows();
-void ConfigureShaderAndMatrices();
+void CreateDepthCubemap();
 
 Shader* renderShader;
 Shader* shadowShader;
@@ -81,6 +81,7 @@ GLuint pingpongColorbuffers[2];
 unsigned int depthMapFBO;
 unsigned int depthCubemap;
 
+std::vector<glm::mat4> shadowTransforms;
 
 Actor* actor; 
 Knight1* knight1;
@@ -100,10 +101,19 @@ Chess* chess;
 Coordinatesystem* coordinatesystem;
 Fire** fire;
 
-
+glm::vec3 lightPos;
 
 double mouseXPosOld, mouseYPosOld;
 
+////////////MAIN CONSTS////////////////////
+float nearDist = 0.01f;
+float farDist = 200.0f;
+float fov = 100.0f;
+float near_plane = 0.1; // = 1.0f;
+float far_plane = 50.0f; // = farDist; //
+
+
+///////////////////////////////////////////
 
 FrustumG* frustumG;
 
@@ -113,6 +123,7 @@ float RING_HEIGHT_LOW = 10.0f;
 
 int width;
 int height;
+float ratio;
 
 float MOVESPEED = 80000.0f;
 float ROTATESPEED = 5000.0f;
@@ -440,44 +451,6 @@ int main(int argc, char** argv)
 	auto refreshTime = 0.0f;
 	auto time_abs = 0.0f;
 
-	nearDist = 1.0f;
-	nearDist = 0.01f;
-	farDist = 200.0f;
-	float fov = 100.0f;
-	float ratio = (float)width / (float)height;
-
-	// 1. first render to depth cubemap
-	//ConfigureShaderAndMatrices
-	float aspect = ratio; // (float)width / (float)height;
-	float near_plane = 0.1; // = 1.0f;
-	float far_plane = 50.0f; // = farDist; //
-
-	// Point shadow
-	// lighting info
-	// -------------
-	//glm::vec3 lightPos(0.0f, 0.0f, 0.0f);
-	glm::vec3 lightPos = torchPos[0] + 0.5f * flameDir;
-
-
-	// move light position over time //TODO should be removed
-	//lightPos.z = sin(glfwGetTime() * 0.5) * 3.0;
-
-	//glm::vec3 lightPos2 = vec3(-torch1Pos.z, torch1Pos.y, torch1Pos.x);
-
-	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, near_plane, far_plane);
-
-	std::vector<glm::mat4> shadowTransforms;
-
-	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
-	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
-	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-	
-	
-
-
 	while (!glfwWindowShouldClose(window))
 	{
 		auto time_new = glfwGetTime();
@@ -485,7 +458,6 @@ int main(int argc, char** argv)
 		refreshTime += time_delta;
 		time_abs += time_delta;
 		time = time_new;
-
 
 
 		handleInput(window, time_delta);
@@ -497,51 +469,14 @@ int main(int argc, char** argv)
 
 		NUMBER_OF_CULLED_MESHES = 0;
 
-
 		// render
 		// ------
 		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+		CreateDepthCubemap();
 
 
-		// 1. render scene to depth cubemap
-		// --------------------------------
-		glViewport(0, 0, width, height);
-		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
-		glClear(GL_DEPTH_BUFFER_BIT);
-		// Use our shader
-		glUseProgram(depthShader->programHandle);
-		glm:mat4 model = mat4(1);
-		auto model_location = glGetUniformLocation(depthShader->programHandle, "model");
-		glUniformMatrix4fv(model_location, 1, GL_FALSE, value_ptr(model));
-
-		for (unsigned int i = 0; i < 6; ++i){
-			string nameString = "shadowMatrices[" + std::to_string(i) + "]";
-			auto DepthVPID = glGetUniformLocation(depthShader->programHandle, nameString.c_str());
-			glUniformMatrix4fv(DepthVPID, 1, GL_FALSE, &shadowTransforms[i][0][0]);
-		}
-
-		glUniform1f(glGetUniformLocation(depthShader->programHandle, "far_plane"), far_plane);
-		// depthShader.setVec3("lightPos", lightPos);
-		//glUniform3fv(glGetUniformLocation(depthShader->programHandle, "lightPos"), 1, &lightPos[0]);
-		
-		auto xyzac = glGetUniformLocation(depthShader->programHandle, "lightPos");
-		glUniform3f(xyzac, lightPos.x, lightPos.y, lightPos.z);
-		//cout << lightPos.x << " " << lightPos.y << " " << lightPos.z << endl;
-
-
-
-		draw(depthShader, mat4x4(1.0f), mat4x4(1.0f), mat4x4(1.0f));
-
-
-
-		////////////////////////
-
-
-
-		//cout << "frametime: " << time_delta * 1000 << "ms" << " = " << 1.0 / time_delta << " fps" << endl;
 
 		// Render to our framebuffer
 		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -632,12 +567,7 @@ int main(int argc, char** argv)
 
 		mat4x4 view = camera_model * pxMatToGlm(PxMat44(actor->actor->getGlobalPose().getInverse()));
 
-		/*
-		nearDist = 1.0f;
-		farDist = 200.0f;
-		float fov = 100.0f;
-		float ratio = (float)width / (float)height;
-		*/
+		
 		proj = glm::perspective(fov, ratio, nearDist, farDist);
 
 		hnear = abs(2 * tan(fov / 2) * nearDist);
@@ -836,6 +766,7 @@ void init()
 	// 60° Open angle, aspect, near, far
 	//proj = glm::perspective(100.0f, (float)width / (float)height, 0.1f, 200.0f);
 
+	ratio = (float)width / (float)height;
 
 	initDirectionalShadows();
 	initPointShadows();
@@ -959,16 +890,53 @@ void initPointShadows(){
 	glReadBuffer(GL_NONE);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	// shader configuration
-	// --------------------
-	//shader.use();
-	//glUseProgram(depthShader->programHandle);
+	// 1. first render to depth cubemap
+	//ConfigureShaderAndMatrices
+
+	// Point shadow
+	// lighting info
+	// -------------
+	lightPos = torchPos[0] + 0.5f * flameDir;
+
+	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), ratio, near_plane, far_plane);
+
+	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
 }
 
-// is empty
-void ConfigureShaderAndMatrices(){
-	
+// Creates the depth cubmap each render cycle
+void CreateDepthCubemap(){
+	// 1. render scene to depth cubemap
+	// --------------------------------
+	glViewport(0, 0, width, height);
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+	glClear(GL_DEPTH_BUFFER_BIT);
+	// Use our shader
+	glUseProgram(depthShader->programHandle);
+	glm:mat4 model = mat4(1);
+	auto model_location = glGetUniformLocation(depthShader->programHandle, "model");
+	glUniformMatrix4fv(model_location, 1, GL_FALSE, value_ptr(model));
 
+	for (unsigned int i = 0; i < 6; ++i){
+		string nameString = "shadowMatrices[" + std::to_string(i) + "]";
+		auto DepthVPID = glGetUniformLocation(depthShader->programHandle, nameString.c_str());
+		glUniformMatrix4fv(DepthVPID, 1, GL_FALSE, &shadowTransforms[i][0][0]);
+	}
+
+	glUniform1f(glGetUniformLocation(depthShader->programHandle, "far_plane"), far_plane);
+	// depthShader.setVec3("lightPos", lightPos);
+	//glUniform3fv(glGetUniformLocation(depthShader->programHandle, "lightPos"), 1, &lightPos[0]);
+
+	auto xyzac = glGetUniformLocation(depthShader->programHandle, "lightPos");
+	glUniform3f(xyzac, lightPos.x, lightPos.y, lightPos.z);
+	//cout << lightPos.x << " " << lightPos.y << " " << lightPos.z << endl;
+
+	draw(depthShader, mat4x4(1.0f), mat4x4(1.0f), mat4x4(1.0f));
 }
 
 GLuint quadVAO = 0;
