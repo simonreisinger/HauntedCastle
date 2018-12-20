@@ -446,6 +446,7 @@ int main(int argc, char** argv)
 	auto time_abs = 0.0f;
 
 	nearDist = 1.0f;
+	nearDist = 0.01f;
 	farDist = 200.0f;
 	float fov = 100.0f;
 	float ratio = (float)width / (float)height;
@@ -454,8 +455,8 @@ int main(int argc, char** argv)
 	// 1. first render to depth cubemap
 	//ConfigureShaderAndMatrices
 	float aspect = ratio; // (float)width / (float)height;
-	float near_plane = nearDist; // = 1.0f;
-	float far_plane = 100.0f; // = farDist; //
+	float near_plane = 0.1; // = 1.0f;
+	float far_plane = 50.0f; // = farDist; //
 
 	// Point shadow
 	// lighting info
@@ -468,12 +469,15 @@ int main(int argc, char** argv)
 	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, near_plane, far_plane);
 
 	std::vector<glm::mat4> shadowTransforms;
-	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
-	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0, 0.0, 0.0), glm::vec3(0.0, -1.0, 0.0)));
-	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 1.0, 0.0), glm::vec3(0.0, 0.0, 1.0)));
-	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0, -1.0, 0.0), glm::vec3(0.0, 0.0, -1.0)));
-	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 0.0, 1.0), glm::vec3(0.0, -1.0, 0.0)));
-	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0, 0.0, -1.0), glm::vec3(0.0, -1.0, 0.0)));
+	
+	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+
+	
 
 
 	while (!glfwWindowShouldClose(window))
@@ -506,6 +510,7 @@ int main(int argc, char** argv)
 		// 1. render scene to depth cubemap
 		// --------------------------------
 		glViewport(0, 0, width, height);
+		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 		glClear(GL_DEPTH_BUFFER_BIT);
 		// Use our shader
@@ -542,10 +547,16 @@ int main(int argc, char** argv)
 		//glm::mat4 depthMVP1 = depthProjectionMatrix1 /* * depthViewMatrix1 */* depthModelMatrix1;
 
 		//draw(depthShader, depthViewMatrix1, depthProjectionMatrix1, mat4x4(1.0f));
-		draw(depthShader, depthViewMatrix1, proj, mat4x4(1.0f));
+		draw(depthShader, mat4x4(1.0f), mat4x4(1.0f), mat4x4(1.0f));
+
+
+
+		////////////////////////
+
+
+		//*
 
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		////////////////////////
 
 		// 2. then render scene as normal with shadow mapping (using depth cubemap)
 		//glViewport(0, 0, width, height);
@@ -654,8 +665,6 @@ int main(int argc, char** argv)
 		glUniform1i(glGetUniformLocation(renderShader->programHandle, "depthMap"), 1);
 		// shader.setFloat("far_plane", far_plane);
 		glUniform1f(glGetUniformLocation(renderShader->programHandle, "far_plane"), far_plane);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
 
 		auto xyzabc = glGetUniformLocation(renderShader->programHandle, "lightPos");
 		glUniform3f(xyzabc, lightPos.x, lightPos.y, lightPos.z);
@@ -702,6 +711,8 @@ int main(int argc, char** argv)
 		frustumG->setCamDef(p, l, u);
 			
 
+		glActiveTexture(GL_TEXTURE1);
+		//glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
 		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap); //TODO kann man das da hintun
 		draw(renderShader, lookAt, proj, camera_model);
 
@@ -712,6 +723,8 @@ int main(int argc, char** argv)
 		auto time_particle_delta = (float)(time_particle_end - time_particle_start);
 		//cout << "Particles - Frame time: " << (int)(time_particle_delta * 1000) << "ms, Frame/sec: " << (int)(1.0f / time_particle_delta) << endl;
 		
+
+		//*/
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -828,22 +841,25 @@ void init()
 
 	room = new Room(renderShader);
 
-	commode = new Commode(renderShader);
+	//commode = new Commode(renderShader);
 
 
 	if (renderObjects)
 	{
+		/*
 		wardrobe = new Wardrobe(renderShader);
 
 		frame = new Frame(renderShader);
+		//*/
+		desk = new Desk(renderShader);
 		torch1 = new Torch1(renderShader);
 
-		desk = new Desk(renderShader);
-
-		knight2 = new Knight2(renderShader);
-		knight1 = new Knight1(renderShader);
+		torch2 = new Torch2(renderShader);
+		/*
 
 		
+		knight2 = new Knight2(renderShader);
+		knight1 = new Knight1(renderShader);
 
 		door = new Door(renderShader);
 
@@ -852,13 +868,12 @@ void init()
 		chair2 = new Chair2(renderShader);
 
 
-		torch2 = new Torch2(renderShader);
 
 		chess = new Chess(renderShader);
-		
+		//*/
 	}
 
-	fire = new Fire(renderShader, 0.0, 0.0, 0.0, 0.0, 90.0, 0.0);
+	//fire = new Fire(renderShader, 0.0, 0.0, 0.0, 0.0, 90.0, 0.0);
 
 
 	//coordinatesystem = new Coordinatesystem(renderShader);
@@ -1045,19 +1060,23 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 
 
 	room->draw(drawShader, view, proj, camera_model, cull);
-	commode->draw(drawShader, view, proj, camera_model, cull);
+	//commode->draw(drawShader, view, proj, camera_model, cull);
 
 	if (renderObjects)
 	{
+		/*
 		wardrobe->draw(drawShader, view, proj, camera_model, cull);
 
-		knight1->draw(drawShader, view, proj, camera_model, cull);
-		torch1->draw(drawShader, view, proj, camera_model, cull);
 
-		knight2->draw(drawShader, view, proj, camera_model, cull);
+		//*/
 
 		desk->draw(drawShader, view, proj, camera_model, cull);
+		torch1->draw(drawShader, view, proj, camera_model, cull);
 
+		torch2->draw(drawShader, view, proj, camera_model, cull);
+		/*
+		knight1->draw(drawShader, view, proj, camera_model, cull);
+		knight2->draw(drawShader, view, proj, camera_model, cull);
 		door->draw(drawShader, view, proj, camera_model, cull);
 
 		chair1->draw(drawShader, view, proj, camera_model, cull);
@@ -1066,10 +1085,9 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 
 		frame->draw(drawShader, view, proj, camera_model, cull);
 
-		torch2->draw(drawShader, view, proj, camera_model, cull);
 
 		chess->draw(drawShader, view, proj, camera_model, cull);
-
+		//*/
 	}
 
 

@@ -91,7 +91,7 @@ void main(){
 	//////////////////////////////////////////////////////
 
 
-	float AmbientIntensity = 0.6;
+	float AmbientIntensity = 0.1;
 
 	vec3 MaterialAmbientColor = AmbientIntensity * MaterialDiffuseColor;
 	vec3 MaterialSpecularColor = specularColor;
@@ -144,10 +144,43 @@ void main(){
 
 	visibility = visibility * visibilityPosible;
 	
-	///*
+
+	
+	/*
+	vec3 fragToLight = FragPos - lightPos;
+
+	float currentDepth = length(fragToLight);
+
+	float closestDepth = texture(depthMap, fragToLight).r;
+	*/
+
+
+	vec3 fragToLight = FragPos - lightPos; 
+
+	vec3 fragToLight2 = vec3(fragToLight.z, fragToLight.x, fragToLight.y);
+
+	//vec3 fragToLight2 = vec3(fragToLight.x, fragToLight.z, fragToLight.y);
+
+    float closestDepth = texture(depthMap, fragToLight2).r;
+	closestDepth *= far_plane;
+	float currentDepth = length(fragToLight2); 
+
+	float biasx = 0.001;//5; 
+	float xxxxxxx = currentDepth -  biasx > closestDepth ? 0.0 : 1.0; 
+
+	//float xxxxxxx = texture(depthMap, Position_worldspace - lightPos).r;
+
+	//vec4 FragColorShadow = vec4(vec3(closestDepth / far_plane), 1.0);  
+
+
+
+	//*
 	FragColor = vec4(
 		// Ambient
-		vec3(MaterialAmbientColor) + // TODO is wrong here must be changed
+		MaterialAmbientColor + 0.5 * vec3(xxxxxxx) // TODO is wrong here must be changed
+		/*
+		vec3(MaterialAmbientColor* (1.0+3.0*xxxxxxx))
+
 		(1.0 - shadow) * 		
 		(// Diffuse Torch 1
 		MaterialDiffuseColor * I1 * cosTheta1 +
@@ -161,14 +194,23 @@ void main(){
 		MaterialSpecularColor * I2 * pow(cosAlpha2, 5)) +
 		// Window
 		MaterialDiffuseColor * visibility
+		*/
 	, 1);
 	// */
 	//FragColor = vec4(lightPos.xyz,1);
 	//     //float closestDepth = texture(depthMap, vec3(gl_FragCoord.xy / vec2(1600,1600),1)).r;
 
-	//float xxxxxxx = texture(depthMap, FragPos - lightPos).r;// texture(depthMap, vec3(gl_FragCoord.xy / vec2(1600.0,1600.0),1)).r/2.0;
 
-	//FragColor = vec4(xxxxxxx,(xxxxxxx),(xxxxxxx),1.0);
+	/*
+	float xxxxxxx = texture(depthMap, FragPos - lightPos).r;// texture(depthMap, vec3(gl_FragCoord.xy / vec2(1600.0,1600.0),1)).r/2.0;
 
+	FragColor = vec4(xxxxxxx, xxxxxxx, xxxxxxx, 1.0);
+	*/
+	/*
+	float shadowX = ShadowCalculation(FragPos);                      
+    vec3 lighting = (MaterialAmbientColor * (1.0 - shadowX));    
+    
+    FragColor = vec4(lighting, 1.0);
+	*/
 
 }
