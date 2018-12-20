@@ -76,6 +76,7 @@ void Geometry::draw(Shader* drawShader, mat4x4 view, glm::mat4x4 proj, mat4x4 ca
 {
 	drawShader->useShader();
 
+	//mat4x4 globalPose = mat4x4(1);
 	mat4x4 globalPose = getGlobalPose();
 
 	sceneNode->draw(drawShader, view, proj, globalPose, cull);

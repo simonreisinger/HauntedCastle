@@ -1,9 +1,16 @@
 #include <iostream>
 #include <string>
 #include <sstream> // for: char**
-#include <GL\glew.h>
-#include <GLFW\glfw3.h>
-#include <glm\glm.hpp>
+
+
+#include <vector> // Point shadow CHECK IF CORRECT
+// #include <glm/GTC/matrix_transform.hpp>
+
+
+
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include "Resources/SceneObject.hpp"
@@ -63,9 +70,12 @@ mat4x4 pxMatToGlm(PxMat44 pxMat);
 void RenderQuad();
 void initDirectionalShadows();
 void initPointShadows();
+void ConfigureShaderAndMatrices();
 
 Shader* renderShader;
 Shader* shadowShader;
+Shader* pointShadowShader;
+Shader* depthShader;
 
 GLuint FramebufferName = 0;
 GLuint hdrFBO;
@@ -73,7 +83,10 @@ GLuint colorBuffers[2];
 GLuint pingpongFBO[2];
 GLuint pingpongColorbuffers[2];
 
-// TODO actor1 to actor
+unsigned int depthMapFBO;
+unsigned int depthCubemap;
+
+
 Actor* actor; 
 Knight1* knight1;
 Knight2* knight2;
@@ -148,7 +161,7 @@ class SimulationEvents : public PxSimulationEventCallback
 static SimulationEvents gSimulationEventCallback;			//Instance of 'SimulationEvents' class inherited from 'PxSimulationEventCallback' class
 
 glm::mat4 proj;
-glm::mat4 view;
+//glm::mat4 view;
 
 //Defining a custome filter shader 
 PxFilterFlags customFilterShader(PxFilterObjectAttributes attributes0, PxFilterData filterData0,
@@ -299,13 +312,13 @@ int main(int argc, char** argv)
 	cout << "Loading..." << endl;
 
 	// TODO implement full screen 
-	width = 1280;
-	height = 768;
+	width = 1600;
+	height = 1600;
 	auto fullscreen = false;
 
 	// Parameters
 	if (argc == 3) {
-		if ((stringstream(argv[1]) >> width).fail() || (stringstream(argv[2]) >> height).fail()){
+		if ((stringstream(argv[1]) >> width).fail() || (stringstream(argv[2]) >> height).fail()) {
 			cout << "ERROR: Invalid argument!" << endl;
 			system("PAUSE");
 			exit(EXIT_FAILURE);
@@ -340,10 +353,6 @@ int main(int argc, char** argv)
 	int refresh_rate = 60;
 	glfwWindowHint(GLFW_REFRESH_RATE, refresh_rate);
 
-
-
-
-
 	GLFWwindow* window;
 	if (fullscreen)
 	{
@@ -371,8 +380,6 @@ int main(int argc, char** argv)
 	}
 
 	glfwHideWindow(window);
-
-
 
 	// Hide Cursor
 	// glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN); // blends out curser if nescessary
@@ -438,6 +445,39 @@ int main(int argc, char** argv)
 	auto time = glfwGetTime();
 	auto refreshTime = 0.0f;
 	auto time_abs = 0.0f;
+	
+	float ratio = (float)width / (float)height;
+
+	// 1. first render to depth cubemap
+	//ConfigureShaderAndMatrices
+	float aspect = ratio; // (float)width / (float)height;
+	float near_plane = 0.1; // = 1.0f;
+	float far_plane = 50.0f; // = farDist; //
+
+	// Point shadow
+	// lighting info
+	// -------------
+	//glm::vec3 lightPos(0.0f, 0.0f, 0.0f);
+	glm::vec3 lightPos = torch1Pos;
+	// move light position over time //TODO should be removed
+	//lightPos.z = sin(glfwGetTime() * 0.5) * 3.0;
+
+	//glm::vec3 lightPos2 = vec3(-torch1Pos.z, torch1Pos.y, torch1Pos.x);
+
+	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, near_plane, far_plane);
+
+	std::vector<glm::mat4> shadowTransforms;
+
+	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	
+	
+
+
 	while (!glfwWindowShouldClose(window))
 	{
 		auto time_new = glfwGetTime();
@@ -445,6 +485,8 @@ int main(int argc, char** argv)
 		refreshTime += time_delta;
 		time_abs += time_delta;
 		time = time_new;
+
+
 
 		handleInput(window, time_delta);
 
@@ -455,6 +497,47 @@ int main(int argc, char** argv)
 
 		NUMBER_OF_CULLED_MESHES = 0;
 
+
+		// render
+		// ------
+		glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+
+		// 1. render scene to depth cubemap
+		// --------------------------------
+		glViewport(0, 0, width, height);
+		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		// Use our shader
+		glUseProgram(depthShader->programHandle);
+		glm:mat4 model = mat4(1);
+		auto model_location = glGetUniformLocation(depthShader->programHandle, "model");
+		glUniformMatrix4fv(model_location, 1, GL_FALSE, value_ptr(model));
+
+		for (unsigned int i = 0; i < 6; ++i){
+			string nameString = "shadowMatrices[" + std::to_string(i) + "]";
+			auto DepthVPID = glGetUniformLocation(depthShader->programHandle, nameString.c_str());
+			glUniformMatrix4fv(DepthVPID, 1, GL_FALSE, &shadowTransforms[i][0][0]);
+		}
+
+		glUniform1f(glGetUniformLocation(depthShader->programHandle, "far_plane"), far_plane);
+		// depthShader.setVec3("lightPos", lightPos);
+		//glUniform3fv(glGetUniformLocation(depthShader->programHandle, "lightPos"), 1, &lightPos[0]);
+		
+		auto xyzac = glGetUniformLocation(depthShader->programHandle, "lightPos");
+		glUniform3f(xyzac, lightPos.x, lightPos.y, lightPos.z);
+		//cout << lightPos.x << " " << lightPos.y << " " << lightPos.z << endl;
+
+
+
+		draw(depthShader, mat4x4(1.0f), mat4x4(1.0f), mat4x4(1.0f));
+
+
+
+		////////////////////////
 
 
 
@@ -468,7 +551,6 @@ int main(int argc, char** argv)
 
 		// We don't use bias in the shader, but instead we draw back faces, 
 		// which are already separated from the front faces by a small distance 
-		// (if your geometry is made this way)
 		glDisable(GL_CULL_FACE);
 		//glCullFace(GL_BACK); // Cull back-facing triangles -> draw only front-facing triangles
 
@@ -491,7 +573,7 @@ int main(int argc, char** argv)
 		glm::mat4 depthModelMatrix = glm::mat4(1.0);
 		glm::mat4 depthVP = depthProjectionMatrix * depthViewMatrix;
 		glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
-
+		
 		// Send our transformation to the currently bound shader, 
 		// in the "MVP" uniform
 
@@ -531,10 +613,24 @@ int main(int argc, char** argv)
 		glUniform1i(ShadowMapID, 2);
 
 
+		///////////////////////////////////POINT SHADER///////////////////////////////////////////
+		//shader.setInt("diffuseTexture", 0);
+		glUniform1i(glGetUniformLocation(renderShader->programHandle, "diffuseTexture"), 0);
+		//shader.setInt("depthMap", 1);
+		glUniform1i(glGetUniformLocation(renderShader->programHandle, "depthMap"), 1);
+		// shader.setFloat("far_plane", far_plane);
+		glUniform1f(glGetUniformLocation(renderShader->programHandle, "far_plane"), far_plane);
+
+		auto xyzabc = glGetUniformLocation(renderShader->programHandle, "lightPos");
+		glUniform3f(xyzabc, lightPos.x, lightPos.y, lightPos.z);
+		//cout << lightPos.x << " " << lightPos.y << " " << lightPos.z << endl;
+
+
+		////////SIMON WAS HERE //////////////////////////////////////////////////////////////////
+		
 		mat4x4 camera_model = camera->getCameraModel();
 
 		mat4x4 view = camera_model * pxMatToGlm(PxMat44(actor->actor->getGlobalPose().getInverse()));
-
 
 
 		nearDist = 1.0f;
@@ -571,16 +667,18 @@ int main(int argc, char** argv)
 			
 		frustumG->setCamInternals(fov, ratio, nearDist, farDist);
 		frustumG->setCamDef(p, l, u);
-			
-
-
+		
+		glActiveTexture(GL_TEXTURE1);
+		//glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap); //TODO kann man das da hintun
 		draw(renderShader, lookAt, proj, camera_model);
 
-
+		
 		fire1->drawParticles(time_delta, view, proj);
 		fire2->drawParticles(time_delta, view, proj);
 		
 
+		
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
@@ -632,6 +730,8 @@ void OnShutdown()
 
 	delete renderShader; renderShader = nullptr;
 	delete shadowShader; shadowShader = nullptr;
+	delete depthShader; depthShader = nullptr;
+	delete pointShadowShader; pointShadowShader = nullptr;
 
 	delete frustumG; frustumG = nullptr;
 
@@ -695,32 +795,32 @@ void init()
 
 	room = new Room(renderShader);
 
-	frame = new Frame(renderShader);
-	commode = new Commode(renderShader);
+	//commode = new Commode(renderShader);
+
 
 	if (renderObjects)
 	{
+		
+		wardrobe = new Wardrobe(renderShader);
 
 		torch1 = new Torch1(renderShader);
 		torch2 = new Torch2(renderShader);
-
 		
 		desk = new Desk(renderShader);
+
+		commode = new Commode(renderShader);
+
+		chair1 = new Chair1(renderShader);
+		chair2 = new Chair2(renderShader);
 
 		knight1 = new Knight1(renderShader);
 		knight2 = new Knight2(renderShader);
 
-		wardrobe = new Wardrobe(renderShader);
-
 		door = new Door(renderShader);
 
-		chair1 = new Chair1(renderShader);
-		
-		chair2 = new Chair2(renderShader);
-
-
-
 		chess = new Chess(renderShader);
+
+		frame = new Frame(renderShader);
 		
 	}
 
@@ -737,7 +837,7 @@ void init()
 
 
 	initDirectionalShadows();
-
+	initPointShadows();
 
 
 	// Always check that our framebuffer is ok
@@ -823,9 +923,21 @@ void initDirectionalShadows()
 
 // source: https://learnopengl.com/Advanced-Lighting/Shadows/Point-Shadows
 void initPointShadows(){
-	unsigned int depthCubemap;
+	// Shadow Maps
+	/*
+	pointShadowShader = new Shader(
+		"Shader/PointShadow.vert",
+		"Shader/PointShadow.frag"); // */
+
+	depthShader = new Shader(
+		"Shader/Depth.vert",
+		"Shader/Depth.frag",
+		"Shader/Depth.geom");
+
+
 	glGenTextures(1, &depthCubemap);
-	const unsigned int SHADOW_WIDTH = 1024, SHADOW_HEIGHT = 1024;
+	const unsigned int SHADOW_WIDTH = 1600, SHADOW_HEIGHT = 1600; // TODO change this line
+	
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
 	for (unsigned int i = 0; i < 6; ++i){
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT,
@@ -837,12 +949,25 @@ void initPointShadows(){
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	/*
+	// attach depth texture as FBO's depth buffer
+	glGenFramebuffers(1, &depthMapFBO);
+
 	glBindFramebuffer(GL_FRAMEBUFFER, depthMapFBO);
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemap, 0);
 	glDrawBuffer(GL_NONE);
 	glReadBuffer(GL_NONE);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);*/
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	// shader configuration
+	// --------------------
+	//shader.use();
+	//glUseProgram(depthShader->programHandle);
+}
+
+// is empty
+void ConfigureShaderAndMatrices(){
+	
+
 }
 
 GLuint quadVAO = 0;
@@ -889,27 +1014,25 @@ void draw(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_model)
 
 
 	room->draw(drawShader, view, proj, camera_model, cull);
+	//commode->draw(drawShader, view, proj, camera_model, cull);
 
 	if (renderObjects)
 	{
+		
 		torch1->draw(drawShader, view, proj, camera_model, cull);
-
 		torch2->draw(drawShader, view, proj, camera_model, cull);
 
-		
-		knight1->draw(drawShader, view, proj, camera_model, cull);
+		chair1->draw(drawShader, view, proj, camera_model, cull);
+		chair2->draw(drawShader, view, proj, camera_model, cull);
 
+		knight1->draw(drawShader, view, proj, camera_model, cull);
 		knight2->draw(drawShader, view, proj, camera_model, cull);
 
 		wardrobe->draw(drawShader, view, proj, camera_model, cull);
 
-		door->draw(drawShader, view, proj, camera_model, cull);
-
-		chair1->draw(drawShader, view, proj, camera_model, cull);
-
-		chair2->draw(drawShader, view, proj, camera_model, cull);
-
 		desk->draw(drawShader, view, proj, camera_model, cull);
+		
+		door->draw(drawShader, view, proj, camera_model, cull);
 
 		frame->draw(drawShader, view, proj, camera_model, cull);
 

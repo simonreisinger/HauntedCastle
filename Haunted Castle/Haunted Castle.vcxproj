@@ -146,9 +146,14 @@
     <ClInclude Include="Scene\Wardrobe.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shader\Depth.geom" />
     <None Include="Shader\Draw.frag" />
     <None Include="Shader\Draw.vert" />
     <None Include="Shader\FireParticle.comp" />
+    <None Include="Shader\Depth.frag" />
+    <None Include="Shader\Depth.vert" />
+    <None Include="Shader\PointShadow.frag" />
+    <None Include="Shader\PointShadow.vert" />
     <None Include="Shader\FireParticle.frag" />
     <None Include="Shader\FireParticle.vert" />
     <None Include="Shader\FireParticle.geom" />

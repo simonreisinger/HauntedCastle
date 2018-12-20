@@ -13,6 +13,11 @@ out vec3 Torch1Direction_cameraspace;
 out vec3 Torch2Direction_cameraspace;
 out vec4 ShadowCoord;
 
+	//////////////// calculate point shadow ///////////////
+	out vec3 FragPos;
+
+	//////////////////////////////////////////////////////
+
 uniform mat4 MVP;
 uniform mat4 V;
 uniform mat4 M;
@@ -24,6 +29,8 @@ uniform vec3 SunDirection_worldspace;
 void main(){
 
 	gl_Position =  MVP * vec4(vertexPosition_modelspace,1);
+
+	FragPos = (M * vec4(vertexPosition_modelspace,1)).xyz; // vec3(model * vec4(aPos, 1.0));
 
 	mat4 biasMatrix = mat4(0.5, 0.0, 0.0, 0.0,
 						 0.0, 0.5, 0.0, 0.0,

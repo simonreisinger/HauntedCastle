@@ -23,6 +23,14 @@ uniform vec3 specularColor;
 uniform sampler2DShadow shadowMap;
 uniform vec3 SunDirection_worldspace;
 
+	//////////////// calculate point shadow ///////////////
+	uniform samplerCube depthMap;
+	uniform vec3 viewPos;
+	uniform vec3 lightPos;
+	uniform float far_plane;
+	in vec3 FragPos;
+	//////////////////////////////////////////////////////
+
 vec2 disk[16] = vec2[]( 
    vec2( -0.94202634, -0.39907226 ), 
    vec2( 0.94558508, -0.76891735 ), 
@@ -42,6 +50,54 @@ vec2 disk[16] = vec2[](
    vec2( 0.14383159, -0.14100800 ) 
 );
 
+// array of offset direction for sampling
+vec3 gridSamplingDisk[20] = vec3[]
+(
+   vec3(1, 1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1, 1,  1), 
+   vec3(1, 1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1, 1, -1),
+   vec3(1, 1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1, 1,  0),
+   vec3(1, 0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1, 0, -1),
+   vec3(0, 1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0, 1, -1)
+);
+
+// TODO aufraumen
+float ShadowCalculation(vec3 fragPos)
+{
+    // get vector between fragment position and light position
+    vec3 fragToLight = fragPos - lightPos;
+    // use the fragment to light vector to sample from the depth map    
+    float closestDepth = texture(depthMap, fragToLight).r;
+    // it is currently in linear range between [0,1], let's re-transform it back to original depth value
+    closestDepth *= far_plane;
+    // now get current linear depth as the length between the fragment and light position
+    float currentDepth = length(fragToLight);
+	
+	// test for shadows
+    float bias = 0.05; // we use a much larger bias since depth is now in [near_plane, far_plane] range
+	float shadow = currentDepth -  bias > closestDepth ? 1.0 : 0.0;
+	/*
+	// PCF
+    float shadow = 0.0;
+    float bias = 0.25;// 0.15;
+    int samples = 20;
+    float viewDistance = length(viewPos - fragPos);
+    float diskRadius = (1.0 + (viewDistance / far_plane)) / 25.0;
+    for(int i = 0; i < samples; ++i)
+    {
+        float closestDepth = texture(depthMap, fragToLight + gridSamplingDisk[i] * diskRadius).r;
+        closestDepth *= far_plane;   // undo mapping [0;1]
+        if(currentDepth - bias > closestDepth)
+            shadow += 1.0;
+    }
+    shadow /= float(samples);
+    */
+    // display closestDepth as debug (to visualize depth cubemap)
+    // FragColor = vec4(vec3(closestDepth / far_plane), 1.0);    
+    
+    return shadow;
+}
+
+
 void main(){
 	
 	// Use Texture or Material Color
@@ -56,8 +112,12 @@ void main(){
 		MaterialDiffuseColor = diffuseColor;
 	}
 
+	//////////////// calculate point shadow ///////////////
+	float shadow = ShadowCalculation(FragPos);
+	//////////////////////////////////////////////////////
 
-	float AmbientIntensity = 0.01;
+	float AmbientIntensity = 0.3;
+
 	vec3 MaterialAmbientColor = AmbientIntensity * MaterialDiffuseColor;
 	vec3 MaterialSpecularColor = specularColor;
 
@@ -86,10 +146,6 @@ void main(){
 
 	float I2 = 1 / distance( Torch2Position_worldspace, Position_worldspace );
 
-	
-
-
-
 	float visibility=1.0;
 	
 	// Bias to get rid of Shadow acne
@@ -109,13 +165,12 @@ void main(){
 
 	visibility = visibility * visibilityPosible;
 	
-
 	FragColor = vec4(
-	
 		// Ambient
-		vec3(MaterialAmbientColor) + 
+		vec3(MaterialAmbientColor) +
 
-		// Diffuse Torch 1
+		(1.0-shadow) *	
+		(// Diffuse Torch 1
 		MaterialDiffuseColor * I1 * cosTheta1 +
 		// Specular Torch 1
 		MaterialSpecularColor * I1 * pow(cosAlpha1, 5) +
@@ -124,9 +179,8 @@ void main(){
 		// Diffuse Torch 2
 		MaterialDiffuseColor * I2 * cosTheta2 +
 		// Specular Torch 2
-		MaterialSpecularColor * I2 * pow(cosAlpha2, 5) +
+		MaterialSpecularColor * I2 * pow(cosAlpha2, 5)) +
 		// Window
 		MaterialDiffuseColor * visibility
-
-		, 1);
+	, 1);
 }
