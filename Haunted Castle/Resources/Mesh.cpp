@@ -246,6 +246,12 @@ void Mesh::loadUniforms(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalP
 	// Torch2
 	auto Torch2Position_worldspace_location = glGetUniformLocation(shader->programHandle, "Torch2Position_worldspace");
 	glUniform3f(Torch2Position_worldspace_location, torchPos[1].x, torchPos[1].y, torchPos[1].z);
+	
+	for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++) {
+		string nameString = "flameIntensity[" + std::to_string(i) + "]";
+		auto flameIntensity_location = glGetUniformLocation(shader->programHandle, nameString.c_str());
+		glUniform1f(flameIntensity_location, flameIntensity[i]);
+	}
 
 	// Diffuse
 	auto diffuseColor = glGetUniformLocation(shader->programHandle, "diffuseColor");

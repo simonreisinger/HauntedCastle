@@ -70,6 +70,7 @@ void initPointShadows();
 void renderScreen();
 void renderDepthCubemap();
 void renderDepthMap();
+void renderFire(float time_delta);
 void sendPointShadowsDataToScreenRenderer();
 void sendDirectionalShadowsDataToScreenRenderer();
 float rand(float min, float max);
@@ -131,9 +132,11 @@ float RING_HEIGHT_HIGH = 2.0f;
 float RING_HEIGHT_MEDIUM = 6.0f;
 float RING_HEIGHT_LOW = 10.0f;
 
-int width;
-int height;
+int width = 1600;
+int height = 1600;
 float ratio;
+
+auto fullscreen = false;
 
 float MOVESPEED = 80000.0f;
 float ROTATESPEED = 5000.0f;
@@ -328,10 +331,7 @@ int main(int argc, char** argv)
 	cout << "Loading..." << endl;
 
 	// TODO implement full screen 
-	width = 1600;
-	height = 1600;
 	ratio = (float)width / (float)height;
-	auto fullscreen = false;
 
 	// Parameters
 	if (argc == 3) {
@@ -443,14 +443,11 @@ int main(int argc, char** argv)
 
 	init();
 
-
 	glfwSetWindowTitle(window, "Haunted Castle");
 
 	atexit(OnShutdown);			//Called on application exit 
 
-
 	glfwShowWindow(window);
-
 
 	// Define the color with which the screen is cleared
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -476,11 +473,7 @@ int main(int argc, char** argv)
 
 		NUMBER_OF_CULLED_MESHES = 0;
 
-
-
 		handleInput(window, time_delta);
-
-
 
 		update(time_delta, time_abs);
 
@@ -501,42 +494,16 @@ int main(int argc, char** argv)
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glUseProgram(renderShader->programHandle);
 
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-		glViewport(0, 0, width, height);
-
-		glEnable(GL_CULL_FACE);
-		glCullFace(GL_BACK);
-
-		// Clear screen
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		
-
 		sendDirectionalShadowsDataToScreenRenderer();
-
 
 		sendPointShadowsDataToScreenRenderer();
 		
-
-
-		for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++) {
-			string nameString = "flameIntensity[" + std::to_string(i) + "]";
-			auto flameIntensity_location = glGetUniformLocation(renderShader->programHandle, nameString.c_str());
-			glUniform1f(flameIntensity_location, flameIntensity[i]);
-		}
-
 		renderScreen();
-		
-
+	
 		auto time_screen_end = glfwGetTime();
 		auto time_fires_start = glfwGetTime();
 
-		for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++)
-		{
-			//cout << "Fire " << i+1 << ": ";
-			fire[i]->renderParticles(time_delta, view, proj, flameIntensity[i]);
-			//cout << endl;
-		}
-		//cout << endl;
+		renderFire(time_delta);
 
 		auto time_fires_end = glfwGetTime();
 		auto time_total_end = glfwGetTime();
@@ -719,6 +686,16 @@ void initScene(){
 }
 
 void renderScreen(){
+
+	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	glViewport(0, 0, width, height);
+
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
+
+	// Clear screen
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 	mat4x4 camera_model = camera->getCameraModel();
 
 	view = camera_model * pxMatToGlm(PxMat44(actor->actor->getGlobalPose().getInverse()));
@@ -940,6 +917,16 @@ void sendPointShadowsDataToScreenRenderer(){
 
 	glActiveTexture(GL_TEXTURE1);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+}
+
+void renderFire(float time_delta){
+	for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++)
+	{
+		//cout << "Fire " << i+1 << ": ";
+		fire[i]->renderParticles(time_delta, view, proj, flameIntensity[i]);
+		//cout << endl;
+	}
+	//cout << endl;
 }
 
 GLuint quadVAO = 0;
