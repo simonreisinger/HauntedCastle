@@ -48,9 +48,11 @@ namespace cgue
 		GLuint texid;
 		Shader* shader;
 		bool hasTexture;
+		bool hasNormalTexture;
 		glm::vec3 diffuse;
 		glm::vec3 specular;
 		Texture* texture;
+		Texture* normalTexture;
 
 		GLuint vao, positionBuffer, normalsBuffer, uvBuffer, indexBuffer;
 

@@ -23,6 +23,7 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 	iMeshesLoaded++;
 	//cout << "Loading Mesh " << iMeshesLoaded << " of " << countMeshesLoading << endl;
 
+	
 
 	int texIndex = 0;
 	aiString path;
@@ -35,17 +36,34 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 	material->Get(AI_MATKEY_COLOR_SPECULAR, specularColor);
 	specular = vec3(specularColor.r, specularColor.g, specularColor.b);
 
-	
 
 	hasTexture = false;
-	if (material->GetTexture(aiTextureType_DIFFUSE, texIndex, &path) == AI_SUCCESS)
+	hasNormalTexture = false;
+
+	for (int texIndex = 0; texIndex < material->GetTextureCount(aiTextureType_DIFFUSE); texIndex++)
 	{
-		string sTextureName = path.data;
-		//cout << "sTextureName: " << sTextureName << endl;
+		if (material->GetTexture(aiTextureType_DIFFUSE, texIndex, &path) == AI_SUCCESS)
+		{
+			string sTextureName = path.data;
+			//cout << "sTextureName: " << sTextureName << endl;
 
-		texture = new Texture(modelDir, sTextureName);
+			texture = new Texture(modelDir, sTextureName);
 
-		hasTexture = true;
+			hasTexture = true;
+		}
+	}
+
+	for (int texIndex = 0; texIndex < material->GetTextureCount(aiTextureType_NORMALS); texIndex++)
+	{
+		if (material->GetTexture(aiTextureType_NORMALS, texIndex, &path) == AI_SUCCESS)
+		{
+			string sTextureName = path.data;
+			//cout << "sTextureName: " << sTextureName << endl;
+
+			normalTexture = new Texture(modelDir, sTextureName);
+
+			hasNormalTexture = true;
+		}
 	}
 
 	size = mesh->mNumFaces * 3;
@@ -275,6 +293,21 @@ void Mesh::loadUniforms(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalP
 	}
 	else {
 		glUniform1i(tex_enabled, 0);
+	}
+
+
+	// Normal Texture
+	auto normal_tex_enabled = glGetUniformLocation(shader->programHandle, "hasNormalTexture");
+	if (hasNormalTexture) {
+		glUniform1i(normal_tex_enabled, 1);
+
+		normalTexture->bind(7);
+
+		auto modelNormalTexture_location = glGetUniformLocation(shader->programHandle, "modelNormalTexture");
+		glUniform1i(modelNormalTexture_location, 7);
+	}
+	else {
+		glUniform1i(normal_tex_enabled, 0);
 	}
 }
 

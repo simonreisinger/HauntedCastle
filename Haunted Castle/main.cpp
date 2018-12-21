@@ -664,7 +664,6 @@ void initScene(){
 	actor->initActor();
 
 	room = new Room(renderShader);
-	knight1 = new Knight1(renderShader);
 
 	if (renderObjects) {
 		wardrobe = new Wardrobe(renderShader);
@@ -679,6 +678,7 @@ void initScene(){
 		chair1 = new Chair1(renderShader);
 		chair2 = new Chair2(renderShader);
 
+		knight1 = new Knight1(renderShader);
 		knight2 = new Knight2(renderShader);
 
 		door = new Door(renderShader);
@@ -1003,7 +1003,6 @@ void renderScene(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_mod
 
 
 	room->renderGeometry(drawShader, view, proj, camera_model, cull);
-	knight1->renderGeometry(drawShader, view, proj, camera_model, cull);
 
 	if (renderObjects)
 	{
@@ -1014,6 +1013,7 @@ void renderScene(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_mod
 		chair1->renderGeometry(drawShader, view, proj, camera_model, cull);
 		chair2->renderGeometry(drawShader, view, proj, camera_model, cull);
 
+		knight1->renderGeometry(drawShader, view, proj, camera_model, cull);
 		knight2->renderGeometry(drawShader, view, proj, camera_model, cull);
 
 		wardrobe->renderGeometry(drawShader, view, proj, camera_model, cull);

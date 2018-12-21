@@ -15,10 +15,12 @@ layout (location = 0) out vec4 FragColor;
 
 // Values that stay constant for the whole mesh.
 uniform sampler2D modelTexture; // modelTexture
+uniform sampler2D modelNormalTexture; // modelTexture
 uniform vec3 Torch1Position_worldspace;
 uniform vec3 Torch2Position_worldspace;
 uniform float flameIntensity[2];
 uniform int hasTexture;
+uniform int hasNormalTexture;
 uniform vec3 diffuseColor;
 uniform vec3 specularColor;
 uniform sampler2DShadow directionalShadowsDepthMap;
@@ -115,6 +117,15 @@ void main(){
 	vec3 MaterialSpecularColor = specularColor;
 
 
+	
+	if(hasNormalTexture == 1)
+	{
+		// obtain normal from normal map in range [0,1]
+		vec3 normal = texture(modelNormalTexture, UV).rgb;
+		// transform normal vector to range [-1,1]
+		normal = normalize(normal * 2.0 - 1.0);   
+	}
+
 
 
 	vec3 n1 = normalize( Normal_cameraspace );
@@ -186,4 +197,6 @@ void main(){
 		// Window
 		MaterialDiffuseColor * visibility
 	, 1);
+
+	//FragColor = vec4(normal, 1);
 }
