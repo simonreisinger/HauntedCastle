@@ -284,10 +284,12 @@ void Mesh::loadUniforms(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalP
 	if (hasTexture) {
 		glUniform1i(tex_enabled, 1);
 
-		texture->bind(3);
+		int posOnGPU = 0;
+
+		texture->bind(posOnGPU);
 
 		auto modelTexture_location = glGetUniformLocation(shader->programHandle, "modelTexture");
-		glUniform1i(modelTexture_location, 3);
+		glUniform1i(modelTexture_location, posOnGPU);
 	}
 	else {
 		glUniform1i(tex_enabled, 0);

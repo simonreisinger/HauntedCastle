@@ -66,12 +66,12 @@ void init();
 void initPhysics();
 void initScene();
 void initDirectionalShadows();
-void initPointShadows();
+void initPointShadows(int index);
 void renderScreen();
-void renderDepthCubemap();
+void renderDepthCubemap(int index);
 void renderDepthMap();
 void renderFire(float time_delta);
-void sendPointShadowsDataToScreenRenderer();
+void sendPointShadowsDataToScreenRenderer(int index);
 void sendDirectionalShadowsDataToScreenRenderer();
 float rand(float min, float max);
 
@@ -87,10 +87,16 @@ GLuint colorBuffers[2];
 GLuint pingpongFBO[2];
 GLuint pingpongColorbuffers[2];
 
-unsigned int pointShadowsFBO;
-unsigned int depthCubemap;
+const int numberOfTorches = 2;
+unsigned int pointShadowsFBO[numberOfTorches];
+unsigned int depthCubemap[numberOfTorches];
+glm::vec3 flameCenterPosition[numberOfTorches];
 
-std::vector<glm::mat4> shadowTransforms;
+
+GLuint cubemaps; // TODO not implemented yet
+GLuint depthMapFBO;
+
+std::vector<glm::mat4> shadowTransforms[numberOfTorches];
 
 glm::mat4 depthVP;
 
@@ -113,8 +119,6 @@ Coordinatesystem* coordinatesystem;
 Fire** fire;
 
 mat4x4 view;
-
-glm::vec3 flameCenterPosition;
 
 double mouseXPosOld, mouseYPosOld;
 
@@ -462,6 +466,10 @@ int main(int argc, char** argv)
 
 	while (!glfwWindowShouldClose(window))
 	{
+		/*
+		for (int i = 0; i < numberOfTorches; i++){
+			cout << depthCubemap[i] << endl;
+		}*/
 		auto time_total_start = glfwGetTime();
 		auto time_update_start = glfwGetTime();
 
@@ -480,7 +488,9 @@ int main(int argc, char** argv)
 		auto time_update_end = glfwGetTime();
 		auto time_pointShadows_start = glfwGetTime();
 
-		renderDepthCubemap();
+		for (int i = 0; i < numberOfTorches; i++){
+			renderDepthCubemap(i);
+		}
 
 		auto time_pointShadows_end = glfwGetTime();
 		auto time_directionalShadows_start = glfwGetTime();
@@ -496,8 +506,10 @@ int main(int argc, char** argv)
 
 		sendDirectionalShadowsDataToScreenRenderer();
 
-		sendPointShadowsDataToScreenRenderer();
-		
+		for (int i = 0; i < numberOfTorches; i++){
+			sendPointShadowsDataToScreenRenderer(i);
+		}
+
 		renderScreen();
 	
 		auto time_screen_end = glfwGetTime();
@@ -586,8 +598,9 @@ void init()
 	initPhysics();
 	initScene();
 	initDirectionalShadows();
-	initPointShadows();
-
+	for (int i = 0; i < numberOfTorches; i++){
+		initPointShadows(i);
+	}
 	// Always check that our framebuffer is ok
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
@@ -817,30 +830,31 @@ void sendDirectionalShadowsDataToScreenRenderer(){
 	GLuint DepthVPID = glGetUniformLocation(renderShader->programHandle, "directionalShadowsDepthVP");
 	glUniformMatrix4fv(DepthVPID, 1, GL_FALSE, &depthVP[0][0]);
 
-	int i = 2;
-	glActiveTexture(GL_TEXTURE0 + i);
+	int GPUpos = 2;
+	glActiveTexture(GL_TEXTURE0 + GPUpos);
 	glBindTexture(GL_TEXTURE_2D, directionalShadowsDepthMap);
 	GLuint directionalShadowsID = glGetUniformLocation(renderShader->programHandle, "directionalShadowsDepthMap");
-	glUniform1i(directionalShadowsID, i);
+	glUniform1i(directionalShadowsID, GPUpos);
 }
 
 // source: https://learnopengl.com/Advanced-Lighting/Shadows/Point-Shadows
-void initPointShadows(){
+void initPointShadows(int index){
 
 	pointShadowsShader = new Shader(
 		"Shader/PointShadows.vert",
 		"Shader/PointShadows.frag",
 		"Shader/PointShadows.geom");
 
+
 	// Create and bind FBO
-	glGenFramebuffers(1, &pointShadowsFBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, pointShadowsFBO);
+	glGenFramebuffers(1, &pointShadowsFBO[index]);
+	glBindFramebuffer(GL_FRAMEBUFFER, pointShadowsFBO[index]);
 
 	// Create cubemap textures
-	glGenTextures(1, &depthCubemap);
+	glGenTextures(1, &depthCubemap[index]);
 	const unsigned int SHADOW_WIDTH = 1600, SHADOW_HEIGHT = 1600; // TODO change this line
 	
-	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap[index]);
 	for (unsigned int i = 0; i < 6; ++i){
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT,
 			SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
@@ -851,10 +865,10 @@ void initPointShadows(){
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
+	
 	// attach depth texture as FBO's depth buffer
 	// (tells GPU that this texture should be the output of current bound FBO)
-	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemap, 0);
+	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemap[index], 0);
 
 
 	glDrawBuffer(GL_NONE);
@@ -867,25 +881,25 @@ void initPointShadows(){
 	// Point shadow
 	// lighting info
 	// -------------
-	flameCenterPosition = torchPos[0] + 0.5f * flameDir;
+	flameCenterPosition[index] = torchPos[index] + 0.5f * flameDir;
 
 	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), ratio, pointShadowsNearPlane, pointShadowsFarPlane);
 
-	shadowTransforms.push_back(shadowProj * glm::lookAt(flameCenterPosition, flameCenterPosition + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-	shadowTransforms.push_back(shadowProj * glm::lookAt(flameCenterPosition, flameCenterPosition + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-	shadowTransforms.push_back(shadowProj * glm::lookAt(flameCenterPosition, flameCenterPosition + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
-	shadowTransforms.push_back(shadowProj * glm::lookAt(flameCenterPosition, flameCenterPosition + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
-	shadowTransforms.push_back(shadowProj * glm::lookAt(flameCenterPosition, flameCenterPosition + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-	shadowTransforms.push_back(shadowProj * glm::lookAt(flameCenterPosition, flameCenterPosition + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	shadowTransforms[index].push_back(shadowProj * glm::lookAt(flameCenterPosition[index], flameCenterPosition[index] + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	shadowTransforms[index].push_back(shadowProj * glm::lookAt(flameCenterPosition[index], flameCenterPosition[index] + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	shadowTransforms[index].push_back(shadowProj * glm::lookAt(flameCenterPosition[index], flameCenterPosition[index] + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+	shadowTransforms[index].push_back(shadowProj * glm::lookAt(flameCenterPosition[index], flameCenterPosition[index] + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
+	shadowTransforms[index].push_back(shadowProj * glm::lookAt(flameCenterPosition[index], flameCenterPosition[index] + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	shadowTransforms[index].push_back(shadowProj * glm::lookAt(flameCenterPosition[index], flameCenterPosition[index] + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
 }
 
 // Creates the depth cubmap each render cycle
-void renderDepthCubemap(){
+void renderDepthCubemap(int index){
 	// 1. render scene to depth cubemap
 	// --------------------------------
 
 	// Loads the FBO with the bound cubemap as output
-	glBindFramebuffer(GL_FRAMEBUFFER, pointShadowsFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, pointShadowsFBO[index]);
 	glUseProgram(pointShadowsShader->programHandle);
 
 
@@ -899,24 +913,40 @@ void renderDepthCubemap(){
 	for (unsigned int i = 0; i < 6; ++i){
 		string nameString = "shadowMatrices[" + std::to_string(i) + "]";
 		auto DepthMapVPID = glGetUniformLocation(pointShadowsShader->programHandle, nameString.c_str());
-		glUniformMatrix4fv(DepthMapVPID, 1, GL_FALSE, &shadowTransforms[i][0][0]);
+		glUniformMatrix4fv(DepthMapVPID, 1, GL_FALSE, &shadowTransforms[index][i][0][0]);
 	}
 
 	glUniform1f(glGetUniformLocation(pointShadowsShader->programHandle, "pointShadowsFarPlane"), pointShadowsFarPlane);
 
-	auto xyzac = glGetUniformLocation(pointShadowsShader->programHandle, "flameCenterPosition");
-	glUniform3f(xyzac, flameCenterPosition.x, flameCenterPosition.y, flameCenterPosition.z);
+	auto flameCenterPositionID = glGetUniformLocation(pointShadowsShader->programHandle, "flameCenterPosition");
+	glUniform3f(flameCenterPositionID, flameCenterPosition[index].x, flameCenterPosition[index].y, flameCenterPosition[index].z);
 
 	renderScene(pointShadowsShader, mat4x4(1.0f), mat4x4(1.0f), mat4x4(1.0f));
 }
 
-void sendPointShadowsDataToScreenRenderer(){
-	glUniform1i(glGetUniformLocation(renderShader->programHandle, "pointShadowsDepthCubeMap"), 1);
+void sendPointShadowsDataToScreenRenderer(int index){
+	//cout << "xx: " << pointShadowsFarPlane << "xx: " << pointShadowsFarPlane << "xx: " << pointShadowsFarPlane << "xx: " << pointShadowsFarPlane << endl;
+	///////////////////////// same for both /////////////////////////
 	glUniform1f(glGetUniformLocation(renderShader->programHandle, "pointShadowsFarPlane"), pointShadowsFarPlane);
-	glUniform3f(glGetUniformLocation(renderShader->programHandle, "flameCenterPosition"), flameCenterPosition.x, flameCenterPosition.y, flameCenterPosition.z);
+	
+	mat4x4 camera_model = camera->getCameraModel();
+	mat4 viewPosMatrix = camera_model * pxMatToGlm(PxMat44(actor->actor->getGlobalPose().getInverse()));
+	vec3 viewPos = vec3(viewPosMatrix[3][0], viewPosMatrix[3][1], viewPosMatrix[3][2]);
+	//cout << "Pos:" << viewPos.x << ", " << viewPos.y << ", " << viewPos.z << endl;
 
-	glActiveTexture(GL_TEXTURE1);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
+	glUniform3f(glGetUniformLocation(renderShader->programHandle, "viewPos"), viewPos.x, viewPos.y, viewPos.z);
+
+
+	///////////////////////// different for both /////////////////////////
+	string nameStringFlameCenterPosition = "flameCenterPosition" + std::to_string(index + 1);
+	glUniform3f(glGetUniformLocation(renderShader->programHandle, nameStringFlameCenterPosition.c_str()), flameCenterPosition[index].x, flameCenterPosition[index].y, flameCenterPosition[index].z);
+
+	int firstDepthMapGPUPos = 3;
+	string nameStringPointShadowsDepthCubeMap = "pointShadowsDepthCubeMap" + std::to_string(index + 1);
+	glUniform1i(glGetUniformLocation(renderShader->programHandle, nameStringPointShadowsDepthCubeMap.c_str()), index + firstDepthMapGPUPos);
+
+	glActiveTexture(GL_TEXTURE0 + index + firstDepthMapGPUPos);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap[index]);
 }
 
 void renderFire(float time_delta){
