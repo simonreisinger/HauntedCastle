@@ -21,14 +21,14 @@ uniform float flameIntensity[2];
 uniform int hasTexture;
 uniform vec3 diffuseColor;
 uniform vec3 specularColor;
-uniform sampler2DShadow shadowMap;
+uniform sampler2DShadow directionalShadowsDepthMap;
 uniform vec3 SunDirection_worldspace;
 
 	//////////////// calculate point shadow ///////////////
-	uniform samplerCube depthMap;
+	uniform samplerCube pointShadowsDepthCubeMap;
 	uniform vec3 viewPos;
-	uniform vec3 lightPos;
-	uniform float far_plane;
+	uniform vec3 flameCenterPosition;
+	uniform float pointShadowsFarPlane;
 	in vec3 FragPos;
 	//////////////////////////////////////////////////////
 
@@ -65,15 +65,15 @@ vec3 gridSamplingDisk[20] = vec3[]
 float ShadowCalculation(vec3 fragPos)
 {
     // get vector between fragment position and light position
-    vec3 fragToLight = fragPos - lightPos;
+    vec3 fragToLight = fragPos - flameCenterPosition;
     // use the fragment to light vector to sample from the depth map    
     // float closestDepth = texture(depthMap, fragToLight).r;
     // it is currently in linear range between [0,1], let's re-transform it back to original depth value
-    // closestDepth *= far_plane;
+    // closestDepth *= pointShadowsFarPlane;
     // now get current linear depth as the length between the fragment and light position
     float currentDepth = length(fragToLight);
     // test for shadows
-    // float bias = 0.05; // we use a much larger bias since depth is now in [near_plane, far_plane] range
+    // float bias = 0.05; // we use a much larger bias since depth is now in [near_plane, pointShadowsFarPlane] range
     // float shadow = currentDepth -  bias > closestDepth ? 1.0 : 0.0;
     // PCF
     // float shadow = 0.0;
@@ -87,7 +87,7 @@ float ShadowCalculation(vec3 fragPos)
             // for(float z = -offset; z < offset; z += offset / (samples * 0.5))
             // {
                 // float closestDepth = texture(depthMap, fragToLight + vec3(x, y, z)).r; // use lightdir to lookup cubemap
-                // closestDepth *= far_plane;   // Undo mapping [0;1]
+                // closestDepth *= pointShadowsFarPlane;   // Undo mapping [0;1]
                 // if(currentDepth - bias > closestDepth)
                     // shadow += 1.0;
             // }
@@ -98,18 +98,18 @@ float ShadowCalculation(vec3 fragPos)
     float bias = 0.25;
     int samples = 20;
     float viewDistance = length(viewPos - fragPos);
-    float diskRadius = (1.0 + (viewDistance / far_plane)) / 25.0;
+    float diskRadius = (1.0 + (viewDistance / pointShadowsFarPlane)) / 25.0;
     for(int i = 0; i < samples; ++i)
     {
-        float closestDepth = texture(depthMap, fragToLight + gridSamplingDisk[i] * diskRadius).r;
-        closestDepth *= far_plane;   // undo mapping [0;1]
+        float closestDepth = texture(pointShadowsDepthCubeMap, fragToLight + gridSamplingDisk[i] * diskRadius).r;
+        closestDepth *= pointShadowsFarPlane;   // undo mapping [0;1]
         if(currentDepth - bias > closestDepth)
             shadow += 1.0;
     }
     shadow /= float(samples);
         
     // display closestDepth as debug (to visualize depth cubemap)
-    // FragColor = vec4(vec3(closestDepth / far_plane), 1.0);    
+    // FragColor = vec4(vec3(closestDepth / pointShadowsFarPlane), 1.0);    
         
     return shadow;
 }
@@ -172,7 +172,7 @@ void main(){
 	// PCF
 	// 4 Times Stratified Poisson Sampling
 	for (int i=0;i<4;i++){
-		visibility -= 0.25*(1.0-texture( shadowMap, vec3(ShadowCoord.xy + disk[i]/700.0,  (ShadowCoord.z-bias)/ShadowCoord.w) ));
+		visibility -= 0.25*(1.0-texture( directionalShadowsDepthMap, vec3(ShadowCoord.xy + disk[i]/700.0,  (ShadowCoord.z-bias)/ShadowCoord.w) ));
 	}
 
 	

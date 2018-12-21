@@ -13,7 +13,6 @@ bool TEXTURE_SAMPLING_QUALITY = true;
 bool CGUE_F5_PRESSED = false;
 int MIP_MAPPING_QUALITY = 2;
 bool CGUE_F6_PRESSED = false;
-bool EFFECT_HDR_ENABLED = false;
 bool CGUE_F8_PRESSED = false;
 bool VIEWFRUSTUM_CULLING = false;
 int NUMBER_OF_CULLED_MESHES = 0;

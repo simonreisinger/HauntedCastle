@@ -67,8 +67,11 @@ void initPhysics();
 void initScene();
 void initDirectionalShadows();
 void initPointShadows();
+void renderScreen();
 void renderDepthCubemap();
 void renderDepthMap();
+void sendPointShadowsDataToScreenRenderer();
+void sendDirectionalShadowsDataToScreenRenderer();
 float rand(float min, float max);
 
 GLFWwindow* window;
@@ -78,7 +81,7 @@ Shader* directionalShadowsShader;
 Shader* pointShadowsShader;
 
 GLuint directionalShadowsFBO = 0;
-GLuint hdrFBO;
+GLuint directionalShadowsColorMap;
 GLuint colorBuffers[2];
 GLuint pingpongFBO[2];
 GLuint pingpongColorbuffers[2];
@@ -87,6 +90,8 @@ unsigned int pointShadowsFBO;
 unsigned int depthCubemap;
 
 std::vector<glm::mat4> shadowTransforms;
+
+glm::mat4 depthVP;
 
 Actor* actor; 
 Knight1* knight1;
@@ -106,7 +111,9 @@ Chess* chess;
 Coordinatesystem* coordinatesystem;
 Fire** fire;
 
-glm::vec3 lightPos;
+mat4x4 view;
+
+glm::vec3 flameCenterPosition;
 
 double mouseXPosOld, mouseYPosOld;
 
@@ -114,8 +121,8 @@ double mouseXPosOld, mouseYPosOld;
 float nearDist = 0.01f;
 float farDist = 200.0f;
 float fov = 100.0f;
-float near_plane = 0.1; // = 1.0f;
-float far_plane = 50.0f; // = farDist; //
+float pointShadowsNearPlane = 0.1; // = 1.0f;
+float pointShadowsFarPlane = 50.0f; // = farDist; //
 ///////////////////////////////////////////
 
 FrustumG* frustumG;
@@ -486,46 +493,10 @@ int main(int argc, char** argv)
 
 		renderDepthMap();
 
-		// Render to our framebuffer
-		//glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glBindFramebuffer(GL_FRAMEBUFFER, directionalShadowsFBO);
-		glViewport(0, 0, width, height); // Render on the whole framebuffer, complete from the lower left corner to the upper right
-
-		// We don't use bias in the shader, but instead we draw back faces, 
-		// which are already separated from the front faces by a small distance 
-		glDisable(GL_CULL_FACE);
-		//glCullFace(GL_BACK); // Cull back-facing triangles -> draw only front-facing triangles
-
-		// Clear the screen
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		// Use our shader
-		glUseProgram(directionalShadowsShader->programHandle);
-
-
-		// Compute the MVP matrix from the light's point of view
-		glm::mat4 depthProjectionMatrix = glm::ortho<float>(-20, 20, 20, -20, -40.0f, 40.0f);
-		glm::mat4 depthViewMatrix = glm::lookAt(SunDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-		//lookAt
-		// or, for spot light :
-		//glm::vec3 lightPos(5, 20, 20);
-		//glm::mat4 depthProjectionMatrix = glm::perspective<float>(45.0f, 1.0f, 2.0f, 50.0f);
-		//glm::mat4 depthViewMatrix = glm::lookAt(lightPos, lightPos-lightInvDir, glm::vec3(0,1,0));
-
-		glm::mat4 depthModelMatrix = glm::mat4(1.0);
-		glm::mat4 depthVP = depthProjectionMatrix * depthViewMatrix;
-		glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
-		
-		// Send our transformation to the currently bound shader, 
-		// in the "MVP" uniform
-
-		// Shadow
-		renderScene(directionalShadowsShader, depthViewMatrix, depthProjectionMatrix, mat4x4(1.0f));
-
 		auto time_directionalShadows_end = glfwGetTime();
 		auto time_screen_start = glfwGetTime();
 
-		// 1. Render scene into floating point framebuffer
+		// Render scene into floating point framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glUseProgram(renderShader->programHandle);
 
@@ -537,40 +508,13 @@ int main(int argc, char** argv)
 
 		// Clear screen
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		
+
+		sendDirectionalShadowsDataToScreenRenderer();
 
 
-		glm::mat4 biasMatrix(
-			0.5, 0.0, 0.0, 0.0,
-			0.0, 0.5, 0.0, 0.0,
-			0.0, 0.0, 0.5, 0.0,
-			0.5, 0.5, 0.5, 1.0
-			);
-
-		GLuint DepthVPID = glGetUniformLocation(renderShader->programHandle, "depthVP");
-		glUniformMatrix4fv(DepthVPID, 1, GL_FALSE, &depthVP[0][0]);
-
-
-		glActiveTexture(GL_TEXTURE2);
-		glBindTexture(GL_TEXTURE_2D, directionalShadowsDepthMap);
-		GLuint ShadowMapID = glGetUniformLocation(renderShader->programHandle, "shadowMap");
-		glUniform1i(ShadowMapID, 2);
-
-
-		///////////////////////////////////POINT SHADER///////////////////////////////////////////
-		//shader.setInt("depthMap", 1);
-		glUniform1i(glGetUniformLocation(renderShader->programHandle, "depthMap"), 1);
-		// shader.setFloat("far_plane", far_plane);
-		glUniform1f(glGetUniformLocation(renderShader->programHandle, "far_plane"), far_plane);
-
-		//auto xyzabc = ;
-		glUniform3f(glGetUniformLocation(renderShader->programHandle, "lightPos"), lightPos.x, lightPos.y, lightPos.z);
-		//cout << lightPos.x << " " << lightPos.y << " " << lightPos.z << endl;
-
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
-
-
-		////////SIMON WAS HERE //////////////////////////////////////////////////////////////////
+		sendPointShadowsDataToScreenRenderer();
+		
 
 
 		for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++) {
@@ -579,45 +523,19 @@ int main(int argc, char** argv)
 			glUniform1f(flameIntensity_location, flameIntensity[i]);
 		}
 
+		renderScreen();
 		
-		mat4x4 camera_model = camera->getCameraModel();
-
-		mat4x4 view = camera_model * pxMatToGlm(PxMat44(actor->actor->getGlobalPose().getInverse()));
-
-		
-		proj = glm::perspective(fov, ratio, nearDist, farDist);
-
-
-		vec4 camera_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraPos(), 1);
-		vec3 p = vec3(camera_pos.x, camera_pos.y, camera_pos.z);
-
-		vec4 look_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraLookAt(), 1);
-		vec3 l = vec3(look_pos.x, look_pos.y, look_pos.z);
-
-		vec4 up_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraUp(), 1);
-		vec3 u = vec3(up_pos.x, up_pos.y, up_pos.z);
-		u = u - p;
-		u = normalize(u);
-
-
-
-		mat4x4 lookAt = glm::lookAt(p, l, u);
-		
-		frustumG->setCamInternals(fov, ratio, nearDist, farDist);
-		frustumG->setCamDef(p, l, u);
-		
-		renderScene(renderShader, lookAt, proj, camera_model);
 
 		auto time_screen_end = glfwGetTime();
 		auto time_fires_start = glfwGetTime();
 
 		for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++)
 		{
-			cout << "Fire " << i+1 << ": ";
-			fire[i]->drawParticles(time_delta, view, proj, flameIntensity[i]);
-			cout << endl;
+			//cout << "Fire " << i+1 << ": ";
+			fire[i]->renderParticles(time_delta, view, proj, flameIntensity[i]);
+			//cout << endl;
 		}
-		cout << endl;
+		//cout << endl;
 
 		auto time_fires_end = glfwGetTime();
 		auto time_total_end = glfwGetTime();
@@ -757,9 +675,6 @@ void initScene(){
 
 	renderShader = new Shader("Shader/Screen.vert", "Shader/Screen.frag");
 
-
-	// 60° Open angle, aspect, near, far
-	//proj = glm::perspective(100.0f, (float)width / (float)height, 0.1f, 200.0f);
 	frustumG = new FrustumG();
 	camera = new Camera();
 
@@ -800,6 +715,34 @@ void initScene(){
 
 
 	//coordinatesystem = new Coordinatesystem(renderShader);
+}
+
+void renderScreen(){
+	mat4x4 camera_model = camera->getCameraModel();
+
+	view = camera_model * pxMatToGlm(PxMat44(actor->actor->getGlobalPose().getInverse()));
+
+
+	proj = glm::perspective(fov, ratio, nearDist, farDist);
+
+
+	vec4 camera_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraPos(), 1);
+	vec3 p = vec3(camera_pos.x, camera_pos.y, camera_pos.z);
+
+	vec4 look_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraLookAt(), 1);
+	vec3 l = vec3(look_pos.x, look_pos.y, look_pos.z);
+
+	vec4 up_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraUp(), 1);
+	vec3 u = vec3(up_pos.x, up_pos.y, up_pos.z);
+	u = u - p;
+	u = normalize(u);
+
+	mat4x4 lookAt = glm::lookAt(p, l, u);
+
+	frustumG->setCamInternals(fov, ratio, nearDist, farDist);
+	frustumG->setCamDef(p, l, u);
+
+	renderScene(renderShader, lookAt, proj, camera_model);
 }
 
 void initDirectionalShadows()
@@ -844,8 +787,8 @@ void initDirectionalShadows()
 	// TODO Still do not know what this FBO and Texture are for,
 	// but they are needed.
 	// Set up floating point framebuffer to render scene to
-	glGenFramebuffers(1, &hdrFBO);
-	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+	glGenFramebuffers(1, &directionalShadowsColorMap);
+	glBindFramebuffer(GL_FRAMEBUFFER, directionalShadowsColorMap);
 	glGenTextures(2, colorBuffers);
 	for (GLuint i = 0; i < 2; i++)
 	{
@@ -865,7 +808,42 @@ void initDirectionalShadows()
 }
 
 void renderDepthMap(){
+	// Render to our framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, directionalShadowsFBO);
+	glViewport(0, 0, width, height); // Render on the whole framebuffer, complete from the lower left corner to the upper right
 
+	// We don't use bias in the shader, but instead we draw back faces, 
+	// which are already separated from the front faces by a small distance 
+	glDisable(GL_CULL_FACE);
+
+	// Clear the screen
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Use our shader
+	glUseProgram(directionalShadowsShader->programHandle);
+
+	// Compute the MVP matrix from the light's point of view
+	glm::mat4 depthProjectionMatrix = glm::ortho<float>(-20, 20, 20, -20, -40.0f, 40.0f);
+	glm::mat4 depthViewMatrix = glm::lookAt(SunDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+
+	glm::mat4 depthModelMatrix = glm::mat4(1.0);
+	depthVP = depthProjectionMatrix * depthViewMatrix;
+	glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
+
+	// Send our transformation to the currently bound shader, 
+
+	renderScene(directionalShadowsShader, depthViewMatrix, depthProjectionMatrix, mat4x4(1.0f));
+}
+
+void sendDirectionalShadowsDataToScreenRenderer(){
+	GLuint DepthVPID = glGetUniformLocation(renderShader->programHandle, "directionalShadowsDepthVP");
+	glUniformMatrix4fv(DepthVPID, 1, GL_FALSE, &depthVP[0][0]);
+
+	int i = 2;
+	glActiveTexture(GL_TEXTURE0 + i);
+	glBindTexture(GL_TEXTURE_2D, directionalShadowsDepthMap);
+	GLuint directionalShadowsID = glGetUniformLocation(renderShader->programHandle, "directionalShadowsDepthMap");
+	glUniform1i(directionalShadowsID, i);
 }
 
 // source: https://learnopengl.com/Advanced-Lighting/Shadows/Point-Shadows
@@ -911,16 +889,16 @@ void initPointShadows(){
 	// Point shadow
 	// lighting info
 	// -------------
-	lightPos = torchPos[0] + 0.5f * flameDir;
+	flameCenterPosition = torchPos[0] + 0.5f * flameDir;
 
-	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), ratio, near_plane, far_plane);
+	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), ratio, pointShadowsNearPlane, pointShadowsFarPlane);
 
-	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
-	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
-	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
-	shadowTransforms.push_back(shadowProj * glm::lookAt(lightPos, lightPos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(flameCenterPosition, flameCenterPosition + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(flameCenterPosition, flameCenterPosition + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(flameCenterPosition, flameCenterPosition + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(flameCenterPosition, flameCenterPosition + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(flameCenterPosition, flameCenterPosition + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
+	shadowTransforms.push_back(shadowProj * glm::lookAt(flameCenterPosition, flameCenterPosition + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
 }
 
 // Creates the depth cubmap each render cycle
@@ -942,16 +920,25 @@ void renderDepthCubemap(){
 
 	for (unsigned int i = 0; i < 6; ++i){
 		string nameString = "shadowMatrices[" + std::to_string(i) + "]";
-		auto DepthVPID = glGetUniformLocation(pointShadowsShader->programHandle, nameString.c_str());
-		glUniformMatrix4fv(DepthVPID, 1, GL_FALSE, &shadowTransforms[i][0][0]);
+		auto DepthMapVPID = glGetUniformLocation(pointShadowsShader->programHandle, nameString.c_str());
+		glUniformMatrix4fv(DepthMapVPID, 1, GL_FALSE, &shadowTransforms[i][0][0]);
 	}
 
-	glUniform1f(glGetUniformLocation(pointShadowsShader->programHandle, "far_plane"), far_plane);
+	glUniform1f(glGetUniformLocation(pointShadowsShader->programHandle, "pointShadowsFarPlane"), pointShadowsFarPlane);
 
-	auto xyzac = glGetUniformLocation(pointShadowsShader->programHandle, "lightPos");
-	glUniform3f(xyzac, lightPos.x, lightPos.y, lightPos.z);
+	auto xyzac = glGetUniformLocation(pointShadowsShader->programHandle, "flameCenterPosition");
+	glUniform3f(xyzac, flameCenterPosition.x, flameCenterPosition.y, flameCenterPosition.z);
 
 	renderScene(pointShadowsShader, mat4x4(1.0f), mat4x4(1.0f), mat4x4(1.0f));
+}
+
+void sendPointShadowsDataToScreenRenderer(){
+	glUniform1i(glGetUniformLocation(renderShader->programHandle, "pointShadowsDepthCubeMap"), 1);
+	glUniform1f(glGetUniformLocation(renderShader->programHandle, "pointShadowsFarPlane"), pointShadowsFarPlane);
+	glUniform3f(glGetUniformLocation(renderShader->programHandle, "flameCenterPosition"), flameCenterPosition.x, flameCenterPosition.y, flameCenterPosition.z);
+
+	glActiveTexture(GL_TEXTURE1);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap);
 }
 
 GLuint quadVAO = 0;

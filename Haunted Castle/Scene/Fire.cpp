@@ -190,7 +190,7 @@ void Fire::calculate(double deltaTime)
 	GLuint *counterValue = (GLuint*)glMapBufferRange(GL_COPY_WRITE_BUFFER, 0,
 		sizeof(GLuint), GL_MAP_READ_BIT | GL_MAP_WRITE_BIT); // Needs so long for the first fire
 	auto time_suspicious_function_end = glfwGetTime();
-	cout << "dispatch: " << (time_suspicious_function_end - time_suspicious_function_start) * 1000 << "ms, ";
+	//cout << "dispatch: " << (time_suspicious_function_end - time_suspicious_function_start) * 1000 << "ms, ";
 
 	particle_count = counterValue[0];
 	//cout << "Particles: " << particle_count << endl;
@@ -259,7 +259,7 @@ void Fire::draw(mat4x4 view, mat4x4 proj, float flameIntensity)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-void Fire::drawParticles(float delta, mat4x4 view, mat4x4 proj, float flameIntensity)
+void Fire::renderParticles(float delta, mat4x4 view, mat4x4 proj, float flameIntensity)
 {
 	auto time_calculate_start = glfwGetTime();
 	calculate(delta);
@@ -269,6 +269,6 @@ void Fire::drawParticles(float delta, mat4x4 view, mat4x4 proj, float flameInten
 	draw(view, proj, flameIntensity);
 	auto time_draw_end = glfwGetTime();
 
-	cout << "calculate: " << (time_calculate_end - time_calculate_start) * 1000 << "ms, ";
-	cout << "draw: " << (time_draw_end - time_draw_start) * 1000 << "ms, ";
+	//cout << "calculate: " << (time_calculate_end - time_calculate_start) * 1000 << "ms, ";
+	//cout << "draw: " << (time_draw_end - time_draw_start) * 1000 << "ms, ";
 }

@@ -21,7 +21,7 @@ out vec4 ShadowCoord;
 uniform mat4 MVP;
 uniform mat4 V;
 uniform mat4 M;
-uniform mat4 depthVP;
+uniform mat4 directionalShadowsDepthVP;
 uniform vec3 Torch1Position_worldspace;
 uniform vec3 Torch2Position_worldspace;
 uniform vec3 SunDirection_worldspace;
@@ -37,7 +37,7 @@ void main(){
 						 0.0, 0.0, 0.5, 0.0,
 						 0.5, 0.5, 0.5, 1.0);
 	
-	ShadowCoord = biasMatrix * depthVP * M * vec4(vertexPosition_modelspace,1);
+	ShadowCoord = biasMatrix * directionalShadowsDepthVP * M * vec4(vertexPosition_modelspace,1);
 	
 	Position_worldspace = (M * vec4(vertexPosition_modelspace,1)).xyz;
 	

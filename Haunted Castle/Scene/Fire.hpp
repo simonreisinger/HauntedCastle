@@ -18,7 +18,7 @@ namespace cgue
 		// Destructor
 		virtual ~Fire();
 
-		void drawParticles(float time_delta, mat4x4 view, mat4x4 proj, float flameIntensity);
+		void renderParticles(float time_delta, mat4x4 view, mat4x4 proj, float flameIntensity);
 	private:
 
 		Shader* particleShader;
