@@ -17,6 +17,7 @@ layout (location = 0) out vec4 FragColor;
 uniform sampler2D modelTexture; // modelTexture
 uniform vec3 Torch1Position_worldspace;
 uniform vec3 Torch2Position_worldspace;
+uniform float flameIntensity[2];
 uniform int hasTexture;
 uniform vec3 diffuseColor;
 uniform vec3 specularColor;
@@ -132,7 +133,7 @@ void main(){
 	float shadow = ShadowCalculation(FragPos);
 	//////////////////////////////////////////////////////
 
-	float AmbientIntensity = 0.3;
+	float AmbientIntensity = 0.1;
 
 	vec3 MaterialAmbientColor = AmbientIntensity * MaterialDiffuseColor;
 	vec3 MaterialSpecularColor = specularColor;
@@ -186,16 +187,22 @@ void main(){
 		vec3(MaterialAmbientColor) +
 
 		(1.0-shadow) *	
-		(// Diffuse Torch 1
-		MaterialDiffuseColor * I1 * cosTheta1 +
-		// Specular Torch 1
-		MaterialSpecularColor * I1 * pow(cosAlpha1, 5) +
-
-		
-		// Diffuse Torch 2
-		MaterialDiffuseColor * I2 * cosTheta2 +
-		// Specular Torch 2
-		MaterialSpecularColor * I2 * pow(cosAlpha2, 5)) +
+		(
+			flameIntensity[0]*
+			(
+				// Diffuse Torch 1
+				MaterialDiffuseColor * I1 * cosTheta1 +
+				// Specular Torch 1
+				MaterialSpecularColor * I1 * pow(cosAlpha1, 5)
+			) +
+			flameIntensity[1] *
+			(
+				// Diffuse Torch 2
+				MaterialDiffuseColor * I2 * cosTheta2 +
+				// Specular Torch 2
+				MaterialSpecularColor * I2 * pow(cosAlpha2, 5)
+			)
+		) +
 		// Window
 		MaterialDiffuseColor * visibility
 	, 1);

@@ -7,6 +7,8 @@ in float TTL;
 
 uniform sampler2D fireTexture;
 
+uniform float flameIntensity;
+
 vec2 spriteUV()
 {
 	int rows = 5;
@@ -27,5 +29,5 @@ void main()
 	vec2 spriteUV = spriteUV();
 	
 	vec3 color = texture( fireTexture, spriteUV ).rgb;
-	FragColor = vec4(color, 0.04 * TTL);
+	FragColor = vec4(color, 0.04 * TTL * flameIntensity);
 }  

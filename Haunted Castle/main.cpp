@@ -69,6 +69,7 @@ void initDirectionalShadows();
 void initPointShadows();
 void renderDepthCubemap();
 void renderDepthMap();
+float rand(float min, float max);
 
 GLFWwindow* window;
 
@@ -562,6 +563,14 @@ int main(int argc, char** argv)
 
 
 		////////SIMON WAS HERE //////////////////////////////////////////////////////////////////
+
+
+		for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++) {
+			string nameString = "flameIntensity[" + std::to_string(i) + "]";
+			auto flameIntensity_location = glGetUniformLocation(renderShader->programHandle, nameString.c_str());
+			glUniform1f(flameIntensity_location, flameIntensity[i]);
+		}
+
 		
 		mat4x4 camera_model = camera->getCameraModel();
 
@@ -593,7 +602,7 @@ int main(int argc, char** argv)
 
 		for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++)
 		{
-			fire[i]->drawParticles(time_delta, view, proj);
+			fire[i]->drawParticles(time_delta, view, proj, flameIntensity[i]);
 		}
 
 		
@@ -1000,6 +1009,16 @@ void update(float time_delta, float time_abs) // TODO change time_delta to delta
 {
 	if (gScene)
 		StepPhysX(time_delta);
+
+	for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++)
+	{
+		flameIntensity[i] = rand(flameIntensityMin, flameIntensityMax);
+	}
+}
+
+float rand(float min, float max)
+{
+	return min + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (max - min)));;
 }
 
 void handleInput(GLFWwindow* window, float time_delta)

@@ -18,7 +18,7 @@ namespace cgue
 		// Destructor
 		virtual ~Fire();
 
-		void drawParticles(float time_delta, mat4x4 view, mat4x4 proj);
+		void drawParticles(float time_delta, mat4x4 view, mat4x4 proj, float flameIntensity);
 	private:
 
 		Shader* particleShader;
@@ -41,7 +41,7 @@ namespace cgue
 
 		void calculate(double deltaTime);
 
-		void draw(mat4x4 view, mat4x4 proj);
+		void draw(mat4x4 view, mat4x4 proj, float flameIntensity);
 
 		const int MAX_PARTICLES = 100000;
 

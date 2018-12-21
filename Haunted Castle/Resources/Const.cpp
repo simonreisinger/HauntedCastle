@@ -65,6 +65,14 @@ vec3 torchPos[2] =
 	changeAxis * vec3(12.5634, 8.90968, 9.75919) + flameDir * 0.01f
 };
 
+float flameIntensity[2] =
+{
+	1,
+	1
+};
+float flameIntensityMax = 1.2;
+float flameIntensityMin = 0.8;
+
 vec3 SunDir = changeAxis * vec3(0.0, -1.0, 1.0);
 
 float wnear = 0;
@@ -78,4 +86,4 @@ int countMeshesLoading = 73;
 int iObjectsLoaded = 0;
 int countObjectsLoading = 14;
 
-bool renderObjects = false;
+bool renderObjects = true;

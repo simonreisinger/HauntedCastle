@@ -49,6 +49,10 @@ extern vec3 torchPos[2];
 
 extern vec3 flameDir;
 
+extern float flameIntensity[2];
+extern float flameIntensityMax;
+extern float flameIntensityMin;
+
 extern vec3 SunDir;
 
 extern float wnear;

@@ -183,7 +183,7 @@ void Fire::calculate(double deltaTime)
 	//cout << "End calculate" << endl;
 }
 
-void Fire::draw(mat4x4 view, mat4x4 proj)
+void Fire::draw(mat4x4 view, mat4x4 proj, float flameIntensity)
 {
 	glEnable(GL_BLEND); // activate blending
 	glDepthMask(GL_FALSE); // disable writing to depth buffer
@@ -215,6 +215,10 @@ void Fire::draw(mat4x4 view, mat4x4 proj)
 	glUniform1i(fireTexture_location, 4);
 
 
+	auto flameIntensity_location = glGetUniformLocation(programID, "flameIntensity");
+	glUniform1f(flameIntensity_location, flameIntensity);
+
+
 	glUniform3f(CameraRight_worldspace_ID, ViewMatrix[0][0], ViewMatrix[1][0], ViewMatrix[2][0]);
 	glUniform3f(CameraUp_worldspace_ID, ViewMatrix[0][1], ViewMatrix[1][1], ViewMatrix[2][1]);
 
@@ -227,11 +231,11 @@ void Fire::draw(mat4x4 view, mat4x4 proj)
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
-void Fire::drawParticles(float delta, mat4x4 view, mat4x4 proj)
+void Fire::drawParticles(float delta, mat4x4 view, mat4x4 proj, float flameIntensity)
 {
 
 	calculate(delta);
 
-	draw(view, proj);
+	draw(view, proj, flameIntensity);
 
 }
