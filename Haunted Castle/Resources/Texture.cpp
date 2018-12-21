@@ -18,7 +18,7 @@ Texture::Texture(const std::string& modelDir, const std::string& path)
 	glGenTextures(1, &handle);
 
 	// Texture-Slot in der Grafikkarte
-	glActiveTexture(GL_TEXTURE3);
+	glActiveTexture(GL_TEXTURE0);
 	// Define that texture type of the slot to use
 	glBindTexture(GL_TEXTURE_2D, handle);
 
