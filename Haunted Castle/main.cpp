@@ -487,14 +487,13 @@ int main(int argc, char** argv)
 
 		auto time_update_end = glfwGetTime();
 		auto time_pointShadows_start = glfwGetTime();
-		cout << "Hier" << endl;
+
 		for (int i = 0; i < numberOfTorches; i++){
 			renderDepthCubemap(i);
 		}
 
 		auto time_pointShadows_end = glfwGetTime();
 		auto time_directionalShadows_start = glfwGetTime();
-		cout << "Hier" << endl;
 
 		renderDepthMap();
 
@@ -504,23 +503,17 @@ int main(int argc, char** argv)
 		// Render scene into floating point framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glUseProgram(renderShader->programHandle);
-		cout << "Hier" << endl;
 
 		sendDirectionalShadowsDataToScreenRenderer();
 
 		for (int i = 0; i < numberOfTorches; i++){
-			cout << "Hier" << i << endl;
-
 			sendPointShadowsDataToScreenRenderer(i);
 		}
-
-		cout << "Hier" << endl;
 
 		renderScreen();
 	
 		auto time_screen_end = glfwGetTime();
 		auto time_fires_start = glfwGetTime();
-		cout << "Hier" << endl;
 
 		renderFire(time_delta);
 

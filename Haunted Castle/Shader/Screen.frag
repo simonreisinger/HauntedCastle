@@ -170,7 +170,9 @@ void main(){
 				MaterialDiffuseColor * I1 * cosTheta1 +
 				// Specular Torch 1
 				MaterialSpecularColor * I1 * pow(cosAlpha1, 5)
-			)) +
+			)
+			)
+			 +
 			(1.0-shadow2) *	
 		(
 			flameIntensity[1] *
