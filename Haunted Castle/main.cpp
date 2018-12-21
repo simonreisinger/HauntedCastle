@@ -283,7 +283,7 @@ static std::string FormatDebugOutput(GLenum source, GLenum type, GLuint id, GLen
 	}
 	}
 
-	if (type != GL_DEBUG_TYPE_OTHER)
+	if (type != GL_DEBUG_TYPE_OTHER && type != GL_DEBUG_TYPE_PERFORMANCE)
 	{
 		stringStream << "OpenGL Error: " << msg;
 		stringStream << " [Source = " << sourceString;
@@ -359,7 +359,7 @@ int main(int argc, char** argv)
 
 
 	// Refresh rate
-	int refresh_rate = 120; // 60
+	int refresh_rate = 60;
 	glfwWindowHint(GLFW_REFRESH_RATE, refresh_rate);
 
 
@@ -457,28 +457,33 @@ int main(int argc, char** argv)
 
 	while (!glfwWindowShouldClose(window))
 	{
+		auto time_total_start = glfwGetTime();
+		auto time_update_start = glfwGetTime();
+
 		auto time_new = glfwGetTime();
 		auto time_delta = (float)(time_new - time);
 		refreshTime += time_delta;
 		time_abs += time_delta;
 		time = time_new;
 
+		NUMBER_OF_CULLED_MESHES = 0;
+
+
 
 		handleInput(window, time_delta);
 
+
+
 		update(time_delta, time_abs);
-		
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-
-		NUMBER_OF_CULLED_MESHES = 0;
-
-		// render
-		// ------
-		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		auto time_update_end = glfwGetTime();
+		auto time_pointShadows_start = glfwGetTime();
 
 		renderDepthCubemap();
+
+		auto time_pointShadows_end = glfwGetTime();
+		auto time_directionalShadows_start = glfwGetTime();
+
 		renderDepthMap();
 
 		// Render to our framebuffer
@@ -517,11 +522,14 @@ int main(int argc, char** argv)
 		// Shadow
 		renderScene(directionalShadowsShader, depthViewMatrix, depthProjectionMatrix, mat4x4(1.0f));
 
+		auto time_directionalShadows_end = glfwGetTime();
+		auto time_screen_start = glfwGetTime();
 
 		// 1. Render scene into floating point framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
 		glUseProgram(renderShader->programHandle);
 
+		glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 		glViewport(0, 0, width, height);
 
 		glEnable(GL_CULL_FACE);
@@ -600,12 +608,21 @@ int main(int argc, char** argv)
 		
 		renderScene(renderShader, lookAt, proj, camera_model);
 
+		auto time_screen_end = glfwGetTime();
+		auto time_fires_start = glfwGetTime();
+
 		for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++)
 		{
+			cout << "Fire " << i+1 << ": ";
 			fire[i]->drawParticles(time_delta, view, proj, flameIntensity[i]);
+			cout << endl;
 		}
+		cout << endl;
 
-		
+		auto time_fires_end = glfwGetTime();
+		auto time_total_end = glfwGetTime();
+		auto time_swap_start = glfwGetTime();
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
@@ -613,12 +630,22 @@ int main(int argc, char** argv)
 		{
 			cout << "ERROR: OpenGL Error" << endl;
 		}
+		auto time_swap_end = glfwGetTime();
+
 
 		if (refreshTime > 1)
 		{
 			if (CGUE_DISPLAY_FRAME_TIME)
 			{
-				cout << "Frame time: " << (int)(time_delta * 1000) << "ms, Frame/sec: " << (int)(1.0f / time_delta) << " PhysX Static Actors: " << gScene->getNbActors(PxActorTypeFlag::eRIGID_STATIC) << endl;
+				//cout << "Frame time: " << (int)(time_delta * 1000) << "ms, Frame/sec: " << (int)(1.0f / time_delta) << endl;
+				cout << "Real Frame time: " << (time_total_end - time_total_start) * 1000 << "ms, Real Frame/sec: " << (int)(1.0f / (time_total_end - time_total_start)) << endl;
+
+				cout << "update: " << (time_update_end - time_update_start)*1000 << "ms, ";
+				cout << "PointShadows: " << (time_pointShadows_end - time_pointShadows_start) * 1000 << "ms, ";
+				cout << "DirectionalShadows: " << (time_directionalShadows_end - time_directionalShadows_start) * 1000 << "ms, ";
+				cout << "Screen: " << (time_screen_end - time_screen_start) * 1000 << "ms, ";
+				cout << "Fire: " << (time_fires_end - time_fires_start) * 1000 << "ms, ";
+				cout << "Swap: " << (time_swap_end - time_swap_start) * 1000 << "ms" << endl;
 			}
 			if (VIEWFRUSTUM_CULLING) {
 				cout << "Number of Culled Meshes: " << NUMBER_OF_CULLED_MESHES << endl;

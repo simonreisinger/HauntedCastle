@@ -86,4 +86,4 @@ int countMeshesLoading = 73;
 int iObjectsLoaded = 0;
 int countObjectsLoading = 14;
 
-bool renderObjects = true;
+bool renderObjects = false;

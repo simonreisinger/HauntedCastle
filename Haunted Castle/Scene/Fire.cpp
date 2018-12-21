@@ -151,10 +151,32 @@ void Fire::calculate(double deltaTime)
 	
 	iSSBO = !iSSBO; // ping-pong between buffers
 	// Execute compute shader with a 16 x 16 work group size
-	GLuint groups = (particle_count / (16 * 16)) + 1;
+	GLuint groups = (particle_count / (32 * 32)) + 1;
+	//GLuint groups = (particle_count / (16 * 16)) + 1;
+
 	glDispatchCompute(groups, 1, 1);
-	
-	
+
+
+	/*
+	auto time_performance_error_part_start = glfwGetTime();
+	// Gives Perfomance Warning
+	glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
+	// Read atomic counter
+	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomic_counter);
+	GLuint *counterValue = (GLuint*)glMapBufferRange(
+		GL_ATOMIC_COUNTER_BUFFER, 0,
+		sizeof(GLuint), GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
+	particle_count = counterValue[0];
+	counterValue[0] = 0; // reset atomic counter
+	glUnmapBuffer(GL_ATOMIC_COUNTER_BUFFER); // stop writing to buffer
+	// memory barrier, to make sure everything from the compute shader is written
+	glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+	auto time_performance_error_part_end = glfwGetTime();
+	cout << "performance_error_part: " << (time_performance_error_part_end - time_performance_error_part_start) * 1000 << "ms, ";
+	//*/
+
+
+	//*
 	glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
 
 	// Read atomic counter through a temporary buffer
@@ -163,8 +185,13 @@ void Fire::calculate(double deltaTime)
 	// from atomic counter to temp buffer:
 	glCopyBufferSubData(GL_ATOMIC_COUNTER_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0,
 		sizeof(GLuint));
+
+	auto time_suspicious_function_start = glfwGetTime();
 	GLuint *counterValue = (GLuint*)glMapBufferRange(GL_COPY_WRITE_BUFFER, 0,
-		sizeof(GLuint), GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
+		sizeof(GLuint), GL_MAP_READ_BIT | GL_MAP_WRITE_BIT); // Needs so long for the first fire
+	auto time_suspicious_function_end = glfwGetTime();
+	cout << "dispatch: " << (time_suspicious_function_end - time_suspicious_function_start) * 1000 << "ms, ";
+
 	particle_count = counterValue[0];
 	//cout << "Particles: " << particle_count << endl;
 	counterValue[0] = 0; // reset atomic counter in temp buffer
@@ -174,9 +201,10 @@ void Fire::calculate(double deltaTime)
 		sizeof(GLuint));
 	// memory barrier, to make sure everything from the compute shader is written
 	glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+	//*/
 
 
-	
+
 
 	//cout << "particle_count: " << particle_count << endl;
 
@@ -233,9 +261,14 @@ void Fire::draw(mat4x4 view, mat4x4 proj, float flameIntensity)
 
 void Fire::drawParticles(float delta, mat4x4 view, mat4x4 proj, float flameIntensity)
 {
-
+	auto time_calculate_start = glfwGetTime();
 	calculate(delta);
+	auto time_calculate_end = glfwGetTime();
 
+	auto time_draw_start = glfwGetTime();
 	draw(view, proj, flameIntensity);
+	auto time_draw_end = glfwGetTime();
 
+	cout << "calculate: " << (time_calculate_end - time_calculate_start) * 1000 << "ms, ";
+	cout << "draw: " << (time_draw_end - time_draw_start) * 1000 << "ms, ";
 }
