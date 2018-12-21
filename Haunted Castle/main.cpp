@@ -290,15 +290,16 @@ static std::string FormatDebugOutput(GLenum source, GLenum type, GLuint id, GLen
 		stringStream << ", Type = " << typeString;
 		stringStream << ", Severity = " << severityString;
 		stringStream << ", ID = " << id << "]";
-	}
 
-	return "Error" + stringStream.str();
+		return "Error" + stringStream.str();
+	}
+	return "";
 }
 
 static void APIENTRY DebugCallbackAMD(GLuint id, GLenum category, GLenum severity, GLsizei length, const GLchar* message, GLvoid* userParam) {
 	std::string error = FormatDebugOutput(category, category, id, severity, message);
 	std::cout << error;
-	std::cout << std::endl;
+	//std::cout << std::endl;
 }
 
 static void APIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) {
@@ -312,7 +313,7 @@ static void APIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum
 	}
 	std::string error = FormatDebugOutput(source, type, id, severity, message);
 	std::cout << error;
-	std::cout << std::endl;
+	//std::cout << std::endl;
 }
 
 int main(int argc, char** argv)

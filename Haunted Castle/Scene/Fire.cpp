@@ -158,21 +158,44 @@ void Fire::calculate(double deltaTime)
 
 
 	/*
-	auto time_performance_error_part_start = glfwGetTime();
+	auto time_alternative_start = glfwGetTime();
+	glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
+	// declare a pointer to hold the values in the buffer
+	GLuint *userCounters;
+	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomic_counter);
+	// map the buffer, userCounters will point to the buffers data
+	userCounters = (GLuint*)glMapBufferRange(GL_ATOMIC_COUNTER_BUFFER,
+		0,
+		sizeof(GLuint) * 3,
+		GL_MAP_WRITE_BIT | GL_MAP_INVALIDATE_BUFFER_BIT | GL_MAP_UNSYNCHRONIZED_BIT
+	);
+	// set the memory to zeros, resetting the values in the buffer
+	memset(userCounters, 0, sizeof(GLuint) * 3);
+	// unmap the buffer
+	glUnmapBuffer(GL_ATOMIC_COUNTER_BUFFER);
+	glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+	auto time_alternative_end = glfwGetTime();
+	cout << "alternative: " << (time_alternative_end - time_alternative_start) * 1000 << "ms, ";
+	//*/
+
+	/*
 	// Gives Perfomance Warning
 	glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
 	// Read atomic counter
 	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomic_counter);
+
+	auto time_performance_error_part_start = glfwGetTime();
 	GLuint *counterValue = (GLuint*)glMapBufferRange(
 		GL_ATOMIC_COUNTER_BUFFER, 0,
-		sizeof(GLuint), GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
+		sizeof(GLuint), GL_MAP_READ_BIT | GL_MAP_WRITE_BIT); // GL_MAP_INVALIDATE_RANGE_BIT
+	auto time_performance_error_part_end = glfwGetTime();
+	//cout << "suspicious_function_performance_error_part: " << (time_performance_error_part_end - time_performance_error_part_start) * 1000 << "ms, ";
+
 	particle_count = counterValue[0];
 	counterValue[0] = 0; // reset atomic counter
 	glUnmapBuffer(GL_ATOMIC_COUNTER_BUFFER); // stop writing to buffer
 	// memory barrier, to make sure everything from the compute shader is written
 	glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
-	auto time_performance_error_part_end = glfwGetTime();
-	cout << "performance_error_part: " << (time_performance_error_part_end - time_performance_error_part_start) * 1000 << "ms, ";
 	//*/
 
 
@@ -190,7 +213,7 @@ void Fire::calculate(double deltaTime)
 	GLuint *counterValue = (GLuint*)glMapBufferRange(GL_COPY_WRITE_BUFFER, 0,
 		sizeof(GLuint), GL_MAP_READ_BIT | GL_MAP_WRITE_BIT); // Needs so long for the first fire
 	auto time_suspicious_function_end = glfwGetTime();
-	cout << "dispatch: " << (time_suspicious_function_end - time_suspicious_function_start) * 1000 << "ms, ";
+	cout << "suspicious_function: " << (time_suspicious_function_end - time_suspicious_function_start) * 1000 << "ms, ";
 
 	particle_count = counterValue[0];
 	//cout << "Particles: " << particle_count << endl;
@@ -269,6 +292,6 @@ void Fire::drawParticles(float delta, mat4x4 view, mat4x4 proj, float flameInten
 	draw(view, proj, flameIntensity);
 	auto time_draw_end = glfwGetTime();
 
-	cout << "calculate: " << (time_calculate_end - time_calculate_start) * 1000 << "ms, ";
-	cout << "draw: " << (time_draw_end - time_draw_start) * 1000 << "ms, ";
+	//cout << "calculate: " << (time_calculate_end - time_calculate_start) * 1000 << "ms, ";
+	//cout << "draw: " << (time_draw_end - time_draw_start) * 1000 << "ms, ";
 }
