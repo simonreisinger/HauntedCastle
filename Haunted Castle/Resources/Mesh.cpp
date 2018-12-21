@@ -301,10 +301,12 @@ void Mesh::loadUniforms(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalP
 	if (hasNormalTexture) {
 		glUniform1i(normal_tex_enabled, 1);
 
-		normalTexture->bind(7);
+		int posOnGPU = 1;
+
+		normalTexture->bind(posOnGPU);
 
 		auto modelNormalTexture_location = glGetUniformLocation(shader->programHandle, "modelNormalTexture");
-		glUniform1i(modelNormalTexture_location, 7);
+		glUniform1i(modelNormalTexture_location, posOnGPU);
 	}
 	else {
 		glUniform1i(normal_tex_enabled, 0);
