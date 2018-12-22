@@ -25,13 +25,9 @@ void Geometry::init(const std::string& displayFile, Shader* _shader)
 
 	string modelDir = displayFile.substr(0, displayFile.find("/"));
 
-	//cout << "ModelDir:" << modelDir << endl;
-
-	//cout << "ReadFile: " << datensatzDir + displayFile << endl;
-
 	Assimp::Importer displayImporter;
 
-	string filePath = datensatzDir + displayFile; //TODO edit here
+	string filePath = datensatzDir + displayFile;
 
 	const aiScene* scene = displayImporter.ReadFile(filePath, aiProcessPreset_TargetRealtime_Quality);
 	if (!scene)
@@ -42,8 +38,6 @@ void Geometry::init(const std::string& displayFile, Shader* _shader)
 		system("PAUSE");
 		exit(EXIT_FAILURE);
 	}
-	
-	
 
 	auto time_start = glfwGetTime();
 
@@ -77,7 +71,6 @@ void Geometry::renderGeometry(Shader* drawShader, mat4x4 view, glm::mat4x4 proj,
 	drawShader->useShader();
 
 	mat4x4 globalPose = mat4x4(1);
-	//mat4x4 globalPose = getGlobalPose();
 
 	sceneNode->draw(drawShader, view, proj, globalPose, cull);
 	

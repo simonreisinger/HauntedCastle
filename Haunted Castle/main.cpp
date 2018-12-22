@@ -34,8 +34,6 @@
 #include "Scene/Fire.hpp"
 
 
-
-
 //-------Loading PhysX libraries (32bit only)----------//
 
 #ifdef _DEBUG //If in 'Debug' load libraries for debug mode 
@@ -1287,4 +1285,8 @@ void handleInput(GLFWwindow* window, float time_delta)
 	{
 		CGUE_F8_PRESSED = false;
 	}
+}
+
+void Bloom(){
+
 }
