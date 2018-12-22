@@ -51,11 +51,13 @@ namespace cgue
 		Texture* texture;
 		Texture* normalTexture;
 
-		GLuint vao, positionBuffer, normalsBuffer, uvBuffer, indexBuffer;
+		GLuint vao, positionBuffer, normalsBuffer, tangentsBuffer, bitangentsBuffer, uvBuffer, indexBuffer;
 
 		int size;
 		float* positions;
 		float* normals;
+		float* tangents;
+		float* bitangents;
 		int* indices;
 		float* uvs;
 
