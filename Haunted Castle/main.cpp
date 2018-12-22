@@ -946,11 +946,11 @@ void sendPointShadowsDataToScreenRenderer(int index){
 void renderFire(float time_delta){
 	for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++)
 	{
-		//cout << "Fire " << i+1 << ": ";
+		cout << "Fire " << i+1 << ": ";
 		fire[i]->renderParticles(time_delta, view, proj, flameIntensity[i]);
-		//cout << endl;
+		cout << endl;
 	}
-	//cout << endl;
+	cout << endl;
 }
 
 GLuint quadVAO = 0;
