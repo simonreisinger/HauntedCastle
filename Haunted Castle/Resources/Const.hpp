@@ -30,6 +30,7 @@ extern bool TEXTURE_SAMPLING_QUALITY;
 extern bool CGUE_F5_PRESSED;
 extern int MIP_MAPPING_QUALITY;
 extern bool CGUE_F6_PRESSED;
+extern bool NORMAL_MAPPING;
 extern bool CGUE_F8_PRESSED;
 extern bool VIEWFRUSTUM_CULLING;
 extern int NUMBER_OF_CULLED_MESHES;

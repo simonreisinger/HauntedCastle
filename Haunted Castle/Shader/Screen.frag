@@ -4,6 +4,9 @@
 in vec2 UV;
 in vec3 Position_worldspace;
 in vec3 Normal_worldspace;
+in vec3 Tangent_worldspace;
+in vec3 Bitangent_worldspace;
+in mat3 TBN;
 in vec3 Normal_cameraspace;
 in vec3 EyeDirection_cameraspace;
 in vec3 Torch1Direction_cameraspace;
@@ -117,22 +120,41 @@ void main(){
 	vec3 MaterialSpecularColor = specularColor;
 
 
+	vec3 normal;
+	vec3 torch1Dir;
+	vec3 torch2Dir;
+	vec3 viewDir;
 	
 	if(hasNormalTexture == 1)
 	{
 		// obtain normal from normal map in range [0,1]
-		vec3 normal = texture(modelNormalTexture, UV).rgb;
+		normal = texture(modelNormalTexture, UV).rgb;
 		// transform normal vector to range [-1,1]
-		normal = normalize(normal * 2.0 - 1.0);   
+		normal = normalize(normal * 2.0 - 1.0);
+		normal = normalize(TBN * normal); 
+		
+		torch1Dir = TBN * normalize(Torch1Position_worldspace - FragPos);
+		torch2Dir = TBN * normalize(Torch2Position_worldspace - FragPos);
+		viewDir  = TBN * normalize(viewPos - FragPos); 
+
 	}
+	else
+	{
+		normal = Normal_cameraspace;
+		torch1Dir = Torch1Direction_cameraspace;
+		torch2Dir = Torch2Direction_cameraspace;
+		viewDir = EyeDirection_cameraspace;
+	}
+	
+	
 
 
 
-	vec3 n1 = normalize( Normal_cameraspace );
-	vec3 l1 = normalize( Torch1Direction_cameraspace );
+	vec3 n1 = normalize( normal );
+	vec3 l1 = normalize( torch1Dir );
 	float cosTheta1 = clamp( dot( n1, l1 ), 0, 1 );
 	
-	vec3 E1 = normalize(EyeDirection_cameraspace);
+	vec3 E1 = normalize(viewDir);
 	vec3 R1 = reflect( -l1, n1 );
 	float cosAlpha1 = clamp( dot( E1, R1 ), 0, 1 );
 
@@ -140,11 +162,11 @@ void main(){
 
 
 
-	vec3 n2 = normalize( Normal_cameraspace );
-	vec3 l2 = normalize( Torch2Direction_cameraspace );
+	vec3 n2 = normalize( normal );
+	vec3 l2 = normalize( torch2Dir );
 	float cosTheta2 = clamp( dot( n2, l2 ), 0, 1 );
 	
-	vec3 E2 = normalize(EyeDirection_cameraspace);
+	vec3 E2 = normalize(viewDir);
 	vec3 R2 = reflect( -l2, n2 );
 	float cosAlpha2 = clamp( dot( E2, R2 ), 0, 1 );
 

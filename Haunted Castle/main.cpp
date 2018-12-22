@@ -966,11 +966,11 @@ void initBloom(){
 void renderFire(float time_delta){
 	for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++)
 	{
-		cout << "Fire " << i+1 << ": ";
+		//cout << "Fire " << i+1 << ": ";
 		fire[i]->renderParticles(time_delta, view, proj, flameIntensity[i]);
-		cout << endl;
+		//cout << endl;
 	}
-	cout << endl;
+	//cout << endl;
 }
 
 GLuint quadVAO = 0;
@@ -1280,6 +1280,20 @@ void handleInput(GLFWwindow* window, float time_delta)
 	else
 	{
 		CGUE_F5_PRESSED = false;
+	}
+
+
+	// F6 - Normal Mapping
+	if (glfwGetKey(window, GLFW_KEY_F6)) {
+		if (CGUE_F6_PRESSED == false)
+		{
+			NORMAL_MAPPING = !NORMAL_MAPPING;
+		}
+		CGUE_F6_PRESSED = true;
+	}
+	else
+	{
+		CGUE_F6_PRESSED = false;
 	}
 
 

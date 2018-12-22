@@ -213,7 +213,7 @@ void Fire::calculate(double deltaTime)
 	GLuint *counterValue = (GLuint*)glMapBufferRange(GL_COPY_WRITE_BUFFER, 0,
 		sizeof(GLuint), GL_MAP_READ_BIT | GL_MAP_WRITE_BIT); // Needs so long for the first fire
 	auto time_glMapBufferRange_end = glfwGetTime();
-	cout << "time_glMapBufferRange: " << (time_glMapBufferRange_end - time_glMapBufferRange_start) * 1000 << "ms, ";
+	//cout << "time_glMapBufferRange: " << (time_glMapBufferRange_end - time_glMapBufferRange_start) * 1000 << "ms, ";
 
 	particle_count = counterValue[0];
 	//cout << "Particles: " << particle_count << endl;

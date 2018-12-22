@@ -13,6 +13,7 @@ bool TEXTURE_SAMPLING_QUALITY = true;
 bool CGUE_F5_PRESSED = false;
 int MIP_MAPPING_QUALITY = 2;
 bool CGUE_F6_PRESSED = false;
+bool NORMAL_MAPPING = true;
 bool CGUE_F8_PRESSED = false;
 bool VIEWFRUSTUM_CULLING = false;
 int NUMBER_OF_CULLED_MESHES = 0;
@@ -91,4 +92,4 @@ int countMeshesLoading = 73;
 int iObjectsLoaded = 0;
 int countObjectsLoading = 14;
 
-bool renderObjects = true;
+bool renderObjects = false;

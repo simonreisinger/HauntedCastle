@@ -4,7 +4,7 @@ Actor::Actor(Shader* shader)
 {
 	this->posz = 5;
 	this->roty = 180;
-	const string displayFile = "knight1/knight1.dae";
+	const string displayFile = "actor/actor.dae";
 
 	init(displayFile, shader);
 }
