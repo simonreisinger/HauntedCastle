@@ -834,7 +834,6 @@ void sendDirectionalShadowsDataToScreenRenderer(){
 	glUniform1i(directionalShadowsID, TEXTURE_SLOT_DIRECTIONAL_SHADOW);
 }
 
-// source: https://learnopengl.com/Advanced-Lighting/Shadows/Point-Shadows
 void initPointShadows(int index){
 
 	pointShadowsShader = new Shader(
