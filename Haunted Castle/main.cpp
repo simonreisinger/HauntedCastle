@@ -943,6 +943,26 @@ void sendPointShadowsDataToScreenRenderer(int index){
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap[index]);
 }
 
+void initBloom(){
+	/*
+	bloomShader = new Shader(
+		"Shader/PointShadows.vert",
+		"Shader/PointShadows.frag",
+		"Shader/PointShadows.geom");
+
+
+	// shader configuration
+	// --------------------
+	shader.use();
+	shader.setInt("diffuseTexture", 0);
+	shaderBlur.use();
+	shaderBlur.setInt("image", 0);
+	shaderBloomFinal.use();
+	shaderBloomFinal.setInt("scene", 0);
+	shaderBloomFinal.setInt("bloomBlur", 1);
+	*/
+}
+
 void renderFire(float time_delta){
 	for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++)
 	{
@@ -1286,6 +1306,3 @@ void handleInput(GLFWwindow* window, float time_delta)
 	}
 }
 
-void Bloom(){
-
-}
