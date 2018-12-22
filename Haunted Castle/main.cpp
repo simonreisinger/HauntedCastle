@@ -34,8 +34,6 @@
 #include "Scene/Fire.hpp"
 
 
-
-
 //-------Loading PhysX libraries (32bit only)----------//
 
 #ifdef _DEBUG //If in 'Debug' load libraries for debug mode 
@@ -830,14 +828,12 @@ void sendDirectionalShadowsDataToScreenRenderer(){
 	GLuint DepthVPID = glGetUniformLocation(renderShader->programHandle, "directionalShadowsDepthVP");
 	glUniformMatrix4fv(DepthVPID, 1, GL_FALSE, &depthVP[0][0]);
 
-	int GPUpos = 2;
-	glActiveTexture(GL_TEXTURE0 + GPUpos);
+	glActiveTexture(GL_TEXTURE0 + TEXTURE_SLOT_DIRECTIONAL_SHADOW);
 	glBindTexture(GL_TEXTURE_2D, directionalShadowsDepthMap);
 	GLuint directionalShadowsID = glGetUniformLocation(renderShader->programHandle, "directionalShadowsDepthMap");
-	glUniform1i(directionalShadowsID, GPUpos);
+	glUniform1i(directionalShadowsID, TEXTURE_SLOT_DIRECTIONAL_SHADOW);
 }
 
-// source: https://learnopengl.com/Advanced-Lighting/Shadows/Point-Shadows
 void initPointShadows(int index){
 
 	pointShadowsShader = new Shader(
@@ -941,22 +937,20 @@ void sendPointShadowsDataToScreenRenderer(int index){
 	string nameStringFlameCenterPosition = "flameCenterPosition" + std::to_string(index + 1);
 	glUniform3f(glGetUniformLocation(renderShader->programHandle, nameStringFlameCenterPosition.c_str()), flameCenterPosition[index].x, flameCenterPosition[index].y, flameCenterPosition[index].z);
 
-	int firstDepthMapGPUPos = 3;
 	string nameStringPointShadowsDepthCubeMap = "pointShadowsDepthCubeMap" + std::to_string(index + 1);
-	glUniform1i(glGetUniformLocation(renderShader->programHandle, nameStringPointShadowsDepthCubeMap.c_str()), index + firstDepthMapGPUPos);
-
-	glActiveTexture(GL_TEXTURE0 + index + firstDepthMapGPUPos);
+	glUniform1i(glGetUniformLocation(renderShader->programHandle, nameStringPointShadowsDepthCubeMap.c_str()), TEXTURE_SLOT_POINT_SHADOWS[index]);
+	glActiveTexture(GL_TEXTURE0 + TEXTURE_SLOT_POINT_SHADOWS[index]);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap[index]);
 }
 
 void renderFire(float time_delta){
 	for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++)
 	{
-		//cout << "Fire " << i+1 << ": ";
+		cout << "Fire " << i+1 << ": ";
 		fire[i]->renderParticles(time_delta, view, proj, flameIntensity[i]);
-		//cout << endl;
+		cout << endl;
 	}
-	//cout << endl;
+	cout << endl;
 }
 
 GLuint quadVAO = 0;
@@ -1290,4 +1284,8 @@ void handleInput(GLFWwindow* window, float time_delta)
 	{
 		CGUE_F8_PRESSED = false;
 	}
+}
+
+void Bloom(){
+
 }

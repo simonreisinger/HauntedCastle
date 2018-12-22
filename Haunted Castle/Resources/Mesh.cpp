@@ -23,8 +23,6 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 	iMeshesLoaded++;
 	//cout << "Loading Mesh " << iMeshesLoaded << " of " << countMeshesLoading << endl;
 
-	
-
 	int texIndex = 0;
 	aiString path;
 
@@ -136,8 +134,6 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 		}
 	}
 
-	
-
 	// face 1
 	positionOfExtremValues[0] = vec3(xmin, ymin, zmin);
 	positionOfExtremValues[1] = vec3(xmin, ymax, zmin);
@@ -153,8 +149,6 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 
 	sphereCenter = vec3((xmax - xmin) / 2, (ymax - ymin) / 2, (zmax - zmin) / 2);
 	sphereRadius = length(vec3(xmax, ymax, zmax) - sphereCenter);
-
-
 
 	// Load into Graphics Card
 
@@ -180,7 +174,6 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, uvBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * 2 * sizeof(float), uvs, GL_STATIC_DRAW); // Buffer detailed info: Buffer object 1 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
 
 	// Bind to Shader
 
@@ -284,29 +277,24 @@ void Mesh::loadUniforms(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalP
 	if (hasTexture) {
 		glUniform1i(tex_enabled, 1);
 
-		int posOnGPU = 0;
-
-		texture->bind(posOnGPU);
+		texture->bind(TEXTURE_SLOT_MESH_DIFFUSE);
 
 		auto modelTexture_location = glGetUniformLocation(shader->programHandle, "modelTexture");
-		glUniform1i(modelTexture_location, posOnGPU);
+		glUniform1i(modelTexture_location, TEXTURE_SLOT_MESH_DIFFUSE);
 	}
 	else {
 		glUniform1i(tex_enabled, 0);
 	}
-
 
 	// Normal Texture
 	auto normal_tex_enabled = glGetUniformLocation(shader->programHandle, "hasNormalTexture");
 	if (hasNormalTexture) {
 		glUniform1i(normal_tex_enabled, 1);
 
-		int posOnGPU = 1;
-
-		normalTexture->bind(posOnGPU);
+		normalTexture->bind(TEXTURE_SLOT_MESH_NORMAL);
 
 		auto modelNormalTexture_location = glGetUniformLocation(shader->programHandle, "modelNormalTexture");
-		glUniform1i(modelNormalTexture_location, posOnGPU);
+		glUniform1i(modelNormalTexture_location, TEXTURE_SLOT_MESH_NORMAL);
 	}
 	else {
 		glUniform1i(normal_tex_enabled, 0);

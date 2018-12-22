@@ -50,7 +50,7 @@ Fire::Fire(Shader* shader, vec3 flame_pos, vec3 flame_dir) {
 
 	vector<vec4> positions;
 	vector<vec4> velocities;
-	positions.push_back(vec4(0, 0, 0, 1));
+	positions.push_back(vec4(flame_pos, 1));
 	velocities.push_back(vec4(0, 1, 0, 1));
 	particle_count = positions.size();
 
@@ -209,11 +209,11 @@ void Fire::calculate(double deltaTime)
 	glCopyBufferSubData(GL_ATOMIC_COUNTER_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0,
 		sizeof(GLuint));
 
-	auto time_suspicious_function_start = glfwGetTime();
+	auto time_glMapBufferRange_start = glfwGetTime();
 	GLuint *counterValue = (GLuint*)glMapBufferRange(GL_COPY_WRITE_BUFFER, 0,
 		sizeof(GLuint), GL_MAP_READ_BIT | GL_MAP_WRITE_BIT); // Needs so long for the first fire
-	auto time_suspicious_function_end = glfwGetTime();
-	//cout << "suspicious_function: " << (time_suspicious_function_end - time_suspicious_function_start) * 1000 << "ms, ";
+	auto time_glMapBufferRange_end = glfwGetTime();
+	cout << "time_glMapBufferRange: " << (time_glMapBufferRange_end - time_glMapBufferRange_start) * 1000 << "ms, ";
 
 	particle_count = counterValue[0];
 	//cout << "Particles: " << particle_count << endl;
@@ -261,7 +261,7 @@ void Fire::draw(mat4x4 view, mat4x4 proj, float flameIntensity)
 	GLuint CameraUp_worldspace_ID = glGetUniformLocation(programID, "CameraUp_worldspace");
 
 	// Texture
-	texture->bind(4);
+	texture->bind(TEXTURE_SLOT_FIRE);
 	auto fireTexture_location = glGetUniformLocation(programID, "fireTexture");
 	glUniform1i(fireTexture_location, 4);
 

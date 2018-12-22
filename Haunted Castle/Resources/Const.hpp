@@ -72,3 +72,9 @@ extern bool renderObjects;
 // Change the Axis from (x, z, y) to (x, z, -y)
 extern mat3x3 changeAxis;
 extern mat3x3 changeAxisInverse;
+
+extern int TEXTURE_SLOT_MESH_DIFFUSE;
+extern int TEXTURE_SLOT_MESH_NORMAL;
+extern int TEXTURE_SLOT_DIRECTIONAL_SHADOW;
+extern int TEXTURE_SLOT_POINT_SHADOWS[2];
+extern int TEXTURE_SLOT_FIRE;

@@ -22,6 +22,12 @@ bool TRANSPARENCY = true;
 bool CGUE_SHOT_ACTOR1_PRESSED = false;
 bool CGUE_SHOT_ACTOR2_PRESSED = false;
 
+int TEXTURE_SLOT_MESH_DIFFUSE = 0;
+int TEXTURE_SLOT_MESH_NORMAL = 1;
+int TEXTURE_SLOT_DIRECTIONAL_SHADOW = 2;
+int TEXTURE_SLOT_POINT_SHADOWS[2] = { 3, 4 };
+int TEXTURE_SLOT_FIRE= 5;
+
 mat4x4 pxMatToGlm(PxMat44 pxMat)
 {
 	return mat4x4(pxMat.column0.x, pxMat.column0.y, pxMat.column0.z, pxMat.column0.w,
