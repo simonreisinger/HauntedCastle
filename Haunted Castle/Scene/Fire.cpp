@@ -261,7 +261,7 @@ void Fire::draw(mat4x4 view, mat4x4 proj, float flameIntensity)
 	GLuint CameraUp_worldspace_ID = glGetUniformLocation(programID, "CameraUp_worldspace");
 
 	// Texture
-	texture->bind(4);
+	texture->bind(TEXTURE_SLOT_FIRE);
 	auto fireTexture_location = glGetUniformLocation(programID, "fireTexture");
 	glUniform1i(fireTexture_location, 4);
 

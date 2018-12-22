@@ -17,17 +17,10 @@ Texture::Texture(const std::string& modelDir, const std::string& path)
 	// Texture im RAM
 	glGenTextures(1, &handle);
 
-	// Texture-Slot in der Grafikkarte
-	glActiveTexture(GL_TEXTURE0);
 	// Define that texture type of the slot to use
 	glBindTexture(GL_TEXTURE_2D, handle);
 
 	const char * filename = pathWithDir.c_str();
-
-	//cout << "FILENAME: " << filename << endl;
-
-	//cout << "filename " << filename << endl;
-
 
 	//image format
 	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
