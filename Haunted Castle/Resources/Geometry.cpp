@@ -94,3 +94,7 @@ void Geometry::setPhysX(PxPhysics* mPhysicsSDK, PxFoundation* mFoundation, PxDef
 	gDefaultAllocatorCallback = mDefaultAllocatorCallback;
 	gScene = mScene;
 }
+
+void Geometry::translateLinear(string meshName, vec3 t, float time_start, float duration, float time, float time_delta) {
+	sceneNode->translateLinear(meshName, t, time_start, duration, time, time_delta);
+}

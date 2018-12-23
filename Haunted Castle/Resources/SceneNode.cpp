@@ -9,6 +9,7 @@ SceneNode::SceneNode(aiNode* aiNode, const aiScene* scene, string modelDir, Shad
 {
 
 	name = aiNode->mName.data;
+	cout << "aiNode: " << name << endl;
 	transform = convertMatrix(aiNode->mTransformation);
 
 
@@ -127,4 +128,16 @@ void printMatrixOfNode(string name, mat4x4 mat)
 	cout << mat[0][1] << " " << mat[1][1] << " " << mat[2][1] << " " << mat[3][1] << endl;
 	cout << mat[0][2] << " " << mat[1][2] << " " << mat[2][2] << " " << mat[3][2] << endl;
 	cout << mat[0][3] << " " << mat[1][3] << " " << mat[2][3] << " " << mat[3][3] << endl;
+}
+
+void SceneNode::translateLinear(string meshName, vec3 t, float time_start, float duration, float time, float time_delta) {
+	if (meshName.compare(name) && time >= time_start && time <= time_start + duration) {
+		cout << name << endl;
+		transform = translate(transform, t * time_delta / duration);
+	}
+
+	for (int i = 0; i < childNodeCount; i++)
+	{
+		childNode[i]->translateLinear(meshName, t, time_start, duration, time, time_delta);
+	}
 }

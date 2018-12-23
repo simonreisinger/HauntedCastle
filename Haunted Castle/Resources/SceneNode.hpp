@@ -25,6 +25,8 @@ namespace cgue
 
 		void draw(Shader* drawShader, mat4x4 view, glm::mat4x4 proj, mat4x4 camera_model, bool cull);
 
+		void translateLinear(string meshName, vec3 translate, float time_start, float duration, float time, float time_delta);
+
 	private:
 
 		int countVertices(aiNode* node, const aiScene* scene);

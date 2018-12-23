@@ -34,6 +34,8 @@ namespace cgue
 		virtual void initActor();
 		virtual mat4x4 getGlobalPose();
 
+		void translateLinear(string meshName, vec3 t, float time_start, float duration, float time, float time_delta);
+
 		PxCooking* mCooking;
 
 		PxPhysics*				gPhysicsSDK;				//Instance of PhysX SDK
