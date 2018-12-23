@@ -200,7 +200,7 @@ void Fire::calculate(double deltaTime)
 
 
 	//*
-	glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
+	//glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
 
 	// Read atomic counter through a temporary buffer
 	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomic_counter);
@@ -263,7 +263,7 @@ void Fire::draw(mat4x4 view, mat4x4 proj, float flameIntensity)
 	// Texture
 	texture->bind(TEXTURE_SLOT_FIRE);
 	auto fireTexture_location = glGetUniformLocation(programID, "fireTexture");
-	glUniform1i(fireTexture_location, 4);
+	glUniform1i(fireTexture_location, TEXTURE_SLOT_FIRE);
 
 
 	auto flameIntensity_location = glGetUniformLocation(programID, "flameIntensity");
