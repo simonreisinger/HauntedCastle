@@ -1069,7 +1069,9 @@ void update(float time_delta, float time_abs) // TODO change time_delta to delta
 
 	cout << time_abs << endl;
 
-	chair1->translateLinear("Chair", vec3(0, -2, 0), 10.0, 2.0, time_abs, time_delta);
+	chair1->translateLinear("Chair", vec3(0, -2, 0), 10.0, 2.0, time_abs, time_delta); 
+
+	frame->translateGravity("Frame", 4.44412, 15.0, time_abs, time_delta);
 
 }
 

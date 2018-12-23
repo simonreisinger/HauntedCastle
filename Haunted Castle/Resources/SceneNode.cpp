@@ -12,7 +12,6 @@ SceneNode::SceneNode(aiNode* aiNode, const aiScene* scene, string modelDir, Shad
 	cout << "aiNode: " << name << endl;
 	transform = convertMatrix(aiNode->mTransformation);
 
-
 	size = countVertices(aiNode, scene);
 	positions = new float[size * 3];
 	indices = new int[size];
@@ -130,14 +129,28 @@ void printMatrixOfNode(string name, mat4x4 mat)
 	cout << mat[0][3] << " " << mat[1][3] << " " << mat[2][3] << " " << mat[3][3] << endl;
 }
 
-void SceneNode::translateLinear(string meshName, vec3 t, float time_start, float duration, float time, float time_delta) {
-	if (meshName.compare(name) && time >= time_start && time <= time_start + duration) {
-		cout << name << endl;
-		transform = translate(transform, t * time_delta / duration);
+void SceneNode::translateLinear(string meshName, vec3 trans, float time_start, float duration, float time, float time_delta) {
+	if (meshName.compare(name) == 0 && time >= time_start && time <= time_start + duration) {
+		transform = translate(transform, trans * time_delta / duration);
 	}
 
 	for (int i = 0; i < childNodeCount; i++)
 	{
-		childNode[i]->translateLinear(meshName, t, time_start, duration, time, time_delta);
+		childNode[i]->translateLinear(meshName, trans, time_start, duration, time, time_delta);
+	}
+}
+
+void SceneNode::translateGravity(string meshName, float trans_y_end, float time_start, float time, float time_delta) {
+	if (meshName.compare(name) == 0 && time >= time_start && transform[3][2] > trans_y_end) {
+		forces += vec3(0, 0, -9.8) * time_delta;
+		transform = translate(transform, forces);
+		if (transform[3][2] < trans_y_end) {
+			transform[3][2] = trans_y_end;
+		}
+	}
+
+	for (int i = 0; i < childNodeCount; i++)
+	{
+		childNode[i]->translateGravity(meshName, trans_y_end, time_start, time, time_delta);
 	}
 }
