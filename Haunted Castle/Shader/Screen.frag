@@ -1,4 +1,6 @@
 #version 430 core
+layout (location = 0) out vec4 FragColor;
+layout (location = 1) out vec4 BrightColor;
 
 // Interpolated values from the vertex shaders
 in vec2 UV;
@@ -11,7 +13,6 @@ in vec3 Torch2Direction_cameraspace;
 in vec4 ShadowCoord;
 
 
-layout (location = 0) out vec4 FragColor;
 
 // Values that stay constant for the whole mesh.
 uniform sampler2D modelTexture; // modelTexture
@@ -169,7 +170,8 @@ void main(){
 
 	visibility = visibility * visibilityPosible;
 	
-	FragColor = vec4(
+	vec3 result = vec3(
+	//FragColor = vec4(
 		// Ambient
 		vec3(MaterialAmbientColor) +
 
@@ -196,7 +198,20 @@ void main(){
 		) +
 		// Window
 		MaterialDiffuseColor * visibility
-	, 1);
+		);
+	//, 1);
 
-	//FragColor = vec4(normal, 1);
+	////////////////////////////////////////////////////////TODO added here///////////////////////////
+	float brightness = dot(result, vec3(0.2126, 0.7152, 0.0722));
+    if(brightness > 1.0)
+        BrightColor = vec4(result, 1.0);
+    else
+        BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
+    FragColor = vec4(result, 1.0);
+	////////////////////////////////////////////////////////TODO added here///////////////////////////
 }
+
+
+
+
+

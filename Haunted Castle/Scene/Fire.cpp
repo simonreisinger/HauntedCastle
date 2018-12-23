@@ -263,7 +263,7 @@ void Fire::draw(mat4x4 view, mat4x4 proj, float flameIntensity)
 	// Texture
 	texture->bind(TEXTURE_SLOT_FIRE);
 	auto fireTexture_location = glGetUniformLocation(programID, "fireTexture");
-	glUniform1i(fireTexture_location, 4);
+	glUniform1i(fireTexture_location, TEXTURE_SLOT_FIRE);
 
 
 	auto flameIntensity_location = glGetUniformLocation(programID, "flameIntensity");

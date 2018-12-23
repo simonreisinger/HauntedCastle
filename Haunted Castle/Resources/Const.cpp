@@ -27,6 +27,8 @@ int TEXTURE_SLOT_MESH_NORMAL = 1;
 int TEXTURE_SLOT_DIRECTIONAL_SHADOW = 2;
 int TEXTURE_SLOT_POINT_SHADOWS[2] = { 3, 4 };
 int TEXTURE_SLOT_FIRE= 5;
+int TEXTURE_SLOT_BLOOM_COLORBUFFER = 6;
+int TEXTURE_SLOT_BLOOM_pingpongColorbuffers = 7;
 
 mat4x4 pxMatToGlm(PxMat44 pxMat)
 {
@@ -91,4 +93,4 @@ int countMeshesLoading = 73;
 int iObjectsLoaded = 0;
 int countObjectsLoading = 14;
 
-bool renderObjects = true;
+bool renderObjects = false;

@@ -59,7 +59,6 @@ void update(float time_delta, float time_abs);
 void handleInput(GLFWwindow* window, float time_delta);
 void OnShutdown();
 mat4x4 pxMatToGlm(PxMat44 pxMat);
-void RenderQuad();
 void init();
 void initPhysics();
 void initScene();
@@ -78,6 +77,30 @@ GLFWwindow* window;
 Shader* renderShader;
 Shader* directionalShadowsShader;
 Shader* pointShadowsShader;
+
+
+///////////////////////////////////////////////////////////////
+Shader* shaderLight;
+Shader* shaderBlur;
+Shader* shaderBloomFinal;
+
+bool bloom = true;
+bool horizontal = true, first_iteration = true;
+float exposure = 1.0f;
+
+// -----------------------------------------
+unsigned int quadVAO = 0;
+unsigned int quadVBO;
+
+void initBloom();
+void initBlur();
+void renderBlur();
+void initLighBox();
+void renderLightBox();
+void intBloomFinal();
+void renderBloomFinal();
+void renderQuad();
+///////////////////////////////////////////////////////////////
 
 GLuint directionalShadowsFBO = 0;
 GLuint directionalShadowsColorMap;
@@ -528,6 +551,11 @@ int main(int argc, char** argv)
 		}
 		auto time_swap_end = glfwGetTime();
 
+		//////////////////////////////////////////////////////////////////////
+		//renderBlur(); // TODO i dont think this will be needed
+		renderBlur();
+		renderLightBox();
+		renderBloomFinal();
 
 		if (refreshTime > 1)
 		{
@@ -557,35 +585,6 @@ int main(int argc, char** argv)
 	return EXIT_SUCCESS;
 }
 
-void OnShutdown()
-{
-	delete actor; actor = nullptr;
-	delete knight1; knight1 = nullptr;
-	delete knight2; knight2 = nullptr;
-	delete room; room = nullptr;
-	delete camera; camera = nullptr;
-	delete wardrobe; wardrobe = nullptr;
-	delete door; door = nullptr;
-	delete chair1; chair1 = nullptr;
-	delete chair2; chair2 = nullptr;
-	delete desk; desk = nullptr;
-	delete frame; frame = nullptr;
-	delete commode; commode = nullptr;
-	delete torch1; torch1 = nullptr;
-	delete torch2; torch2 = nullptr;
-	delete chess; chess = nullptr;
-	delete coordinatesystem; coordinatesystem = nullptr;
-	delete fire; fire = nullptr;
-
-	delete renderShader; renderShader = nullptr;
-	delete directionalShadowsShader; directionalShadowsShader = nullptr;
-	delete pointShadowsShader; pointShadowsShader = nullptr;
-
-	delete frustumG; frustumG = nullptr;
-
-	gPhysicsSDK->release();			//Removes any actors,  particle systems, and constraint shaders from this scene
-	gFoundation->release();			//Destroys the instance of foundation SDK
-}
 
 void init() 
 {
@@ -599,6 +598,17 @@ void init()
 	for (int i = 0; i < numberOfTorches; i++){
 		initPointShadows(i);
 	}
+
+
+	//////////////////////////////////////////////////////////////////////
+	//initBloom(); // TODO remove this
+	initLighBox();
+	initBlur();
+	intBloomFinal();
+	//////////////////////////////////////////////////////////////////////
+
+
+
 	// Always check that our framebuffer is ok
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
@@ -963,19 +973,96 @@ void initBloom(){
 	*/
 }
 
-void renderFire(float time_delta){
-	for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++)
-	{
-		cout << "Fire " << i+1 << ": ";
-		fire[i]->renderParticles(time_delta, view, proj, flameIntensity[i]);
-		cout << endl;
-	}
-	cout << endl;
+void initLighBox(){
+	shaderLight = new Shader("Shader/Bloom.vert", "Shader/LighBox.frag");
 }
 
-GLuint quadVAO = 0;
-GLuint quadVBO;
-void RenderQuad()
+void renderLightBox(){
+	// finally show all the light sources as bright cubes
+	//shaderLight.use();
+	shaderBlur->useShader();
+	// TODO einblenden
+	//shaderLight.setMat4("projection", projection);
+	//glUniformMatrix4fv(glGetUniformLocation(shaderLight->programHandle, "projection"), 1, GL_FALSE, &mat[0][0]);
+	//shaderLight.setMat4("view", view);
+	//glUniformMatrix4fv(glGetUniformLocation(shaderLight->programHandle, "view"), 1, GL_FALSE, &mat[0][0]);
+
+}
+
+void initBlur(){
+	// ping-pong-framebuffer for blurring
+	unsigned int pingpongFBO[2];
+	unsigned int pingpongColorbuffers[2];
+	glGenFramebuffers(2, pingpongFBO);
+	glGenTextures(2, pingpongColorbuffers);
+	for (unsigned int i = 0; i < 2; i++)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[i]);
+		glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingpongColorbuffers[i], 0);
+		// also check if framebuffers are complete (no need for depth buffer)
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			std::cout << "Framebuffer not complete!" << std::endl;
+	}
+	shaderBlur = new Shader("Shader/Blur.vert", "Shader/Blur.frag");
+	//shaderBlur.use();
+	shaderBlur->useShader();
+	glUniform1i(glGetUniformLocation(shaderBlur->programHandle, "image"), 0);
+}
+
+void renderBlur(){
+	unsigned int amount = 10;
+	shaderBlur->useShader();
+	for (unsigned int i = 0; i < amount; i++)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[horizontal]);
+		//shaderBlur.setInt("horizontal", horizontal);
+		glUniform1i(glGetUniformLocation(shaderLight->programHandle, "horizontal"), horizontal);
+		glBindTexture(GL_TEXTURE_2D, first_iteration ? colorBuffers[1] : pingpongColorbuffers[!horizontal]);  // bind texture of other framebuffer (or scene if first iteration)
+		renderQuad();
+		horizontal = !horizontal;
+		if (first_iteration)
+			first_iteration = false;
+	}
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+}
+
+void intBloomFinal(){
+	shaderBloomFinal = new Shader("Shader/Bloom_final.vert", "Shader/Bloom_final.frag");
+	shaderBloomFinal->useShader();
+	//shaderBloomFinal.setInt("scene", 0);
+	glUniform1i(glGetUniformLocation(shaderBlur->programHandle, "scene"), 0);
+	//shaderBloomFinal.setInt("bloomBlur", 1);
+	glUniform1i(glGetUniformLocation(shaderBlur->programHandle, "bloomBlur"), 1);
+}
+
+void renderBloomFinal(){
+	// 3. now render floating point color buffer to 2D quad and tonemap HDR colors to default framebuffer's (clamped) color range
+	// --------------------------------------------------------------------------------------------------------------------------
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	shaderBloomFinal->useShader();
+	glActiveTexture(GL_TEXTURE0 + TEXTURE_SLOT_BLOOM_COLORBUFFER);
+	glBindTexture(GL_TEXTURE_2D, colorBuffers[0]);
+	glActiveTexture(GL_TEXTURE0 + TEXTURE_SLOT_BLOOM_pingpongColorbuffers);
+	glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[!horizontal]);
+	//shaderBloomFinal->setInt("bloom", bloom);
+	glUniform1i(glGetUniformLocation(shaderBloomFinal->programHandle, "bloom"), bloom);
+	//shaderBloomFinal->setFloat("exposure", exposure);
+	glUniform1f(glGetUniformLocation(shaderBloomFinal->programHandle, "exposure"), exposure);
+	renderQuad();
+
+	//std::cout << "bloom: " << (bloom ? "on" : "off") << "| exposure: " << exposure << std::endl;
+}
+
+//TODO what does this do?
+// renderQuad() renders a 1x1 XY quad in NDC
+// -----------------------------------------
+void renderQuad()
 {
 	if (quadVAO == 0)
 	{
@@ -1000,6 +1087,16 @@ void RenderQuad()
 	glBindVertexArray(quadVAO);
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 	glBindVertexArray(0);
+}
+
+void renderFire(float time_delta){
+	for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++)
+	{
+		cout << "Fire " << i+1 << ": ";
+		fire[i]->renderParticles(time_delta, view, proj, flameIntensity[i]);
+		cout << endl;
+	}
+	cout << endl;
 }
 
 void StepPhysX(float time_delta)					//Stepping PhysX
@@ -1306,3 +1403,33 @@ void handleInput(GLFWwindow* window, float time_delta)
 	}
 }
 
+
+void OnShutdown()
+{
+	delete actor; actor = nullptr;
+	delete knight1; knight1 = nullptr;
+	delete knight2; knight2 = nullptr;
+	delete room; room = nullptr;
+	delete camera; camera = nullptr;
+	delete wardrobe; wardrobe = nullptr;
+	delete door; door = nullptr;
+	delete chair1; chair1 = nullptr;
+	delete chair2; chair2 = nullptr;
+	delete desk; desk = nullptr;
+	delete frame; frame = nullptr;
+	delete commode; commode = nullptr;
+	delete torch1; torch1 = nullptr;
+	delete torch2; torch2 = nullptr;
+	delete chess; chess = nullptr;
+	delete coordinatesystem; coordinatesystem = nullptr;
+	delete fire; fire = nullptr;
+
+	delete renderShader; renderShader = nullptr;
+	delete directionalShadowsShader; directionalShadowsShader = nullptr;
+	delete pointShadowsShader; pointShadowsShader = nullptr;
+
+	delete frustumG; frustumG = nullptr;
+
+	gPhysicsSDK->release();			//Removes any actors,  particle systems, and constraint shaders from this scene
+	gFoundation->release();			//Destroys the instance of foundation SDK
+}

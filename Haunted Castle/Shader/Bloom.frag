@@ -1,6 +1,4 @@
-
-
-#version 330 core
+#version 430 core
 layout (location = 0) out vec4 FragColor;
 layout (location = 1) out vec4 BrightColor;
 
@@ -15,7 +13,7 @@ struct Light {
     vec3 Color;
 };
 
-uniform Light lights[4];
+uniform Light lights[2];
 uniform sampler2D diffuseTexture;
 uniform vec3 viewPos;
 
