@@ -548,7 +548,7 @@ int main(int argc, char** argv)
 		auto time_screen_end = glfwGetTime();
 		auto time_fires_start = glfwGetTime();
 
-		//renderFire(time_delta);
+		renderFire(time_delta);
 
 		auto time_fires_end = glfwGetTime();
 		auto time_total_end = glfwGetTime();
@@ -988,7 +988,6 @@ void renderDepthCubemap(int index){
 }
 
 void sendPointShadowsDataToScreenRenderer(int index){
-	//cout << "xx: " << pointShadowsFarPlane << "xx: " << pointShadowsFarPlane << "xx: " << pointShadowsFarPlane << "xx: " << pointShadowsFarPlane << endl;
 	///////////////////////// same for both /////////////////////////
 	glUniform1f(glGetUniformLocation(renderShader->programHandle, "pointShadowsFarPlane"), pointShadowsFarPlane);
 	
@@ -1165,11 +1164,11 @@ void renderQuad()
 void renderFire(float time_delta){
 	for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++)
 	{
-		cout << "Fire " << i+1 << ": ";
+		//cout << "Fire " << i+1 << ": ";
 		fire[i]->renderParticles(time_delta, view, proj, flameIntensity[i]);
-		cout << endl;
+		//cout << endl;
 	}
-	cout << endl;
+	//cout << endl;
 }
 
 void StepPhysX(float time_delta)					//Stepping PhysX
