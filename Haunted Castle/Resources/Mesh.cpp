@@ -339,6 +339,18 @@ void Mesh::loadUniforms(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalP
 	auto specularColor = glGetUniformLocation(shader->programHandle, "specularColor");
 	glUniform3f(specularColor, specular.r, specular.g, specular.b);
 
+	// Normal
+	auto normal_mapping_activated_location = glGetUniformLocation(shader->programHandle, "NORMAL_MAPPING");
+	glUniform1i(normal_mapping_activated_location, NORMAL_MAPPING);
+
+	// Fire and Shadows 1
+	auto fire_and_shadows_1_activated_location = glGetUniformLocation(shader->programHandle, "FIRE_AND_SHADOWS_1");
+	glUniform1i(fire_and_shadows_1_activated_location, FIRE_AND_SHADOWS_1);
+
+	// Fire and Shadows 2
+	auto fire_and_shadows_2_activated_location = glGetUniformLocation(shader->programHandle, "FIRE_AND_SHADOWS_2");
+	glUniform1i(fire_and_shadows_2_activated_location, FIRE_AND_SHADOWS_2);
+
 	// Texture
 	auto tex_enabled = glGetUniformLocation(shader->programHandle, "hasTexture");
 	if (hasTexture) {

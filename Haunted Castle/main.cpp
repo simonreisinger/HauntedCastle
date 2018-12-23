@@ -486,7 +486,7 @@ int main(int argc, char** argv)
 		auto time_update_end = glfwGetTime();
 		auto time_pointShadows_start = glfwGetTime();
 
-		for (int i = 0; i < numberOfTorches; i++){
+		for (int i = 0; i < numberOfTorches; i++) {
 			renderDepthCubemap(i);
 		}
 
@@ -504,7 +504,7 @@ int main(int argc, char** argv)
 
 		sendDirectionalShadowsDataToScreenRenderer();
 
-		for (int i = 0; i < numberOfTorches; i++){
+		for (int i = 0; i < numberOfTorches; i++) {
 			sendPointShadowsDataToScreenRenderer(i);
 		}
 
@@ -890,7 +890,7 @@ void initPointShadows(int index){
 }
 
 // Creates the depth cubmap each render cycle
-void renderDepthCubemap(int index){
+void renderDepthCubemap(int index) {
 	// 1. render scene to depth cubemap
 	// --------------------------------
 
@@ -964,11 +964,12 @@ void initBloom(){
 }
 
 void renderFire(float time_delta){
-	for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++)
-	{
-		//cout << "Fire " << i+1 << ": ";
-		fire[i]->renderParticles(time_delta, view, proj, flameIntensity[i]);
-		//cout << endl;
+	for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++) {
+		if ((i == 0 && FIRE_AND_SHADOWS_1) || (i == 1 && FIRE_AND_SHADOWS_2)) {
+			//cout << "Fire " << i+1 << ": ";
+			fire[i]->renderParticles(time_delta, view, proj, flameIntensity[i]);
+			//cout << endl;
+		}
 	}
 	//cout << endl;
 }
@@ -1177,8 +1178,11 @@ void handleInput(GLFWwindow* window, float time_delta)
 			cout << "F3 - Wire Frame on/off" << endl;
 			cout << "F4 - Textur-Sampling-Quality: Nearest Neighbor/Bilinear" << endl;
 			cout << "F5 - Mip Mapping-Quality: Off/Nearest Neighbor/Linear" << endl;
-			cout << "F8 - Viewfrustum-Culling on/off" << endl;
-			//cout << "F9 - Transparency on/off" << endl;
+			cout << "F6 - Viewfrustum-Culling on/off" << endl;
+			cout << "F7 - Normal Mapping on/off" << endl;
+			cout << "F8 - Fire and Shadows 1 on/off" << endl;
+			cout << "F9 - Fire and Shadows 2 on/off" << endl;
+			cout << "F10 - Bloom on/off" << endl;
 			cout << "ESC - Quit Game" << endl << endl;
 		}
 		CGUE_F1_PRESSED = true;
@@ -1189,134 +1193,113 @@ void handleInput(GLFWwindow* window, float time_delta)
 	}
 
 	// F2 - Frame Time on/off
-	if (glfwGetKey(window, GLFW_KEY_F2)){
-		if (!CGUE_F2_PRESSED)
-		{
-			if (!CGUE_DISPLAY_FRAME_TIME)
-			{
-				cout << "Frame Time on" << endl;
-				CGUE_DISPLAY_FRAME_TIME = true;
-			}
-			else
-			{
-				cout << "Frame Time off" << endl;
-				CGUE_DISPLAY_FRAME_TIME = false;
-			}
+	if (glfwGetKey(window, GLFW_KEY_F2)) {
+		if (!CGUE_F2_PRESSED) {
+			CGUE_DISPLAY_FRAME_TIME = !CGUE_DISPLAY_FRAME_TIME;
+			cout << "Frame Time " << (CGUE_DISPLAY_FRAME_TIME ? "on" : "off") << endl;
 		}
 		CGUE_F2_PRESSED = true;
-	}
-	else
-	{
+	} else {
 		CGUE_F2_PRESSED = false;
 	}
 
 	// F3 - Wire Frame on/off
-	if (glfwGetKey(window, GLFW_KEY_F3)){
-		if (!CGUE_F3_PRESSED)
-		{
-			if (CGUE_RENDER == GL_TRIANGLES)
-			{
-				cout << "Wire Frame on" << endl;
-				CGUE_RENDER = GL_LINE_STRIP;// GL_LINES;
-			}
-			else
-			{
-				cout << "Wire Frame off" << endl;
-				CGUE_RENDER = GL_TRIANGLES;
-			}
+	if (glfwGetKey(window, GLFW_KEY_F3)) {
+		if (!CGUE_F3_PRESSED) {
+			CGUE_RENDER = CGUE_RENDER == GL_TRIANGLES ? GL_LINE_STRIP : GL_TRIANGLES;
+			cout << "Wire Frame " << (CGUE_RENDER == GL_TRIANGLES ? "on" : "off") << endl;
 		}
 		CGUE_F3_PRESSED = true;
-	}
-	else
-	{
+	} else {
 		CGUE_F3_PRESSED = false;
 	}
 
 	//  F4 - Textur-Sampling-Quality: Nearest Neighbor/Bilinear
-	if (glfwGetKey(window, GLFW_KEY_F4)){
-		if (!CGUE_F4_PRESSED)
-		{
-			if (!TEXTURE_SAMPLING_QUALITY)
-			{
-				cout << "Textur-Sampling-Quality: Bilinear" << endl;
-				TEXTURE_SAMPLING_QUALITY = true;
-			}
-			else
-			{
-				cout << "Textur-Sampling-Quality: Nearest Neighbor" << endl;
-				TEXTURE_SAMPLING_QUALITY = false;
-			}
+	if (glfwGetKey(window, GLFW_KEY_F4)) {
+		if (!CGUE_F4_PRESSED) {
+			TEXTURE_SAMPLING_QUALITY = !TEXTURE_SAMPLING_QUALITY;
+			cout << "Textur-Sampling-Quality: " << (TEXTURE_SAMPLING_QUALITY ? "Bilinear" : "Nearest Neighbor") << endl;
 		}
 		CGUE_F4_PRESSED = true;
-	}
-	else
-	{
+	} else {
 		CGUE_F4_PRESSED = false;
 	}
 
-
 	// F5 - Mip Mapping-Quality: Off/Nearest Neighbor/Linear
-	if (glfwGetKey(window, GLFW_KEY_F5)){
-		if (CGUE_F5_PRESSED == false)
-		{
-			if (MIP_MAPPING_QUALITY == 0)
-			{
+	if (glfwGetKey(window, GLFW_KEY_F5)) {
+		if (CGUE_F5_PRESSED == false) {
+			if (MIP_MAPPING_QUALITY == 0) {
 				cout << "Mip Mapping-Quality: Nearest Neighbor" << endl;
 				MIP_MAPPING_QUALITY = 1;
-			}
-			else if (MIP_MAPPING_QUALITY == 1)
-			{
+			} else if (MIP_MAPPING_QUALITY == 1) {
 				cout << "Mip Mapping-Quality: Linear" << endl;
 				MIP_MAPPING_QUALITY = 2;
-			}
-			else
-			{
+			} else {
 				cout << "Mip Mapping-Quality: Off" << endl;
 				MIP_MAPPING_QUALITY = 0;
 			}
 		}
 		CGUE_F5_PRESSED = true;
-	}
-	else
-	{
+	} else {
 		CGUE_F5_PRESSED = false;
 	}
 
-
-	// F6 - Normal Mapping
+	// F6 - Viewfrustum-Culling on/off
 	if (glfwGetKey(window, GLFW_KEY_F6)) {
-		if (CGUE_F6_PRESSED == false)
-		{
-			NORMAL_MAPPING = !NORMAL_MAPPING;
+		if (CGUE_F6_PRESSED == false) {
+			VIEWFRUSTUM_CULLING = !VIEWFRUSTUM_CULLING;
+			cout << "Viewfrustum-Culling " << (VIEWFRUSTUM_CULLING ? "on" : "off") << endl;
 		}
 		CGUE_F6_PRESSED = true;
-	}
-	else
-	{
+	} else {
 		CGUE_F6_PRESSED = false;
 	}
 
+	// F7 - Normal Mapping
+	if (glfwGetKey(window, GLFW_KEY_F7)) {
+		if (CGUE_F7_PRESSED == false) {
+			NORMAL_MAPPING = !NORMAL_MAPPING;
+			cout << "Normal Mapping " << (NORMAL_MAPPING ? "on" : "off") << endl;
+		}
+		CGUE_F7_PRESSED = true;
+	} else {
+		CGUE_F7_PRESSED = false;
+	}
 
-	// F8 - Viewfrustum-Culling on/off
-	if (glfwGetKey(window, GLFW_KEY_F8)){
-		if (CGUE_F8_PRESSED == false)
-		{
-			if (!VIEWFRUSTUM_CULLING)
-			{
-				cout << "Viewfrustum-Culling on" << endl;
-				VIEWFRUSTUM_CULLING = true;
-			}
-			else
-			{
-				cout << "Viewfrustum-Culling off" << endl;
-				VIEWFRUSTUM_CULLING = false;
-			}
+	// F8 - Fire
+	if (glfwGetKey(window, GLFW_KEY_F8)) {
+		if (CGUE_F8_PRESSED == false) {
+			FIRE_AND_SHADOWS_1 = !FIRE_AND_SHADOWS_1;
+			cout << "Fire and Shadows 1 " << (FIRE_AND_SHADOWS_1 ? "on" : "off") << endl;
 		}
 		CGUE_F8_PRESSED = true;
 	}
-	else
-	{
+	else {
 		CGUE_F8_PRESSED = false;
+	}
+
+	// F9 - Fire
+	if (glfwGetKey(window, GLFW_KEY_F9)) {
+		if (CGUE_F9_PRESSED == false) {
+			FIRE_AND_SHADOWS_2 = !FIRE_AND_SHADOWS_2;
+			cout << "Fire and Shadows 2 " << (FIRE_AND_SHADOWS_2 ? "on" : "off") << endl;
+		}
+		CGUE_F9_PRESSED = true;
+	}
+	else {
+		CGUE_F9_PRESSED = false;
+	}
+
+	// F8 - Fire
+	if (glfwGetKey(window, GLFW_KEY_F10)) {
+		if (CGUE_F10_PRESSED == false) {
+			BLOOM = !BLOOM;
+			cout << "Bloom " << (BLOOM ? "on" : "off") << endl;
+		}
+		CGUE_F10_PRESSED = true;
+	}
+	else {
+		CGUE_F10_PRESSED = false;
 	}
 }
 

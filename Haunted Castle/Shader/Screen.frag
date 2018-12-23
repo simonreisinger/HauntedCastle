@@ -16,6 +16,12 @@ in vec4 ShadowCoord;
 
 layout (location = 0) out vec4 FragColor;
 
+
+uniform int NORMAL_MAPPING;
+uniform int FIRE_AND_SHADOWS_1;
+uniform int FIRE_AND_SHADOWS_2;
+
+
 // Values that stay constant for the whole mesh.
 uniform sampler2D modelTexture; // modelTexture
 uniform sampler2D modelNormalTexture; // modelTexture
@@ -125,7 +131,7 @@ void main(){
 	vec3 torch2Dir;
 	vec3 viewDir;
 	
-	if(hasNormalTexture == 1)
+	if(NORMAL_MAPPING == 1 && hasNormalTexture == 1)
 	{
 		// obtain normal from normal map in range [0,1]
 		normal = texture(modelNormalTexture, UV).rgb;
@@ -133,9 +139,9 @@ void main(){
 		normal = normalize(normal * 2.0 - 1.0);
 		normal = normalize(TBN * normal); 
 		
-		torch1Dir = TBN * normalize(Torch1Position_worldspace - FragPos);
-		torch2Dir = TBN * normalize(Torch2Position_worldspace - FragPos);
-		viewDir  = TBN * normalize(viewPos - FragPos); 
+		torch1Dir = normalize(Torch1Position_worldspace - Position_worldspace);
+		torch2Dir = normalize(Torch2Position_worldspace - Position_worldspace);
+		viewDir  = normalize(viewPos - Position_worldspace); 
 
 	}
 	else
@@ -195,6 +201,7 @@ void main(){
 		// Ambient
 		vec3(MaterialAmbientColor) +
 
+		FIRE_AND_SHADOWS_1 *
 		(1.0-shadow1) *	
 		(
 			flameIntensity[0]*
@@ -204,9 +211,10 @@ void main(){
 				// Specular Torch 1
 				MaterialSpecularColor * I1 * pow(cosAlpha1, 5)
 			)
-			)
-			 +
-			(1.0-shadow2) *	
+		)
+		+
+		FIRE_AND_SHADOWS_2 *
+		(1.0-shadow2) *	
 		(
 			flameIntensity[1] *
 			(
@@ -220,5 +228,5 @@ void main(){
 		MaterialDiffuseColor * visibility
 	, 1);
 
-	//FragColor = vec4(normal, 1);
+	//FragColor = vec4(vec3(cosTheta1), 1);
 }

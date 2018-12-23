@@ -59,9 +59,9 @@ void main(){
 	Torch2Direction_cameraspace = Torch2Position_cameraspace + EyeDirection_cameraspace;
 
 	
-	Normal_worldspace = normalize( M * vec4(vertexNormal_modelspace,0)).xyz;
-	Tangent_worldspace = normalize( M * vec4(vertexTangent_modelspace,0)).xyz;
-	Bitangent_worldspace = normalize( M * vec4(vertexBitangent_modelspace,0)).xyz;
+	Normal_worldspace = normalize(( M * vec4(vertexNormal_modelspace, 0)).xyz);
+	Tangent_worldspace = normalize(( M * vec4(vertexTangent_modelspace, 0)).xyz);
+	Bitangent_worldspace = normalize(( M * vec4(vertexBitangent_modelspace, 0)).xyz);
 	
 	TBN = mat3(Tangent_worldspace, Bitangent_worldspace, Normal_worldspace);
 
