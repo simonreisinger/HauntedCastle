@@ -203,14 +203,14 @@ void main(){
 	////////////////////////////////////////////////////////TODO added here///////////////////////////
 	//float brightness = dot(result, vec3(1.0, 1.0, 1.0));
     //if(brightness > 1.0){
-	if(MaterialDiffuseColor.r == 1.0 && MaterialDiffuseColor.g == 1.0 && MaterialDiffuseColor.b == 1.0){
+	if(MaterialDiffuseColor.r == 1.0 && MaterialDiffuseColor.g == 1.0 && MaterialDiffuseColor.b == 1.0){ // TODO make this nicer
         BrightColor = vec4(MaterialDiffuseColor, 1.0);
     } else {
         BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 	}
 	        //BrightColor = vec4(0.0, 1.0, 0.0, 1.0);
 
-	FragColor =  vec4(result, 1.0);
+	FragColor = vec4(result, 1.0); // BrightColor; //
 
 	////////////////////////////////////////////////////////TODO added here///////////////////////////
 }

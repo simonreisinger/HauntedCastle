@@ -192,8 +192,6 @@
     <None Include="Shader\PointShadows.vert" />
     <None Include="Shader\Screen.frag" />
     <None Include="Shader\Screen.vert" />
-    <None Include="Shader\Bloom.frag" />
-    <None Include="Shader\Bloom.vert" />
     <None Include="Shader\Bloom_final.frag" />
     <None Include="Shader\Bloom_final.vert" />
     <None Include="Shader\Blur.frag" />

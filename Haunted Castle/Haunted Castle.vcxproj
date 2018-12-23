@@ -148,8 +148,6 @@
     <ClInclude Include="Scene\Windows.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shader\Bloom.frag" />
-    <None Include="Shader\Bloom.vert" />
     <None Include="Shader\Bloom_final.frag" />
     <None Include="Shader\Bloom_final.vert" />
     <None Include="Shader\Blur.frag" />

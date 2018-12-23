@@ -28,5 +28,5 @@ void main()
          }
      }
 	 //result = vec3(1.0,1.0,0.0);
-     FragColor = vec4(texture(image, TexCoords).rgb, 1.0);
+     FragColor = vec4(result, 1.0) ; // vec4(texture(image, TexCoords).rgb, 1.0);
 }
