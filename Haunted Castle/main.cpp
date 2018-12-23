@@ -32,6 +32,7 @@
 #include "Scene/Chess.hpp"
 #include "Scene/Coordinatesystem.hpp"
 #include "Scene/Fire.hpp"
+#include "Scene/Windows.hpp"
 
 
 //-------Loading PhysX libraries (32bit only)----------//
@@ -80,7 +81,7 @@ Shader* pointShadowsShader;
 
 
 ///////////////////////////////////////////////////////////////
-Shader* shaderLight;
+//Shader* shaderLight;
 Shader* shaderBlur;
 Shader* shaderBloomFinal;
 
@@ -92,21 +93,31 @@ float exposure = 1.0f;
 unsigned int quadVAO = 0;
 unsigned int quadVBO;
 
-void initBloom();
+//void initBloom();
+//void initLighBox();
+//void renderLightBox();
+//void intCombine(); // BLOOMFINAL
+//void renderCombin();
+
+GLuint hdrFBO;
 void initBlur();
 void renderBlur();
-void initLighBox();
-void renderLightBox();
 void intBloomFinal();
 void renderBloomFinal();
 void renderQuad();
+
+GLuint directionalShadowsColorMap[2];
+GLuint pingpongFBO[2];
+GLuint pingpongColorbuffers[2];
+GLuint combineFBO;
+GLuint combineBuffer;
+
+GLuint colorBuffers[2];
+
 ///////////////////////////////////////////////////////////////
 
 GLuint directionalShadowsFBO = 0;
-GLuint directionalShadowsColorMap;
-GLuint colorBuffers[2];
-GLuint pingpongFBO[2];
-GLuint pingpongColorbuffers[2];
+GLuint directionalShadowsColorFBO;
 
 const int numberOfTorches = 2;
 unsigned int pointShadowsFBO[numberOfTorches];
@@ -138,6 +149,7 @@ Torch2* torch2;
 Chess* chess;
 Coordinatesystem* coordinatesystem;
 Fire** fire;
+Windows* windows;
 
 mat4x4 view;
 
@@ -522,8 +534,8 @@ int main(int argc, char** argv)
 		auto time_screen_start = glfwGetTime();
 
 		// Render scene into floating point framebuffer
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glUseProgram(renderShader->programHandle);
+		glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+		renderShader->useShader();
 
 		sendDirectionalShadowsDataToScreenRenderer();
 
@@ -536,11 +548,16 @@ int main(int argc, char** argv)
 		auto time_screen_end = glfwGetTime();
 		auto time_fires_start = glfwGetTime();
 
-		renderFire(time_delta);
+		//renderFire(time_delta);
 
 		auto time_fires_end = glfwGetTime();
 		auto time_total_end = glfwGetTime();
 		auto time_swap_start = glfwGetTime();
+
+		renderBlur();
+		renderBloomFinal();
+
+
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -553,9 +570,7 @@ int main(int argc, char** argv)
 
 		//////////////////////////////////////////////////////////////////////
 		//renderBlur(); // TODO i dont think this will be needed
-		renderBlur();
-		renderLightBox();
-		renderBloomFinal();
+		//renderLightBox(); // Not needed
 
 		if (refreshTime > 1)
 		{
@@ -598,11 +613,52 @@ void init()
 	for (int i = 0; i < numberOfTorches; i++){
 		initPointShadows(i);
 	}
+	///////////////////////////////////////////////////////////////////////
+
+
+	// Set up floating point framebuffer to render scene to
+	glGenFramebuffers(1, &hdrFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+	glGenTextures(2, colorBuffers);
+	for (GLuint i = 0; i < 2; i++)
+	{
+		glBindTexture(GL_TEXTURE_2D, colorBuffers[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_BGR, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		// attach texture to framebuffer
+		glFramebufferTexture2D(
+			GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorBuffers[i], 0
+			);
+	}
+
+
+	// - Create and attach depth buffer (renderbuffer)
+	GLuint rboDepth;
+	glGenRenderbuffers(1, &rboDepth);
+	glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+	// - Tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
+	GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	glDrawBuffers(2, attachments);
+
+
+	// Always check that our framebuffer is ok
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cout << "Couldn't load frame buffer ";
+		glfwTerminate();
+		system("PAUSE");
+		exit(EXIT_FAILURE);
+	}
 
 
 	//////////////////////////////////////////////////////////////////////
 	//initBloom(); // TODO remove this
-	initLighBox();
+	// initLighBox(); // TODO remove this
 	initBlur();
 	intBloomFinal();
 	//////////////////////////////////////////////////////////////////////
@@ -672,6 +728,7 @@ void initScene(){
 	actor->initActor();
 
 	room = new Room(renderShader);
+	windows = new Windows(renderShader);
 
 	if (renderObjects) {
 		wardrobe = new Wardrobe(renderShader);
@@ -707,6 +764,8 @@ void initScene(){
 }
 
 void renderScreen(){
+
+	// 1. Render scene into floating point framebuffer
 
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glViewport(0, 0, width, height);
@@ -786,12 +845,12 @@ void initDirectionalShadows()
 	// TODO Still do not know what this FBO and Texture are for,
 	// but they are needed.
 	// Set up floating point framebuffer to render scene to
-	glGenFramebuffers(1, &directionalShadowsColorMap);
-	glBindFramebuffer(GL_FRAMEBUFFER, directionalShadowsColorMap);
-	glGenTextures(2, colorBuffers);
+	glGenFramebuffers(1, &directionalShadowsColorFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, directionalShadowsColorFBO);
+	glGenTextures(2, directionalShadowsColorMap);
 	for (GLuint i = 0; i < 2; i++)
 	{
-		glBindTexture(GL_TEXTURE_2D, colorBuffers[i]);
+		glBindTexture(GL_TEXTURE_2D, directionalShadowsColorMap[i]);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_BGR, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -799,11 +858,11 @@ void initDirectionalShadows()
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		// attach texture to framebuffer
 		glFramebufferTexture2D(
-			GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorBuffers[i], 0
+			GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, directionalShadowsColorMap[i], 0
 		);
 	}
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0); // TODO 
 }
 
 void renderDepthMap(){
@@ -819,7 +878,7 @@ void renderDepthMap(){
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Use our shader
-	glUseProgram(directionalShadowsShader->programHandle);
+	directionalShadowsShader->useShader();
 
 	// Compute the MVP matrix from the light's point of view
 	glm::mat4 depthProjectionMatrix = glm::ortho<float>(-20, 20, 20, -20, -40.0f, 40.0f);
@@ -850,7 +909,6 @@ void initPointShadows(int index){
 		"Shader/PointShadows.vert",
 		"Shader/PointShadows.frag",
 		"Shader/PointShadows.geom");
-
 
 	// Create and bind FBO
 	glGenFramebuffers(1, &pointShadowsFBO[index]);
@@ -906,8 +964,7 @@ void renderDepthCubemap(int index){
 
 	// Loads the FBO with the bound cubemap as output
 	glBindFramebuffer(GL_FRAMEBUFFER, pointShadowsFBO[index]);
-	glUseProgram(pointShadowsShader->programHandle);
-
+	pointShadowsShader->useShader();
 
 	glViewport(0, 0, width, height);
 	glClear(GL_DEPTH_BUFFER_BIT);
@@ -953,6 +1010,7 @@ void sendPointShadowsDataToScreenRenderer(int index){
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap[index]);
 }
 
+/////////////////////////////////////////////////////////
 void initBloom(){
 	/*
 	bloomShader = new Shader(
@@ -973,90 +1031,105 @@ void initBloom(){
 	*/
 }
 
-void initLighBox(){
-	shaderLight = new Shader("Shader/Bloom.vert", "Shader/LighBox.frag");
-}
-
-void renderLightBox(){
-	// finally show all the light sources as bright cubes
-	//shaderLight.use();
-	shaderBlur->useShader();
-	// TODO einblenden
-	//shaderLight.setMat4("projection", projection);
-	//glUniformMatrix4fv(glGetUniformLocation(shaderLight->programHandle, "projection"), 1, GL_FALSE, &mat[0][0]);
-	//shaderLight.setMat4("view", view);
-	//glUniformMatrix4fv(glGetUniformLocation(shaderLight->programHandle, "view"), 1, GL_FALSE, &mat[0][0]);
-
-}
+///////////////////////////////////////////////////////// Remove this
 
 void initBlur(){
-	// ping-pong-framebuffer for blurring
-	unsigned int pingpongFBO[2];
-	unsigned int pingpongColorbuffers[2];
+	// Ping pong framebuffer for 
 	glGenFramebuffers(2, pingpongFBO);
 	glGenTextures(2, pingpongColorbuffers);
-	for (unsigned int i = 0; i < 2; i++)
+	for (GLuint i = 0; i < 2; i++)
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[i]);
 		glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[i]);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_BGR, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // we clamp to the edge as the blur filter would otherwise sample repeated texture values!
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // We clamp to the edge as the blur filter would otherwise sample repeated texture values!
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingpongColorbuffers[i], 0);
-		// also check if framebuffers are complete (no need for depth buffer)
+		// Also check if framebuffers are complete (no need for depth buffer)
 		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 			std::cout << "Framebuffer not complete!" << std::endl;
 	}
 	shaderBlur = new Shader("Shader/Blur.vert", "Shader/Blur.frag");
-	//shaderBlur.use();
-	shaderBlur->useShader();
-	glUniform1i(glGetUniformLocation(shaderBlur->programHandle, "image"), 0);
 }
 
 void renderBlur(){
-	unsigned int amount = 10;
-	shaderBlur->useShader();
-	for (unsigned int i = 0; i < amount; i++)
+	// 2. Blur bright fragments w/ two-pass Gaussian Blur 
+	GLboolean horizontal = true, first_iteration = true;
+	GLuint amount = 20;
+	for (GLuint i = 0; i < amount; i++)
 	{
 		glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[horizontal]);
-		//shaderBlur.setInt("horizontal", horizontal);
-		glUniform1i(glGetUniformLocation(shaderLight->programHandle, "horizontal"), horizontal);
-		glBindTexture(GL_TEXTURE_2D, first_iteration ? colorBuffers[1] : pingpongColorbuffers[!horizontal]);  // bind texture of other framebuffer (or scene if first iteration)
+		shaderBlur->useShader();
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // We clamp to the edge as the blur filter would otherwise sample repeated texture values!
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		glUniform1i(glGetUniformLocation(shaderBlur->programHandle, "horizontal"), horizontal);
+
+		glActiveTexture(GL_TEXTURE0 + TEXTURE_SLOT_BLOOM_TOBEBLOOMED);
+		glBindTexture(GL_TEXTURE_2D, first_iteration ? colorBuffers[1] : pingpongColorbuffers[!horizontal]);
+		GLuint BlurTextureID = glGetUniformLocation(shaderBlur->programHandle, "image");
+		glUniform1i(BlurTextureID, TEXTURE_SLOT_BLOOM_TOBEBLOOMED);
+
+
 		renderQuad();
 		horizontal = !horizontal;
 		if (first_iteration)
 			first_iteration = false;
+	// TODO DRAW AUFRUFEN
 	}
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void intBloomFinal(){
+	// Set up floating point framebuffer to render scene to
+	glGenFramebuffers(1, &combineFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, combineFBO);
+
+	glGenTextures(1, &combineBuffer);
+	glBindTexture(GL_TEXTURE_2D, combineBuffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_BGR, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	// attach texture to framebuffer
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, combineBuffer, 0);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+
 	shaderBloomFinal = new Shader("Shader/Bloom_final.vert", "Shader/Bloom_final.frag");
-	shaderBloomFinal->useShader();
-	//shaderBloomFinal.setInt("scene", 0);
-	glUniform1i(glGetUniformLocation(shaderBlur->programHandle, "scene"), 0);
-	//shaderBloomFinal.setInt("bloomBlur", 1);
-	glUniform1i(glGetUniformLocation(shaderBlur->programHandle, "bloomBlur"), 1);
 }
 
 void renderBloomFinal(){
-	// 3. now render floating point color buffer to 2D quad and tonemap HDR colors to default framebuffer's (clamped) color range
-	// --------------------------------------------------------------------------------------------------------------------------
+	// 2. Now render floating point color buffer to 2D quad and tonemap HDR colors to default framebuffer's (clamped) color range
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glViewport(0, 0, width, height);
+	//glViewport(iRender * drawWidth, 0, drawWidth, height);
 	shaderBloomFinal->useShader();
-	glActiveTexture(GL_TEXTURE0 + TEXTURE_SLOT_BLOOM_COLORBUFFER);
+
+	glActiveTexture(GL_TEXTURE8);
 	glBindTexture(GL_TEXTURE_2D, colorBuffers[0]);
-	glActiveTexture(GL_TEXTURE0 + TEXTURE_SLOT_BLOOM_pingpongColorbuffers);
-	glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[!horizontal]);
-	//shaderBloomFinal->setInt("bloom", bloom);
+	auto colorBuffers0_location = glGetUniformLocation(shaderBloomFinal->programHandle, "scene");
+	glUniform1i(colorBuffers0_location, 8);
+
+	glActiveTexture(GL_TEXTURE9);
+	glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[1]);
+	auto colorBuffers1_location = glGetUniformLocation(shaderBloomFinal->programHandle, "bloomBlur");
+	glUniform1i(colorBuffers1_location, 9);
+
+	GLboolean bloom = true;
+	GLfloat exposure = 0.9f;
 	glUniform1i(glGetUniformLocation(shaderBloomFinal->programHandle, "bloom"), bloom);
-	//shaderBloomFinal->setFloat("exposure", exposure);
 	glUniform1f(glGetUniformLocation(shaderBloomFinal->programHandle, "exposure"), exposure);
 	renderQuad();
 
-	//std::cout << "bloom: " << (bloom ? "on" : "off") << "| exposure: " << exposure << std::endl;
 }
 
 //TODO what does this do?
@@ -1114,6 +1187,7 @@ void renderScene(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_mod
 
 
 	room->renderGeometry(drawShader, view, proj, camera_model, cull);
+	windows->renderGeometry(drawShader, view, proj, camera_model, cull);
 
 	if (renderObjects)
 	{
@@ -1423,6 +1497,7 @@ void OnShutdown()
 	delete chess; chess = nullptr;
 	delete coordinatesystem; coordinatesystem = nullptr;
 	delete fire; fire = nullptr;
+	delete windows; windows = nullptr;
 
 	delete renderShader; renderShader = nullptr;
 	delete directionalShadowsShader; directionalShadowsShader = nullptr;

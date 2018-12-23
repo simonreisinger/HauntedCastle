@@ -116,6 +116,7 @@
     <ClCompile Include="Scene\Torch1.cpp" />
     <ClCompile Include="Scene\Torch2.cpp" />
     <ClCompile Include="Scene\Wardrobe.cpp" />
+    <ClCompile Include="Scene\Windows.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Resources\Camera.hpp" />
@@ -144,6 +145,7 @@
     <ClInclude Include="Scene\Torch1.hpp" />
     <ClInclude Include="Scene\Torch2.hpp" />
     <ClInclude Include="Scene\Wardrobe.hpp" />
+    <ClInclude Include="Scene\Windows.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shader\Bloom.frag" />
