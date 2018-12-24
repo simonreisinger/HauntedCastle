@@ -37,15 +37,15 @@
 
 //-------Loading PhysX libraries (32bit only)----------//
 
-#ifdef _DEBUG //If in 'Debug' load libraries for debug mode 
-#pragma comment(lib, "PhysX3DEBUG_x86.lib")				//Always be needed  
+#ifdef _DEBUG //If in 'Debug' load libraries for debug mode
+#pragma comment(lib, "PhysX3DEBUG_x86.lib")				//Always be needed
 #pragma comment(lib, "PhysX3CommonDEBUG_x86.lib")		//Always be needed
-#pragma comment(lib, "PhysX3ExtensionsDEBUG.lib")		//PhysX extended library 
-#pragma comment(lib, "PhysXVisualDebuggerSDKDEBUG.lib") //For PVD only 
+#pragma comment(lib, "PhysX3ExtensionsDEBUG.lib")		//PhysX extended library
+#pragma comment(lib, "PhysXVisualDebuggerSDKDEBUG.lib") //For PVD only
 
 #else //Else load libraries for 'Release' mode
-#pragma comment(lib, "PhysX3_x86.lib")	
-#pragma comment(lib, "PhysX3Common_x86.lib") 
+#pragma comment(lib, "PhysX3_x86.lib")
+#pragma comment(lib, "PhysX3Common_x86.lib")
 #pragma comment(lib, "PhysX3Extensions.lib")
 #pragma comment(lib, "PhysXVisualDebuggerSDK.lib")
 #endif
@@ -126,7 +126,7 @@ std::vector<glm::mat4> shadowTransforms[numberOfTorches];
 
 glm::mat4 depthVP;
 
-Actor* actor; 
+Actor* actor;
 Knight1* knight1;
 Knight2* knight2;
 Room* room;
@@ -187,15 +187,15 @@ class SimulationEvents : public PxSimulationEventCallback
 	{
 	}
 
-	void onWake(PxActor** actor, PxU32 count)	//This is called during PxScene::fetchResults with the actors which have just been woken up.						
+	void onWake(PxActor** actor, PxU32 count)	//This is called during PxScene::fetchResults with the actors which have just been woken up.
 	{
 	}
 
-	void onSleep(PxActor** actor, PxU32 count)	////This is called during PxScene::fetchResults with the actors which have just been put to sleep.						
+	void onSleep(PxActor** actor, PxU32 count)	////This is called during PxScene::fetchResults with the actors which have just been put to sleep.
 	{
 	}
 
-	void onTrigger(PxTriggerPair* pairs, PxU32 nbPairs)	//This is called during PxScene::fetchResults with the current trigger pair events.		
+	void onTrigger(PxTriggerPair* pairs, PxU32 nbPairs)	//This is called during PxScene::fetchResults with the current trigger pair events.
 	{
 	}
 
@@ -212,7 +212,7 @@ static SimulationEvents gSimulationEventCallback;			//Instance of 'SimulationEve
 glm::mat4 proj;
 //glm::mat4 view;
 
-//Defining a custome filter shader 
+//Defining a custome filter shader
 PxFilterFlags customFilterShader(PxFilterObjectAttributes attributes0, PxFilterData filterData0,
 	PxFilterObjectAttributes attributes1, PxFilterData filterData1,
 	PxPairFlags& pairFlags, const void* constantBlock, PxU32 constantBlockSize)
@@ -221,7 +221,7 @@ PxFilterFlags customFilterShader(PxFilterObjectAttributes attributes0, PxFilterD
 	pairFlags = PxPairFlag::eCONTACT_DEFAULT
 		| PxPairFlag::eTRIGGER_DEFAULT
 		| PxPairFlag::eNOTIFY_CONTACT_POINTS
-		| PxPairFlag::eCCD_LINEAR; //Set flag to enable CCD (Continuous Collision Detection) 
+		| PxPairFlag::eCCD_LINEAR; //Set flag to enable CCD (Continuous Collision Detection)
 
 	return PxFilterFlag::eDEFAULT;
 }
@@ -346,11 +346,11 @@ static void APIENTRY DebugCallbackAMD(GLuint id, GLenum category, GLenum severit
 static void APIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) {
 	if (type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB || type == GL_DEBUG_TYPE_OTHER_ARB) {
 		/*
-		Error "Buffer detailed info: Buffer object 1 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) 
+		Error "Buffer detailed info: Buffer object 1 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW)
 		will use VIDEO memory as the source for buffer object operations."
 		Can be ignored due to https://stackoverflow.com/questions/46771287/why-is-opengl-telling-me-ive-used-gl-static-draw-when-ive-specified-otherwise
 		*/
-		return; 
+		return;
 	}
 	std::string error = FormatDebugOutput(source, type, id, severity, message);
 	std::cout << error;
@@ -361,7 +361,7 @@ int main(int argc, char** argv)
 {
 	cout << "Loading..." << endl;
 
-	// TODO implement full screen 
+	// TODO implement full screen
 	ratio = (float)width / (float)height;
 
 	// Parameters
@@ -476,7 +476,7 @@ int main(int argc, char** argv)
 
 	glfwSetWindowTitle(window, "Haunted Castle");
 
-	atexit(OnShutdown);			//Called on application exit 
+	atexit(OnShutdown);			//Called on application exit
 
 	glfwShowWindow(window);
 
@@ -515,7 +515,7 @@ int main(int argc, char** argv)
 		auto time_update_end = glfwGetTime();
 		auto time_pointShadows_start = glfwGetTime();
 
-		for (int i = 0; i < numberOfTorches; i++){
+		for (int i = 0; i < numberOfTorches; i++) {
 			renderDepthCubemap(i);
 		}
 
@@ -533,12 +533,12 @@ int main(int argc, char** argv)
 
 		sendDirectionalShadowsDataToScreenRenderer();
 
-		for (int i = 0; i < numberOfTorches; i++){
+		for (int i = 0; i < numberOfTorches; i++) {
 			sendPointShadowsDataToScreenRenderer(i);
 		}
 
 		renderScreen();
-	
+
 		auto time_screen_end = glfwGetTime();
 		auto time_fires_start = glfwGetTime();
 
@@ -593,9 +593,9 @@ int main(int argc, char** argv)
 }
 
 
-void init() 
+void init()
 {
-	
+
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -677,7 +677,7 @@ void initPhysics(){
 	}
 
 	//Creating scene
-	PxSceneDesc sceneDesc(gPhysicsSDK->getTolerancesScale());		//Descriptor class for scenes 
+	PxSceneDesc sceneDesc(gPhysicsSDK->getTolerancesScale());		//Descriptor class for scenes
 
 	sceneDesc.gravity = PxVec3(0.0f, 0.0f, 0.0f);					//Setting gravity
 	sceneDesc.cpuDispatcher = PxDefaultCpuDispatcherCreate(1);		//Creates default CPU dispatcher for the scene
@@ -685,10 +685,10 @@ void initPhysics(){
 	sceneDesc.filterShader = customFilterShader;					//Creates custom user collision filter shader for the scene
 	sceneDesc.simulationEventCallback = &gSimulationEventCallback;  //Resgistering for receiving simulation events
 
-	sceneDesc.flags |= PxSceneFlag::eENABLE_CCD;					//Set flag to enable CCD (Continuous Collision Detection) 
+	sceneDesc.flags |= PxSceneFlag::eENABLE_CCD;					//Set flag to enable CCD (Continuous Collision Detection)
 
-	gScene = gPhysicsSDK->createScene(sceneDesc);					//Creates a scene 
-	//*/This will enable basic visualization of PhysX objects like- actors collision shapes and their axes. 
+	gScene = gPhysicsSDK->createScene(sceneDesc);					//Creates a scene
+	//*/This will enable basic visualization of PhysX objects like- actors collision shapes and their axes.
 	//The function PxScene::getRenderBuffer() is used to render any active visualization for scene.
 	gScene->setVisualizationParameter(PxVisualizationParameter::eSCALE, 1.0);	//Global visualization scale which gets multiplied with the individual scales
 	gScene->setVisualizationParameter(PxVisualizationParameter::eCOLLISION_SHAPES, 1.0f);	//Enable visualization of actor's shape
@@ -807,7 +807,7 @@ void initDirectionalShadows()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-	
+
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, directionalShadowsDepthMap, 0);
 
 	// No color output in the bound framebuffer, only depth.
@@ -845,7 +845,7 @@ void initDirectionalShadows()
 		);
 	}
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0); // TODO 
+	glBindFramebuffer(GL_FRAMEBUFFER, 0); // TODO
 }
 
 void renderDepthMap(){
@@ -853,8 +853,8 @@ void renderDepthMap(){
 	glBindFramebuffer(GL_FRAMEBUFFER, directionalShadowsFBO);
 	glViewport(0, 0, width, height); // Render on the whole framebuffer, complete from the lower left corner to the upper right
 
-	// We don't use bias in the shader, but instead we draw back faces, 
-	// which are already separated from the front faces by a small distance 
+	// We don't use bias in the shader, but instead we draw back faces,
+	// which are already separated from the front faces by a small distance
 	glDisable(GL_CULL_FACE);
 
 	// Clear the screen
@@ -871,7 +871,7 @@ void renderDepthMap(){
 	depthVP = depthProjectionMatrix * depthViewMatrix;
 	glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
 
-	// Send our transformation to the currently bound shader, 
+	// Send our transformation to the currently bound shader,
 
 	renderScene(directionalShadowsShader, depthViewMatrix, depthProjectionMatrix, mat4x4(1.0f));
 }
@@ -900,7 +900,7 @@ void initPointShadows(int index){
 	// Create cubemap textures
 	glGenTextures(1, &depthCubemap[index]);
 	const unsigned int SHADOW_WIDTH = 1600, SHADOW_HEIGHT = 1600; // TODO change this line
-	
+
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap[index]);
 	for (unsigned int i = 0; i < 6; ++i){
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT,
@@ -912,7 +912,7 @@ void initPointShadows(int index){
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	
+
 	// attach depth texture as FBO's depth buffer
 	// (tells GPU that this texture should be the output of current bound FBO)
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemap[index], 0);
@@ -941,7 +941,7 @@ void initPointShadows(int index){
 }
 
 // Creates the depth cubmap each render cycle
-void renderDepthCubemap(int index){
+void renderDepthCubemap(int index) {
 	// 1. render scene to depth cubemap
 	// --------------------------------
 
@@ -973,7 +973,7 @@ void renderDepthCubemap(int index){
 void sendPointShadowsDataToScreenRenderer(int index){
 	///////////////////////// same for both /////////////////////////
 	glUniform1f(glGetUniformLocation(renderShader->programHandle, "pointShadowsFarPlane"), pointShadowsFarPlane);
-	
+
 	mat4x4 camera_model = camera->getCameraModel();
 	mat4 viewPosMatrix = camera_model * pxMatToGlm(PxMat44(actor->actor->getGlobalPose().getInverse()));
 	vec3 viewPos = vec3(viewPosMatrix[3][0], viewPosMatrix[3][1], viewPosMatrix[3][2]);
@@ -993,7 +993,7 @@ void sendPointShadowsDataToScreenRenderer(int index){
 }
 
 void initBlur(){
-	// Ping pong framebuffer for 
+	// Ping pong framebuffer for
 	glGenFramebuffers(2, pingpongFBO);
 	glGenTextures(2, pingpongColorbuffers);
 	for (GLuint i = 0; i < 2; i++)
@@ -1014,7 +1014,7 @@ void initBlur(){
 }
 
 void renderBlur(){
-	// 2. Blur bright fragments w/ two-pass Gaussian Blur 
+	// 2. Blur bright fragments w/ two-pass Gaussian Blur
 	GLboolean horizontal = true, first_iteration = true;
 	GLuint amount = 20;
 	for (GLuint i = 0; i < amount; i++)
@@ -1036,8 +1036,9 @@ void renderBlur(){
 
 		renderQuad();
 		horizontal = !horizontal;
-		if (first_iteration)
+		if (first_iteration){
 			first_iteration = false;
+		}
 	}
 }
 
@@ -1117,11 +1118,12 @@ void renderQuad()
 }
 
 void renderFire(float time_delta){
-	for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++)
-	{
-		//cout << "Fire " << i+1 << ": ";
-		fire[i]->renderParticles(time_delta, view, proj, flameIntensity[i]);
-		//cout << endl;
+	for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++) {
+		if ((i == 0 && FIRE_AND_SHADOWS_1) || (i == 1 && FIRE_AND_SHADOWS_2)) {
+			//cout << "Fire " << i+1 << ": ";
+			fire[i]->renderParticles(time_delta, view, proj, flameIntensity[i]);
+			//cout << endl;
+		}
 	}
 	//cout << endl;
 }
@@ -1145,7 +1147,7 @@ void renderScene(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_mod
 	}
 	if (renderObjects)
 	{
-		
+
 		torch1->renderGeometry(drawShader, view, proj, camera_model, cull);
 		torch2->renderGeometry(drawShader, view, proj, camera_model, cull);
 
@@ -1158,7 +1160,7 @@ void renderScene(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_mod
 		wardrobe->renderGeometry(drawShader, view, proj, camera_model, cull);
 
 		desk->renderGeometry(drawShader, view, proj, camera_model, cull);
-		
+
 		door->renderGeometry(drawShader, view, proj, camera_model, cull);
 
 		frame->renderGeometry(drawShader, view, proj, camera_model, cull);
@@ -1201,7 +1203,7 @@ void handleInput(GLFWwindow* window, float time_delta)
 		double mouseYPosDiff = mouseYPos - mouseYPosOld;
 
 		actor->PxRotate(0, 0, ROTATESPEED * time_delta * mouseXPosDiff / 100);
-		
+
 
 		if (mouseYPosDiff > 0)
 		{
@@ -1217,8 +1219,8 @@ void handleInput(GLFWwindow* window, float time_delta)
 	mouseYPosOld = mouseYPos;
 
 
-	// camera - actor 0 
-	
+	// camera - actor 0
+
 	if (glfwGetKey(window, GLFW_KEY_RIGHT))
 	{
 		actor->PxRotate(0, 0, -ROTATESPEED * time_delta);
@@ -1245,7 +1247,7 @@ void handleInput(GLFWwindow* window, float time_delta)
 	{
 		actor->PxRotate(0, 0, -ROTATESPEED * time_delta);
 	}
-	// actor 0 - move 
+	// actor 0 - move
 	if (glfwGetKey(window, GLFW_KEY_Q))
 	{
 		actor->PxTranslate(0, 0, -MOVESPEED * time_delta);
@@ -1296,8 +1298,11 @@ void handleInput(GLFWwindow* window, float time_delta)
 			cout << "F3 - Wire Frame on/off" << endl;
 			cout << "F4 - Textur-Sampling-Quality: Nearest Neighbor/Bilinear" << endl;
 			cout << "F5 - Mip Mapping-Quality: Off/Nearest Neighbor/Linear" << endl;
-			cout << "F8 - Viewfrustum-Culling on/off" << endl;
-			//cout << "F9 - Transparency on/off" << endl;
+			cout << "F6 - Viewfrustum-Culling on/off" << endl;
+			cout << "F7 - Normal Mapping on/off" << endl;
+			cout << "F8 - Fire and Shadows 1 on/off" << endl;
+			cout << "F9 - Fire and Shadows 2 on/off" << endl;
+			cout << "F10 - Bloom on/off" << endl;
 			cout << "ESC - Quit Game" << endl << endl;
 		}
 		CGUE_F1_PRESSED = true;
@@ -1308,120 +1313,113 @@ void handleInput(GLFWwindow* window, float time_delta)
 	}
 
 	// F2 - Frame Time on/off
-	if (glfwGetKey(window, GLFW_KEY_F2)){
-		if (!CGUE_F2_PRESSED)
-		{
-			if (!CGUE_DISPLAY_FRAME_TIME)
-			{
-				cout << "Frame Time on" << endl;
-				CGUE_DISPLAY_FRAME_TIME = true;
-			}
-			else
-			{
-				cout << "Frame Time off" << endl;
-				CGUE_DISPLAY_FRAME_TIME = false;
-			}
+	if (glfwGetKey(window, GLFW_KEY_F2)) {
+		if (!CGUE_F2_PRESSED) {
+			CGUE_DISPLAY_FRAME_TIME = !CGUE_DISPLAY_FRAME_TIME;
+			cout << "Frame Time " << (CGUE_DISPLAY_FRAME_TIME ? "on" : "off") << endl;
 		}
 		CGUE_F2_PRESSED = true;
-	}
-	else
-	{
+	} else {
 		CGUE_F2_PRESSED = false;
 	}
 
 	// F3 - Wire Frame on/off
-	if (glfwGetKey(window, GLFW_KEY_F3)){
-		if (!CGUE_F3_PRESSED)
-		{
-			if (CGUE_RENDER == GL_TRIANGLES)
-			{
-				cout << "Wire Frame on" << endl;
-				CGUE_RENDER = GL_LINE_STRIP;// GL_LINES;
-			}
-			else
-			{
-				cout << "Wire Frame off" << endl;
-				CGUE_RENDER = GL_TRIANGLES;
-			}
+	if (glfwGetKey(window, GLFW_KEY_F3)) {
+		if (!CGUE_F3_PRESSED) {
+			CGUE_RENDER = CGUE_RENDER == GL_TRIANGLES ? GL_LINE_STRIP : GL_TRIANGLES;
+			cout << "Wire Frame " << (CGUE_RENDER == GL_TRIANGLES ? "on" : "off") << endl;
 		}
 		CGUE_F3_PRESSED = true;
-	}
-	else
-	{
+	} else {
 		CGUE_F3_PRESSED = false;
 	}
 
 	//  F4 - Textur-Sampling-Quality: Nearest Neighbor/Bilinear
-	if (glfwGetKey(window, GLFW_KEY_F4)){
-		if (!CGUE_F4_PRESSED)
-		{
-			if (!TEXTURE_SAMPLING_QUALITY)
-			{
-				cout << "Textur-Sampling-Quality: Bilinear" << endl;
-				TEXTURE_SAMPLING_QUALITY = true;
-			}
-			else
-			{
-				cout << "Textur-Sampling-Quality: Nearest Neighbor" << endl;
-				TEXTURE_SAMPLING_QUALITY = false;
-			}
+	if (glfwGetKey(window, GLFW_KEY_F4)) {
+		if (!CGUE_F4_PRESSED) {
+			TEXTURE_SAMPLING_QUALITY = !TEXTURE_SAMPLING_QUALITY;
+			cout << "Textur-Sampling-Quality: " << (TEXTURE_SAMPLING_QUALITY ? "Bilinear" : "Nearest Neighbor") << endl;
 		}
 		CGUE_F4_PRESSED = true;
-	}
-	else
-	{
+	} else {
 		CGUE_F4_PRESSED = false;
 	}
 
-
 	// F5 - Mip Mapping-Quality: Off/Nearest Neighbor/Linear
-	if (glfwGetKey(window, GLFW_KEY_F5)){
-		if (CGUE_F5_PRESSED == false)
-		{
-			if (MIP_MAPPING_QUALITY == 0)
-			{
+	if (glfwGetKey(window, GLFW_KEY_F5)) {
+		if (CGUE_F5_PRESSED == false) {
+			if (MIP_MAPPING_QUALITY == 0) {
 				cout << "Mip Mapping-Quality: Nearest Neighbor" << endl;
 				MIP_MAPPING_QUALITY = 1;
-			}
-			else if (MIP_MAPPING_QUALITY == 1)
-			{
+			} else if (MIP_MAPPING_QUALITY == 1) {
 				cout << "Mip Mapping-Quality: Linear" << endl;
 				MIP_MAPPING_QUALITY = 2;
-			}
-			else
-			{
+			} else {
 				cout << "Mip Mapping-Quality: Off" << endl;
 				MIP_MAPPING_QUALITY = 0;
 			}
 		}
 		CGUE_F5_PRESSED = true;
-	}
-	else
-	{
+	} else {
 		CGUE_F5_PRESSED = false;
 	}
 
+	// F6 - Viewfrustum-Culling on/off
+	if (glfwGetKey(window, GLFW_KEY_F6)) {
+		if (CGUE_F6_PRESSED == false) {
+			VIEWFRUSTUM_CULLING = !VIEWFRUSTUM_CULLING;
+			cout << "Viewfrustum-Culling " << (VIEWFRUSTUM_CULLING ? "on" : "off") << endl;
+		}
+		CGUE_F6_PRESSED = true;
+	} else {
+		CGUE_F6_PRESSED = false;
+	}
 
-	// F8 - Viewfrustum-Culling on/off
-	if (glfwGetKey(window, GLFW_KEY_F8)){
-		if (CGUE_F8_PRESSED == false)
-		{
-			if (!VIEWFRUSTUM_CULLING)
-			{
-				cout << "Viewfrustum-Culling on" << endl;
-				VIEWFRUSTUM_CULLING = true;
-			}
-			else
-			{
-				cout << "Viewfrustum-Culling off" << endl;
-				VIEWFRUSTUM_CULLING = false;
-			}
+	// F7 - Normal Mapping
+	if (glfwGetKey(window, GLFW_KEY_F7)) {
+		if (CGUE_F7_PRESSED == false) {
+			NORMAL_MAPPING = !NORMAL_MAPPING;
+			cout << "Normal Mapping " << (NORMAL_MAPPING ? "on" : "off") << endl;
+		}
+		CGUE_F7_PRESSED = true;
+	} else {
+		CGUE_F7_PRESSED = false;
+	}
+
+	// F8 - Fire
+	if (glfwGetKey(window, GLFW_KEY_F8)) {
+		if (CGUE_F8_PRESSED == false) {
+			FIRE_AND_SHADOWS_1 = !FIRE_AND_SHADOWS_1;
+			cout << "Fire and Shadows 1 " << (FIRE_AND_SHADOWS_1 ? "on" : "off") << endl;
 		}
 		CGUE_F8_PRESSED = true;
 	}
-	else
-	{
+	else {
 		CGUE_F8_PRESSED = false;
+	}
+
+	// F9 - Fire
+	if (glfwGetKey(window, GLFW_KEY_F9)) {
+		if (CGUE_F9_PRESSED == false) {
+			FIRE_AND_SHADOWS_2 = !FIRE_AND_SHADOWS_2;
+			cout << "Fire and Shadows 2 " << (FIRE_AND_SHADOWS_2 ? "on" : "off") << endl;
+		}
+		CGUE_F9_PRESSED = true;
+	}
+	else {
+		CGUE_F9_PRESSED = false;
+	}
+
+	// F8 - Fire
+	if (glfwGetKey(window, GLFW_KEY_F10)) {
+		if (CGUE_F10_PRESSED == false) {
+			BLOOM = !BLOOM;
+			cout << "Bloom " << (BLOOM ? "on" : "off") << endl;
+		}
+		CGUE_F10_PRESSED = true;
+	}
+	else {
+		CGUE_F10_PRESSED = false;
 	}
 }
 

@@ -20,6 +20,8 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 	this->nameMesh = str;
 	this->updateTrans = mat4x4(1.0f);
 
+	shader->useShader();
+
 	iMeshesLoaded++;
 	//cout << "Loading Mesh " << iMeshesLoaded << " of " << countMeshesLoading << endl;
 
@@ -68,14 +70,22 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 	positions = new float[size * 3];
 	indices = new int[size];
 	normals = new float[size * 3];
+	tangents = new float[size * 3];
+	bitangents = new float[size * 3];
 	uvs = new float[size * 2];
 
+	cout << "Mesh " << nameMesh << ":" << endl;
 	int iVertices = 0;
 	for (int j = 0; j < mesh->mNumFaces; j++)
 	{
 		const aiFace& face = mesh->mFaces[j];
+
+		//cout << "  Face " << j << ":" << endl;
+
+
 		for (int k = 0; k < face.mNumIndices; k++)
 		{
+			//cout << "    Face Index " << k << ":" << endl;
 
 			aiVector3D aiPos = mesh->mVertices[face.mIndices[k]];
 			vec4 pos = vec4(aiPos.x, aiPos.y, aiPos.z, 1);/*initTrans * transform * */
@@ -96,10 +106,41 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 
 			}
 
-			aiVector3D aiNormal = mesh->HasNormals() ?
-				mesh->mNormals[face.mIndices[k]] :
-				aiVector3D(1.0f, 1.0f, 1.0f);
-			vec4 normal = vec4(aiNormal.x, aiNormal.y, aiNormal.z, 1);/*initTrans * transform **/
+
+			if (mesh->HasNormals())
+			{
+				aiVector3D aiNormal = mesh->HasNormals() ?
+					mesh->mNormals[face.mIndices[k]] :
+					aiVector3D(1.0f, 1.0f, 1.0f);
+				vec4 normal = vec4(aiNormal.x, aiNormal.y, aiNormal.z, 1);/*initTrans * transform **/
+
+				//cout << "      Normal: " << aiNormal.x << ", " << aiNormal.y << ", " << aiNormal.z << endl;
+
+				normals[iVertices * 3 + 0] = normal.x;
+				normals[iVertices * 3 + 1] = normal.y;
+				normals[iVertices * 3 + 2] = normal.z;
+			}
+
+
+			if (mesh->HasTangentsAndBitangents())
+			{
+				aiVector3D tangent = mesh->mTangents[face.mIndices[k]];
+
+				tangents[iVertices * 3 + 0] = tangent.x;
+				tangents[iVertices * 3 + 1] = tangent.y;
+				tangents[iVertices * 3 + 2] = tangent.z;
+
+				aiVector3D bitangent = mesh->mBitangents[face.mIndices[k]];
+
+				bitangents[iVertices * 3 + 0] = bitangent.x;
+				bitangents[iVertices * 3 + 1] = bitangent.y;
+				bitangents[iVertices * 3 + 2] = bitangent.z;
+
+				//cout << "      Tangent: " << tangent.x << ", " << tangent.y << ", " << tangent.z << endl;
+				//cout << "      Bitangent: " << bitangent.x << ", " << bitangent.y << ", " << bitangent.z << endl;
+			}
+
+
 
 			positions[iVertices * 3 + 0] = pos.x;
 			positions[iVertices * 3 + 1] = pos.y;
@@ -125,10 +166,6 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 			}
 
 			indices[iVertices] = iVertices;
-
-			normals[iVertices * 3 + 0] = normal.x;
-			normals[iVertices * 3 + 1] = normal.y;
-			normals[iVertices * 3 + 2] = normal.z;
 
 			iVertices++;
 		}
@@ -169,6 +206,16 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * 3 * sizeof(float), normals, GL_STATIC_DRAW); // Buffer detailed info: Buffer object 1 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+	glGenBuffers(1, &tangentsBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tangentsBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * 3 * sizeof(float), tangents, GL_STATIC_DRAW); // Buffer detailed info: Buffer object 1 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	glGenBuffers(1, &bitangentsBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bitangentsBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * 3 * sizeof(float), bitangents, GL_STATIC_DRAW); // Buffer detailed info: Buffer object 1 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 	// UV Buffer
 	glGenBuffers(1, &uvBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, uvBuffer);
@@ -193,6 +240,22 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 	glEnableVertexAttribArray(normalIndex);
 	glVertexAttribPointer(normalIndex, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
+	glBindBuffer(GL_ARRAY_BUFFER, tangentsBuffer);
+	GLint tangentIndex = glGetAttribLocation(shader->programHandle, "vertexTangent_modelspace");
+	if (tangentIndex != -1)
+	{
+		glEnableVertexAttribArray(tangentIndex);
+		glVertexAttribPointer(tangentIndex, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, bitangentsBuffer);
+	GLint bitangentIndex = glGetAttribLocation(shader->programHandle, "vertexBitangent_modelspace");
+	if (bitangentIndex != -1)
+	{
+		glEnableVertexAttribArray(bitangentIndex);
+		glVertexAttribPointer(bitangentIndex, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	}
+
 	glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
 	GLint uvIndex = glGetAttribLocation(shader->programHandle, "vertexUV");
 	glEnableVertexAttribArray(uvIndex);
@@ -210,12 +273,16 @@ Mesh::~Mesh()
 {
 	glDeleteBuffers(1, &positionBuffer);
 	glDeleteBuffers(1, &normalsBuffer);
+	glDeleteBuffers(1, &tangentsBuffer);
+	glDeleteBuffers(1, &bitangentsBuffer);
 	glDeleteBuffers(1, &indexBuffer);
 	glDeleteBuffers(1, &uvBuffer);
 	glDeleteVertexArrays(1, &vao);
 
 	delete positions; positions = nullptr;
 	delete normals; normals = nullptr;
+	delete tangents; tangents = nullptr;
+	delete bitangents; bitangents = nullptr;
 	delete indices; indices = nullptr;
 	delete uvs; uvs = nullptr;
 	delete texture; texture = nullptr;
@@ -272,6 +339,18 @@ void Mesh::loadUniforms(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalP
 	auto specularColor = glGetUniformLocation(shader->programHandle, "specularColor");
 	glUniform3f(specularColor, specular.r, specular.g, specular.b);
 
+	// Normal
+	auto normal_mapping_activated_location = glGetUniformLocation(shader->programHandle, "NORMAL_MAPPING");
+	glUniform1i(normal_mapping_activated_location, NORMAL_MAPPING);
+
+	// Fire and Shadows 1
+	auto fire_and_shadows_1_activated_location = glGetUniformLocation(shader->programHandle, "FIRE_AND_SHADOWS_1");
+	glUniform1i(fire_and_shadows_1_activated_location, FIRE_AND_SHADOWS_1);
+
+	// Fire and Shadows 2
+	auto fire_and_shadows_2_activated_location = glGetUniformLocation(shader->programHandle, "FIRE_AND_SHADOWS_2");
+	glUniform1i(fire_and_shadows_2_activated_location, FIRE_AND_SHADOWS_2);
+
 	// Texture
 	auto tex_enabled = glGetUniformLocation(shader->programHandle, "hasTexture");
 	if (hasTexture) {
@@ -288,7 +367,7 @@ void Mesh::loadUniforms(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalP
 
 	// Normal Texture
 	auto normal_tex_enabled = glGetUniformLocation(shader->programHandle, "hasNormalTexture");
-	if (hasNormalTexture) {
+	if (hasNormalTexture && NORMAL_MAPPING) {
 		glUniform1i(normal_tex_enabled, 1);
 
 		normalTexture->bind(TEXTURE_SLOT_MESH_NORMAL);

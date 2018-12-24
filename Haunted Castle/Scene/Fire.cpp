@@ -200,7 +200,7 @@ void Fire::calculate(double deltaTime)
 
 
 	//*
-	glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
+	//glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
 
 	// Read atomic counter through a temporary buffer
 	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomic_counter);
