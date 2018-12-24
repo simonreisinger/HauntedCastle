@@ -13,7 +13,6 @@ in vec3 Torch2Direction_cameraspace;
 in vec4 ShadowCoord;
 
 
-
 // Values that stay constant for the whole mesh.
 uniform sampler2D modelTexture; // modelTexture
 uniform sampler2D modelNormalTexture; // modelTexture
@@ -163,7 +162,6 @@ void main(){
 		visibility -= 0.25*(1.0-texture( directionalShadowsDepthMap, vec3(ShadowCoord.xy + disk[i]/700.0,  (ShadowCoord.z-bias)/ShadowCoord.w) ));
 	}
 
-	
 	vec3 nV = normalize( Normal_worldspace );
 	vec3 lV = normalize( SunDirection_worldspace );
 	float visibilityPosible = dot( nV, lV ) >= 0 ? 1 : 0;
@@ -198,21 +196,16 @@ void main(){
 		) +
 		// Window
 		MaterialDiffuseColor * visibility
-		);
-	//, 1);
-	////////////////////////////////////////////////////////TODO added here///////////////////////////
+	);
+
 	//float brightness = dot(result, vec3(1.0, 1.0, 1.0));
     //if(brightness > 1.0){
-	if(MaterialDiffuseColor.r == 1.0 && MaterialDiffuseColor.g == 1.0 && MaterialDiffuseColor.b == 1.0){ // TODO make this nicer
+	if(MaterialDiffuseColor.r == 1.1 && MaterialDiffuseColor.g == 1.1 && MaterialDiffuseColor.b == 1.1){ // workaround
         BrightColor = vec4(MaterialDiffuseColor, 1.0);
     } else {
         BrightColor = vec4(0.0, 0.0, 0.0, 1.0);
 	}
-	        //BrightColor = vec4(0.0, 1.0, 0.0, 1.0);
-
-	FragColor = vec4(result, 1.0); // BrightColor; //
-
-	////////////////////////////////////////////////////////TODO added here///////////////////////////
+	FragColor = vec4(result, 1.0);
 }
 
 

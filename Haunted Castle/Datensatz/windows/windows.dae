@@ -90,10 +90,10 @@
               <color sid="ambient">0 0 0 1</color>
             </ambient>
             <diffuse>
-              <color sid="diffuse">1 1 1 1</color>
+              <color sid="diffuse">1.1 1.1 1.1 1</color>
             </diffuse>
             <specular>
-              <color sid="specular">1 1 1 1</color>
+              <color sid="specular">1.1 1.1 1.1 1</color>
             </specular>
             <shininess>
               <float sid="shininess">50</float>
@@ -116,7 +116,7 @@
               <color sid="ambient">0 0 0 1</color>
             </ambient>
             <diffuse>
-              <color sid="diffuse">1 1 1 1</color>
+              <color sid="diffuse">1.1 1.1 1.1 1</color>
             </diffuse>
             <index_of_refraction>
               <float sid="index_of_refraction">1</float>

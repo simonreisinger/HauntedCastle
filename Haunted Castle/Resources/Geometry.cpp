@@ -1,9 +1,7 @@
 #include "Geometry.hpp"
-
+#include "SceneNode.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
-#include "SceneNode.hpp"
 
 using namespace cgue;
 using namespace std;
@@ -73,7 +71,6 @@ void Geometry::renderGeometry(Shader* drawShader, mat4x4 view, glm::mat4x4 proj,
 	mat4x4 globalPose = mat4x4(1);
 
 	sceneNode->draw(drawShader, view, proj, globalPose, cull);
-	
 }
 
 mat4x4 Geometry::getGlobalPose()

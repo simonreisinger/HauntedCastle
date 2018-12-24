@@ -83,7 +83,7 @@ Shader* pointShadowsShader;
 ///////////////////////////////////////////////////////////////
 //Shader* shaderLight;
 Shader* shaderBlur;
-Shader* shaderBloomFinal;
+Shader* shaderCombine;
 
 bool bloom = true;
 bool horizontal = true, first_iteration = true;
@@ -93,17 +93,11 @@ float exposure = 1.0f;
 unsigned int quadVAO = 0;
 unsigned int quadVBO;
 
-//void initBloom();
-//void initLighBox();
-//void renderLightBox();
-//void intCombine(); // BLOOMFINAL
-//void renderCombin();
-
 GLuint hdrFBO;
 void initBlur();
 void renderBlur();
-void intBloomFinal();
-void renderBloomFinal();
+void intCombine();
+void renderCombine();
 void renderQuad();
 
 GLuint directionalShadowsColorMap[2];
@@ -555,9 +549,7 @@ int main(int argc, char** argv)
 		auto time_swap_start = glfwGetTime();
 
 		renderBlur();
-		renderBloomFinal();
-
-
+		renderCombine();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -655,15 +647,8 @@ void init()
 		exit(EXIT_FAILURE);
 	}
 
-
-	//////////////////////////////////////////////////////////////////////
-	//initBloom(); // TODO remove this
-	// initLighBox(); // TODO remove this
 	initBlur();
-	intBloomFinal();
-	//////////////////////////////////////////////////////////////////////
-
-
+	intCombine();
 
 	// Always check that our framebuffer is ok
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
@@ -673,8 +658,6 @@ void init()
 		system("PAUSE");
 		exit(EXIT_FAILURE);
 	}
-
-	
 }
 
 void initPhysics(){
@@ -1009,29 +992,6 @@ void sendPointShadowsDataToScreenRenderer(int index){
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap[index]);
 }
 
-/////////////////////////////////////////////////////////
-void initBloom(){
-	/*
-	bloomShader = new Shader(
-		"Shader/PointShadows.vert",
-		"Shader/PointShadows.frag",
-		"Shader/PointShadows.geom");
-
-
-	// shader configuration
-	// --------------------
-	shader.use();
-	shader.setInt("diffuseTexture", 0);
-	shaderBlur.use();
-	shaderBlur.setInt("image", 0);
-	shaderBloomFinal.use();
-	shaderBloomFinal.setInt("scene", 0);
-	shaderBloomFinal.setInt("bloomBlur", 1);
-	*/
-}
-
-///////////////////////////////////////////////////////// Remove this
-
 void initBlur(){
 	// Ping pong framebuffer for 
 	glGenFramebuffers(2, pingpongFBO);
@@ -1074,16 +1034,14 @@ void renderBlur(){
 		GLuint BlurTextureID = glGetUniformLocation(shaderBlur->programHandle, "image");
 		glUniform1i(BlurTextureID, TEXTURE_SLOT_BLOOM_TOBEBLOOMED);
 
-
 		renderQuad();
 		horizontal = !horizontal;
 		if (first_iteration)
 			first_iteration = false;
-	// TODO DRAW AUFRUFEN
 	}
 }
 
-void intBloomFinal(){
+void intCombine(){
 	// Set up floating point framebuffer to render scene to
 	glGenFramebuffers(1, &combineFBO);
 	glBindFramebuffer(GL_FRAMEBUFFER, combineFBO);
@@ -1100,40 +1058,37 @@ void intBloomFinal(){
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-
-	shaderBloomFinal = new Shader("Shader/Bloom_final.vert", "Shader/Bloom_final.frag");
+	shaderCombine = new Shader("Shader/Combine.vert", "Shader/Combine.frag");
 }
 
-void renderBloomFinal(){
+void renderCombine(){
 	// 2. Now render floating point color buffer to 2D quad and tonemap HDR colors to default framebuffer's (clamped) color range
 	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glViewport(0, 0, width, height);
 	//glViewport(iRender * drawWidth, 0, drawWidth, height);
-	shaderBloomFinal->useShader();
+	shaderCombine->useShader();
 
 	glActiveTexture(GL_TEXTURE8);
 	glBindTexture(GL_TEXTURE_2D, colorBuffers[0]);
-	auto colorBuffers0_location = glGetUniformLocation(shaderBloomFinal->programHandle, "scene");
+	auto colorBuffers0_location = glGetUniformLocation(shaderCombine->programHandle, "scene");
 	glUniform1i(colorBuffers0_location, 8);
 
 	glActiveTexture(GL_TEXTURE9);
 	glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[1]);
-	auto colorBuffers1_location = glGetUniformLocation(shaderBloomFinal->programHandle, "bloomBlur");
+	auto colorBuffers1_location = glGetUniformLocation(shaderCombine->programHandle, "bloomBlur");
 	glUniform1i(colorBuffers1_location, 9);
 
 	GLboolean bloom = true;
 	GLfloat exposure = 0.9f;
-	glUniform1i(glGetUniformLocation(shaderBloomFinal->programHandle, "bloom"), bloom);
-	glUniform1f(glGetUniformLocation(shaderBloomFinal->programHandle, "exposure"), exposure);
+	glUniform1i(glGetUniformLocation(shaderCombine->programHandle, "bloom"), bloom);
+	glUniform1f(glGetUniformLocation(shaderCombine->programHandle, "exposure"), exposure);
 	renderQuad();
 
 }
 
-//TODO what does this do?
 // renderQuad() renders a 1x1 XY quad in NDC
-// -----------------------------------------
 void renderQuad()
 {
 	if (quadVAO == 0)
@@ -1184,10 +1139,10 @@ void renderScene(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_mod
 		cull = true;
 	}
 
-
 	room->renderGeometry(drawShader, view, proj, camera_model, cull);
-	windows->renderGeometry(drawShader, view, proj, camera_model, cull);
-
+	if (drawShader != directionalShadowsShader){
+		windows->renderGeometry(drawShader, view, proj, camera_model, cull);
+	}
 	if (renderObjects)
 	{
 		
@@ -1211,12 +1166,7 @@ void renderScene(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_mod
 		commode->renderGeometry(drawShader, view, proj, camera_model, cull);
 
 		chess->renderGeometry(drawShader, view, proj, camera_model, cull);
-		
 	}
-
-
-	// Actor
-	//actor->draw(drawShader, view, proj, camera_model, cull);
 
 	glDisable(GL_CULL_FACE);
 }
@@ -1241,7 +1191,6 @@ void handleInput(GLFWwindow* window, float time_delta)
 {
 
 	// Mouse
-
 	double mouseXPos, mouseYPos;
 	glfwGetCursorPos(window, &mouseXPos, &mouseYPos);
 
@@ -1475,7 +1424,6 @@ void handleInput(GLFWwindow* window, float time_delta)
 		CGUE_F8_PRESSED = false;
 	}
 }
-
 
 void OnShutdown()
 {

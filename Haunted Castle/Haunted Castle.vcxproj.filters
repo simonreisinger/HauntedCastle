@@ -192,10 +192,9 @@
     <None Include="Shader\PointShadows.vert" />
     <None Include="Shader\Screen.frag" />
     <None Include="Shader\Screen.vert" />
-    <None Include="Shader\Bloom_final.frag" />
-    <None Include="Shader\Bloom_final.vert" />
     <None Include="Shader\Blur.frag" />
     <None Include="Shader\Blur.vert" />
-    <None Include="Shader\LighBox.frag" />
+    <None Include="Shader\Combine.frag" />
+    <None Include="Shader\Combine.vert" />
   </ItemGroup>
 </Project>
