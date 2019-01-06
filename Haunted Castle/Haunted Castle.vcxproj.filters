@@ -91,6 +91,7 @@
       <Filter>Quelldateien</Filter>
     </ClCompile>
     <ClCompile Include="Resources\CameraPoint.cpp">
+    <ClCompile Include="Scene\Fire.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
   </ItemGroup>
@@ -170,14 +171,25 @@
     <ClInclude Include="Resources\RenderBuffer.h">
       <Filter>Headerdateien</Filter>
     </ClInclude>
+<<<<<<< HEAD
     <ClInclude Include="Resources\CameraPoint.hpp">
+=======
+    <ClInclude Include="Scene\Fire.hpp">
+>>>>>>> refs/remotes/origin/master
       <Filter>Headerdateien</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shader\Shadow.vert" />
-    <None Include="Shader\Shadow.frag" />
-    <None Include="Shader\Draw.vert" />
-    <None Include="Shader\Draw.frag" />
+    <None Include="Shader\FireParticle.geom" />
+    <None Include="Shader\FireParticle.vert" />
+    <None Include="Shader\FireParticle.frag" />
+    <None Include="Shader\FireParticle.comp" />
+    <None Include="Shader\DirectionalShadows.frag" />
+    <None Include="Shader\DirectionalShadows.vert" />
+    <None Include="Shader\PointShadows.frag" />
+    <None Include="Shader\PointShadows.geom" />
+    <None Include="Shader\PointShadows.vert" />
+    <None Include="Shader\Screen.frag" />
+    <None Include="Shader\Screen.vert" />
   </ItemGroup>
 </Project>

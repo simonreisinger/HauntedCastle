@@ -25,13 +25,9 @@ void Geometry::init(const std::string& displayFile, Shader* _shader)
 
 	string modelDir = displayFile.substr(0, displayFile.find("/"));
 
-	//cout << "ModelDir:" << modelDir << endl;
-
-	//cout << "ReadFile: " << datensatzDir + displayFile << endl;
-
 	Assimp::Importer displayImporter;
 
-	string filePath = datensatzDir + displayFile; //TODO edit here
+	string filePath = datensatzDir + displayFile;
 
 	const aiScene* scene = displayImporter.ReadFile(filePath, aiProcessPreset_TargetRealtime_Quality);
 	if (!scene)
@@ -42,15 +38,17 @@ void Geometry::init(const std::string& displayFile, Shader* _shader)
 		system("PAUSE");
 		exit(EXIT_FAILURE);
 	}
-	
-	
+
+	auto time_start = glfwGetTime();
 
 	aiNode* rootNode = scene->mRootNode;
 
 	sceneNode = new SceneNode(rootNode, scene, modelDir, shader);
 
+	auto time_end = glfwGetTime();
+
 	iObjectsLoaded++;
-	cout << "Object " << iObjectsLoaded << " of " << countObjectsLoading << " loaded" << endl;
+	cout << "Object " << iObjectsLoaded << " of " << countObjectsLoading << " loaded (Model: " << modelDir << ", Time: " << time_end - time_start << "s)" << endl;
 }
 
 void Geometry::initActor()
@@ -68,11 +66,11 @@ void Geometry::update(float time_delta, float time_abs)
 
 }
 
-void Geometry::draw(Shader* drawShader, mat4x4 view, glm::mat4x4 proj, mat4x4 camera_model, bool cull)
+void Geometry::renderGeometry(Shader* drawShader, mat4x4 view, glm::mat4x4 proj, mat4x4 camera_model, bool cull)
 {
 	drawShader->useShader();
 
-	mat4x4 globalPose = getGlobalPose();
+	mat4x4 globalPose = mat4x4(1);
 
 	sceneNode->draw(drawShader, view, proj, globalPose, cull);
 	

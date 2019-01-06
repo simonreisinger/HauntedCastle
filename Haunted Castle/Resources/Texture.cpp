@@ -8,7 +8,7 @@ using namespace cgue;
 string datensatzDir = "Datensatz";
 
 // Nur Libraries zum Laden der Texture in den Hauptspeicher verwenden,
-// nicht direkt in die Grafikkarte !!! (Vorgabe von CGUE)
+// nicht direkt in die Grafikkarte
 
 Texture::Texture(const std::string& modelDir, const std::string& path)
 {
@@ -17,17 +17,10 @@ Texture::Texture(const std::string& modelDir, const std::string& path)
 	// Texture im RAM
 	glGenTextures(1, &handle);
 
-	// Texture-Slot in der Grafikkarte
-	glActiveTexture(GL_TEXTURE3);
 	// Define that texture type of the slot to use
 	glBindTexture(GL_TEXTURE_2D, handle);
 
 	const char * filename = pathWithDir.c_str();
-
-	//cout << "FILENAME: " << filename << endl;
-
-	//cout << "filename " << filename << endl;
-
 
 	//image format
 	FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
@@ -71,26 +64,14 @@ Texture::Texture(const std::string& modelDir, const std::string& path)
 	width = FreeImage_GetWidth(dib);
 	height = FreeImage_GetHeight(dib);
 
-	//cout << "width: " << width << endl;
-	//cout << "height: " << height << endl;
-
-	/*
-	cout << "width" << width << endl;
-	cout << "height" << height << endl;
-	cout << "bits " << bits << endl;
-	*/
-
 	// TODO: Look up in API, Load texture binary data from program to graphics card
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_BGR, GL_UNSIGNED_BYTE, bits);
 
 	// TODO: Look up
 	glGenerateMipmap(GL_TEXTURE_2D);
 
-
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR); // Interpoliert
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	//cout << "Fertig geladen!" << endl;
 }
 
 Texture::~Texture()

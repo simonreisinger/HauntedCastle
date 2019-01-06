@@ -30,23 +30,32 @@ extern bool TEXTURE_SAMPLING_QUALITY;
 extern bool CGUE_F5_PRESSED;
 extern int MIP_MAPPING_QUALITY;
 extern bool CGUE_F6_PRESSED;
-extern bool EFFECT_HDR_ENABLED;
-extern bool CGUE_F8_PRESSED;
 extern bool VIEWFRUSTUM_CULLING;
-extern int NUMBER_OF_CULLED_MESHES;
+extern bool CGUE_F7_PRESSED;
+extern bool NORMAL_MAPPING;
+extern bool CGUE_F8_PRESSED;
+extern bool FIRE_AND_SHADOWS_1;
 extern bool CGUE_F9_PRESSED;
-extern bool TRANSPARENCY;
+extern bool FIRE_AND_SHADOWS_2;
+extern bool CGUE_F10_PRESSED;
+extern bool BLOOM;
+extern int NUMBER_OF_CULLED_MESHES;
 
 extern mat4x4 pxMatToGlm(PxMat44 pxMat);
 extern PxMat44 glmToPxMat(mat4x4 mat);
 extern void printMatGeometry(mat4x4 mat);
 
-extern GLuint depthTexture;
+extern GLuint directionalShadowsDepthMap;
 extern glm::mat4 depthBiasMVP;
 extern glm::mat4 depthMVP;
 
-extern vec3 torch1Pos;
-extern vec3 torch2Pos;
+extern vec3 torchPos[2];
+
+extern vec3 flameDir;
+
+extern float flameIntensity[2];
+extern float flameIntensityMax;
+extern float flameIntensityMin;
 
 extern vec3 SunDir;
 
@@ -54,8 +63,6 @@ extern float wnear;
 extern float hnear;
 extern float wfar;
 extern float hfar;
-extern float nearDist;
-extern float farDist;
 
 extern int iMeshesLoaded;
 extern int countMeshesLoading;
@@ -70,3 +77,9 @@ extern bool renderObjects;
 // Change the Axis from (x, z, y) to (x, z, -y)
 extern mat3x3 changeAxis;
 extern mat3x3 changeAxisInverse;
+
+extern int TEXTURE_SLOT_MESH_DIFFUSE;
+extern int TEXTURE_SLOT_MESH_NORMAL;
+extern int TEXTURE_SLOT_DIRECTIONAL_SHADOW;
+extern int TEXTURE_SLOT_POINT_SHADOWS[2];
+extern int TEXTURE_SLOT_FIRE;

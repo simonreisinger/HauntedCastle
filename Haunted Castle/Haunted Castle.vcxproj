@@ -106,6 +106,7 @@
     <ClCompile Include="Scene\Coordinatesystem.cpp" />
     <ClCompile Include="Scene\Desk.cpp" />
     <ClCompile Include="Scene\Door.cpp" />
+    <ClCompile Include="Scene\Fire.cpp" />
     <ClCompile Include="Scene\Frame.cpp" />
     <ClCompile Include="Resources\Geometry.cpp" />
     <ClCompile Include="Resources\Shader.cpp" />
@@ -134,6 +135,7 @@
     <ClInclude Include="Scene\Coordinatesystem.hpp" />
     <ClInclude Include="Scene\Desk.hpp" />
     <ClInclude Include="Scene\Door.hpp" />
+    <ClInclude Include="Scene\Fire.hpp" />
     <ClInclude Include="Scene\Frame.hpp" />
     <ClInclude Include="Resources\Geometry.hpp" />
     <ClInclude Include="Resources\Shader.hpp" />
@@ -146,10 +148,20 @@
     <ClInclude Include="Scene\Wardrobe.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shader\Draw.frag" />
-    <None Include="Shader\Draw.vert" />
-    <None Include="Shader\Shadow.frag" />
-    <None Include="Shader\Shadow.vert" />
+    <None Include="Shader\Bloom.frag" />
+    <None Include="Shader\Bloom.vert" />
+    <None Include="Shader\Blur.frag" />
+    <None Include="Shader\PointShadows.geom" />
+    <None Include="Shader\Screen.frag" />
+    <None Include="Shader\Screen.vert" />
+    <None Include="Shader\FireParticle.comp" />
+    <None Include="Shader\PointShadows.frag" />
+    <None Include="Shader\PointShadows.vert" />
+    <None Include="Shader\FireParticle.frag" />
+    <None Include="Shader\FireParticle.vert" />
+    <None Include="Shader\FireParticle.geom" />
+    <None Include="Shader\DirectionalShadows.frag" />
+    <None Include="Shader\DirectionalShadows.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

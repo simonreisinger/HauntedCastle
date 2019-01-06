@@ -14,6 +14,7 @@ namespace cgue
 	public:
 		Shader(const std::string& vertexShader, const std::string& fragmentShader);
 		Shader(const std::string& vertexShader, const std::string& fragmentShader, const std::string& geometryShader);
+		Shader(const std::string& computeShader);
 		// Destructor
 		~Shader();
 
@@ -23,13 +24,14 @@ namespace cgue
 
 	private:
 		// Wird fuer jeden der beiden Shader einmal aufgerufen
-		void loadShader(const std::string& shader, GLenum shaderType, GLuint& handle /*<--OUT*/);
+		void loadShader(const std::string shader, GLenum shaderType, GLuint& handle /*<--OUT*/);
 		// haengt die beiden Shader-Objekts zu einem Programm zusammenhaengen
 		void link();
 
 		GLuint vertexHandle;
 		GLuint fragmentHandle;
 		GLuint geometryHandle = NULL;
+		GLuint computeHandle = NULL;
 
 	};
 }

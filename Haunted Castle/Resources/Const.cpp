@@ -2,6 +2,7 @@
 
 float PI = 3.14159265358979323846f;
 
+
 bool CGUE_F1_PRESSED = false;
 bool CGUE_F2_PRESSED = false;
 bool CGUE_DISPLAY_FRAME_TIME = false;
@@ -12,15 +13,25 @@ bool TEXTURE_SAMPLING_QUALITY = true;
 bool CGUE_F5_PRESSED = false;
 int MIP_MAPPING_QUALITY = 2;
 bool CGUE_F6_PRESSED = false;
-bool EFFECT_HDR_ENABLED = false;
-bool CGUE_F8_PRESSED = false;
 bool VIEWFRUSTUM_CULLING = false;
-int NUMBER_OF_CULLED_MESHES = 0;
+bool CGUE_F7_PRESSED = false;
+bool NORMAL_MAPPING = true;
+bool CGUE_F8_PRESSED = false;
+bool FIRE_AND_SHADOWS_1 = true;
 bool CGUE_F9_PRESSED = false;
-bool TRANSPARENCY = true;
+bool FIRE_AND_SHADOWS_2 = true;
+bool CGUE_F10_PRESSED = false;
+bool BLOOM = true;
+int NUMBER_OF_CULLED_MESHES = 0;
 
 bool CGUE_SHOT_ACTOR1_PRESSED = false;
 bool CGUE_SHOT_ACTOR2_PRESSED = false;
+
+int TEXTURE_SLOT_MESH_DIFFUSE = 0;
+int TEXTURE_SLOT_MESH_NORMAL = 1;
+int TEXTURE_SLOT_DIRECTIONAL_SHADOW = 2;
+int TEXTURE_SLOT_POINT_SHADOWS[2] = { 3, 4 };
+int TEXTURE_SLOT_FIRE= 5;
 
 mat4x4 pxMatToGlm(PxMat44 pxMat)
 {
@@ -48,7 +59,7 @@ void printMatGeometry(mat4x4 mat)
 	//*/
 }
 
-GLuint depthTexture;
+GLuint directionalShadowsDepthMap;
 glm::mat4 depthBiasMVP;
 glm::mat4 depthMVP;
 
@@ -56,8 +67,21 @@ glm::mat4 depthMVP;
 mat3x3 changeAxis = mat3x3(1, 0, 0, 0, 0, -1, 0, 1, 0);
 mat3x3 changeAxisInverse = mat3x3(1, 0, 0, 0, 0, 1, 0, -1, 0);
 
-vec3 torch1Pos = changeAxis * vec3(12.5634, -11.12736, 9.75919 + 0.5);
-vec3 torch2Pos = changeAxis * vec3(12.5634, 8.90968, 9.75919 + 0.5);
+vec3 flameDir = normalize(vec3(-0.3, 1, 0));
+
+vec3 torchPos[2] =
+{
+	changeAxis * vec3(12.5634, -11.12736, 9.75919) + flameDir * 0.01f,
+	changeAxis * vec3(12.5634, 8.90968, 9.75919) + flameDir * 0.01f
+};
+
+float flameIntensity[2] =
+{
+	1,
+	1
+};
+float flameIntensityMax = 1.1;
+float flameIntensityMin = 0.9;
 
 vec3 SunDir = changeAxis * vec3(0.0, -1.0, 1.0);
 
@@ -65,8 +89,6 @@ float wnear = 0;
 float hnear = 0;
 float wfar = 0;
 float hfar = 0;
-float nearDist = 0;
-float farDist = 0;
 
 int iMeshesLoaded = 0;
 int countMeshesLoading = 73;

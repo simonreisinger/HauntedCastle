@@ -11,7 +11,6 @@
 #include "assimp/scene.h"
 #include <PhysX\PxPhysicsAPI.h>
 
-
 #ifdef _DEBUG //If in 'Debug' load libraries for debug mode 
 #pragma comment(lib, "PhysX3DEBUG_x86.lib")				//Always be needed  
 #pragma comment(lib, "PhysX3CommonDEBUG_x86.lib")		//Always be needed
@@ -25,13 +24,11 @@
 #pragma comment(lib, "PhysXVisualDebuggerSDK.lib")
 #endif
 
-
 using namespace glm;
 using namespace physx;
 
 namespace cgue
 {
-
 
 	class Mesh
 	{
@@ -48,15 +45,19 @@ namespace cgue
 		GLuint texid;
 		Shader* shader;
 		bool hasTexture;
+		bool hasNormalTexture;
 		glm::vec3 diffuse;
 		glm::vec3 specular;
 		Texture* texture;
+		Texture* normalTexture;
 
-		GLuint vao, positionBuffer, normalsBuffer, uvBuffer, indexBuffer;
+		GLuint vao, positionBuffer, normalsBuffer, tangentsBuffer, bitangentsBuffer, uvBuffer, indexBuffer;
 
 		int size;
 		float* positions;
 		float* normals;
+		float* tangents;
+		float* bitangents;
 		int* indices;
 		float* uvs;
 
@@ -81,7 +82,7 @@ namespace cgue
 		PxCooking* mCooking;
 
 		PxPhysics*				gPhysicsSDK = NULL;			//Instance of PhysX SDK
-		PxFoundation*			gFoundation = NULL;				//Instance of singleton foundation SDK class
+		PxFoundation*			gFoundation = NULL;			//Instance of singleton foundation SDK class
 		PxDefaultErrorCallback	gDefaultErrorCallback;		//Instance of default implementation of the error callback
 		PxDefaultAllocator		gDefaultAllocatorCallback;	//Instance of default implementation of the allocator interface required by the SDK
 	};

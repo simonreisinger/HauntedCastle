@@ -5,8 +5,8 @@
       <author>Blender User</author>
       <authoring_tool>Blender 2.76.0 commit date:2015-11-03, commit time:10:56, hash:f337fea</authoring_tool>
     </contributor>
-    <created>2018-10-30T23:16:10</created>
-    <modified>2018-10-30T23:16:10</modified>
+    <created>2018-12-21T16:42:26</created>
+    <modified>2018-12-21T16:42:26</modified>
     <unit name="meter" meter="1"/>
     <up_axis>Z_UP</up_axis>
   </asset>
@@ -14,11 +14,20 @@
     <image id="stone01_jpg" name="stone01_jpg">
       <init_from>stone01.jpg</init_from>
     </image>
+    <image id="stone01n_jpg" name="stone01n_jpg">
+      <init_from>stone01n.jpg</init_from>
+    </image>
     <image id="wood_09_jpg" name="wood_09_jpg">
       <init_from>wood_09.jpg</init_from>
     </image>
+    <image id="wood_09n_jpg" name="wood_09n_jpg">
+      <init_from>wood_09n.jpg</init_from>
+    </image>
     <image id="wood_10_jpg" name="wood_10_jpg">
       <init_from>wood_10.jpg</init_from>
+    </image>
+    <image id="wood_10n_jpg" name="wood_10n_jpg">
+      <init_from>wood_10n.jpg</init_from>
     </image>
   </library_images>
   <library_effects>
@@ -32,6 +41,16 @@
         <newparam sid="stone01_jpg-sampler">
           <sampler2D>
             <source>stone01_jpg-surface</source>
+          </sampler2D>
+        </newparam>
+        <newparam sid="stone01n_jpg-surface">
+          <surface type="2D">
+            <init_from>stone01n_jpg</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="stone01n_jpg-sampler">
+          <sampler2D>
+            <source>stone01n_jpg-surface</source>
           </sampler2D>
         </newparam>
         <technique sid="common">
@@ -55,6 +74,13 @@
               <float sid="index_of_refraction">1</float>
             </index_of_refraction>
           </phong>
+          <extra>
+            <technique profile="FCOLLADA">
+              <bump>
+                <texture texture="stone01n_jpg-sampler" texcoord="Cube-mesh-map-0"/>
+              </bump>
+            </technique>
+          </extra>
         </technique>
       </profile_COMMON>
     </effect>
@@ -68,6 +94,16 @@
         <newparam sid="wood_09_jpg-sampler">
           <sampler2D>
             <source>wood_09_jpg-surface</source>
+          </sampler2D>
+        </newparam>
+        <newparam sid="wood_09n_jpg-surface">
+          <surface type="2D">
+            <init_from>wood_09n_jpg</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="wood_09n_jpg-sampler">
+          <sampler2D>
+            <source>wood_09n_jpg-surface</source>
           </sampler2D>
         </newparam>
         <technique sid="common">
@@ -91,6 +127,13 @@
               <float sid="index_of_refraction">1</float>
             </index_of_refraction>
           </phong>
+          <extra>
+            <technique profile="FCOLLADA">
+              <bump>
+                <texture texture="wood_09n_jpg-sampler" texcoord="Cube-mesh-map-0"/>
+              </bump>
+            </technique>
+          </extra>
         </technique>
       </profile_COMMON>
     </effect>
@@ -104,6 +147,16 @@
         <newparam sid="wood_10_jpg-sampler">
           <sampler2D>
             <source>wood_10_jpg-surface</source>
+          </sampler2D>
+        </newparam>
+        <newparam sid="wood_10n_jpg-surface">
+          <surface type="2D">
+            <init_from>wood_10n_jpg</init_from>
+          </surface>
+        </newparam>
+        <newparam sid="wood_10n_jpg-sampler">
+          <sampler2D>
+            <source>wood_10n_jpg-surface</source>
           </sampler2D>
         </newparam>
         <technique sid="common">
@@ -127,6 +180,13 @@
               <float sid="index_of_refraction">1</float>
             </index_of_refraction>
           </phong>
+          <extra>
+            <technique profile="FCOLLADA">
+              <bump>
+                <texture texture="wood_10n_jpg-sampler" texcoord="Cube-mesh-map-0"/>
+              </bump>
+            </technique>
+          </extra>
         </technique>
       </profile_COMMON>
     </effect>

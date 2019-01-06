@@ -20,9 +20,10 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 	this->nameMesh = str;
 	this->updateTrans = mat4x4(1.0f);
 
+	shader->useShader();
+
 	iMeshesLoaded++;
 	//cout << "Loading Mesh " << iMeshesLoaded << " of " << countMeshesLoading << endl;
-
 
 	int texIndex = 0;
 	aiString path;
@@ -35,31 +36,56 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 	material->Get(AI_MATKEY_COLOR_SPECULAR, specularColor);
 	specular = vec3(specularColor.r, specularColor.g, specularColor.b);
 
-	
 
 	hasTexture = false;
-	if (material->GetTexture(aiTextureType_DIFFUSE, texIndex, &path) == AI_SUCCESS)
+	hasNormalTexture = false;
+
+	for (int texIndex = 0; texIndex < material->GetTextureCount(aiTextureType_DIFFUSE); texIndex++)
 	{
-		string sTextureName = path.data;
-		//cout << "sTextureName: " << sTextureName << endl;
+		if (material->GetTexture(aiTextureType_DIFFUSE, texIndex, &path) == AI_SUCCESS)
+		{
+			string sTextureName = path.data;
+			//cout << "sTextureName: " << sTextureName << endl;
 
-		texture = new Texture(modelDir, sTextureName);
+			texture = new Texture(modelDir, sTextureName);
 
-		hasTexture = true;
+			hasTexture = true;
+		}
+	}
+
+	for (int texIndex = 0; texIndex < material->GetTextureCount(aiTextureType_NORMALS); texIndex++)
+	{
+		if (material->GetTexture(aiTextureType_NORMALS, texIndex, &path) == AI_SUCCESS)
+		{
+			string sTextureName = path.data;
+			//cout << "sTextureName: " << sTextureName << endl;
+
+			normalTexture = new Texture(modelDir, sTextureName);
+
+			hasNormalTexture = true;
+		}
 	}
 
 	size = mesh->mNumFaces * 3;
 	positions = new float[size * 3];
 	indices = new int[size];
 	normals = new float[size * 3];
+	tangents = new float[size * 3];
+	bitangents = new float[size * 3];
 	uvs = new float[size * 2];
 
+	cout << "Mesh " << nameMesh << ":" << endl;
 	int iVertices = 0;
 	for (int j = 0; j < mesh->mNumFaces; j++)
 	{
 		const aiFace& face = mesh->mFaces[j];
+
+		//cout << "  Face " << j << ":" << endl;
+
+
 		for (int k = 0; k < face.mNumIndices; k++)
 		{
+			//cout << "    Face Index " << k << ":" << endl;
 
 			aiVector3D aiPos = mesh->mVertices[face.mIndices[k]];
 			vec4 pos = vec4(aiPos.x, aiPos.y, aiPos.z, 1);/*initTrans * transform * */
@@ -80,10 +106,41 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 
 			}
 
-			aiVector3D aiNormal = mesh->HasNormals() ?
-				mesh->mNormals[face.mIndices[k]] :
-				aiVector3D(1.0f, 1.0f, 1.0f);
-			vec4 normal = vec4(aiNormal.x, aiNormal.y, aiNormal.z, 1);/*initTrans * transform **/
+
+			if (mesh->HasNormals())
+			{
+				aiVector3D aiNormal = mesh->HasNormals() ?
+					mesh->mNormals[face.mIndices[k]] :
+					aiVector3D(1.0f, 1.0f, 1.0f);
+				vec4 normal = vec4(aiNormal.x, aiNormal.y, aiNormal.z, 1);/*initTrans * transform **/
+
+				//cout << "      Normal: " << aiNormal.x << ", " << aiNormal.y << ", " << aiNormal.z << endl;
+
+				normals[iVertices * 3 + 0] = normal.x;
+				normals[iVertices * 3 + 1] = normal.y;
+				normals[iVertices * 3 + 2] = normal.z;
+			}
+
+
+			if (mesh->HasTangentsAndBitangents())
+			{
+				aiVector3D tangent = mesh->mTangents[face.mIndices[k]];
+
+				tangents[iVertices * 3 + 0] = tangent.x;
+				tangents[iVertices * 3 + 1] = tangent.y;
+				tangents[iVertices * 3 + 2] = tangent.z;
+
+				aiVector3D bitangent = mesh->mBitangents[face.mIndices[k]];
+
+				bitangents[iVertices * 3 + 0] = bitangent.x;
+				bitangents[iVertices * 3 + 1] = bitangent.y;
+				bitangents[iVertices * 3 + 2] = bitangent.z;
+
+				//cout << "      Tangent: " << tangent.x << ", " << tangent.y << ", " << tangent.z << endl;
+				//cout << "      Bitangent: " << bitangent.x << ", " << bitangent.y << ", " << bitangent.z << endl;
+			}
+
+
 
 			positions[iVertices * 3 + 0] = pos.x;
 			positions[iVertices * 3 + 1] = pos.y;
@@ -110,15 +167,9 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 
 			indices[iVertices] = iVertices;
 
-			normals[iVertices * 3 + 0] = normal.x;
-			normals[iVertices * 3 + 1] = normal.y;
-			normals[iVertices * 3 + 2] = normal.z;
-
 			iVertices++;
 		}
 	}
-
-	
 
 	// face 1
 	positionOfExtremValues[0] = vec3(xmin, ymin, zmin);
@@ -135,8 +186,6 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 
 	sphereCenter = vec3((xmax - xmin) / 2, (ymax - ymin) / 2, (zmax - zmin) / 2);
 	sphereRadius = length(vec3(xmax, ymax, zmax) - sphereCenter);
-
-
 
 	// Load into Graphics Card
 
@@ -157,12 +206,21 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * 3 * sizeof(float), normals, GL_STATIC_DRAW); // Buffer detailed info: Buffer object 1 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
+	glGenBuffers(1, &tangentsBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, tangentsBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * 3 * sizeof(float), tangents, GL_STATIC_DRAW); // Buffer detailed info: Buffer object 1 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
+	glGenBuffers(1, &bitangentsBuffer);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bitangentsBuffer);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * 3 * sizeof(float), bitangents, GL_STATIC_DRAW); // Buffer detailed info: Buffer object 1 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 	// UV Buffer
 	glGenBuffers(1, &uvBuffer);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, uvBuffer);
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, size * 2 * sizeof(float), uvs, GL_STATIC_DRAW); // Buffer detailed info: Buffer object 1 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) will use VIDEO memory as the source for buffer object operations.
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
 
 	// Bind to Shader
 
@@ -182,6 +240,22 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 	glEnableVertexAttribArray(normalIndex);
 	glVertexAttribPointer(normalIndex, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
+	glBindBuffer(GL_ARRAY_BUFFER, tangentsBuffer);
+	GLint tangentIndex = glGetAttribLocation(shader->programHandle, "vertexTangent_modelspace");
+	if (tangentIndex != -1)
+	{
+		glEnableVertexAttribArray(tangentIndex);
+		glVertexAttribPointer(tangentIndex, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	}
+
+	glBindBuffer(GL_ARRAY_BUFFER, bitangentsBuffer);
+	GLint bitangentIndex = glGetAttribLocation(shader->programHandle, "vertexBitangent_modelspace");
+	if (bitangentIndex != -1)
+	{
+		glEnableVertexAttribArray(bitangentIndex);
+		glVertexAttribPointer(bitangentIndex, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	}
+
 	glBindBuffer(GL_ARRAY_BUFFER, uvBuffer);
 	GLint uvIndex = glGetAttribLocation(shader->programHandle, "vertexUV");
 	glEnableVertexAttribArray(uvIndex);
@@ -199,12 +273,16 @@ Mesh::~Mesh()
 {
 	glDeleteBuffers(1, &positionBuffer);
 	glDeleteBuffers(1, &normalsBuffer);
+	glDeleteBuffers(1, &tangentsBuffer);
+	glDeleteBuffers(1, &bitangentsBuffer);
 	glDeleteBuffers(1, &indexBuffer);
 	glDeleteBuffers(1, &uvBuffer);
 	glDeleteVertexArrays(1, &vao);
 
 	delete positions; positions = nullptr;
 	delete normals; normals = nullptr;
+	delete tangents; tangents = nullptr;
+	delete bitangents; bitangents = nullptr;
 	delete indices; indices = nullptr;
 	delete uvs; uvs = nullptr;
 	delete texture; texture = nullptr;
@@ -241,11 +319,17 @@ void Mesh::loadUniforms(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalP
 
 	// Torch1
 	auto Torch1Position_worldspace_location = glGetUniformLocation(shader->programHandle, "Torch1Position_worldspace");
-	glUniform3f(Torch1Position_worldspace_location, torch1Pos.x, torch1Pos.y, torch1Pos.z);
+	glUniform3f(Torch1Position_worldspace_location, torchPos[0].x, torchPos[0].y, torchPos[0].z);
 
 	// Torch2
 	auto Torch2Position_worldspace_location = glGetUniformLocation(shader->programHandle, "Torch2Position_worldspace");
-	glUniform3f(Torch2Position_worldspace_location, torch2Pos.x, torch2Pos.y, torch2Pos.z);
+	glUniform3f(Torch2Position_worldspace_location, torchPos[1].x, torchPos[1].y, torchPos[1].z);
+	
+	for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++) {
+		string nameString = "flameIntensity[" + std::to_string(i) + "]";
+		auto flameIntensity_location = glGetUniformLocation(shader->programHandle, nameString.c_str());
+		glUniform1f(flameIntensity_location, flameIntensity[i]);
+	}
 
 	// Diffuse
 	auto diffuseColor = glGetUniformLocation(shader->programHandle, "diffuseColor");
@@ -255,18 +339,44 @@ void Mesh::loadUniforms(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalP
 	auto specularColor = glGetUniformLocation(shader->programHandle, "specularColor");
 	glUniform3f(specularColor, specular.r, specular.g, specular.b);
 
+	// Normal
+	auto normal_mapping_activated_location = glGetUniformLocation(shader->programHandle, "NORMAL_MAPPING");
+	glUniform1i(normal_mapping_activated_location, NORMAL_MAPPING);
+
+	// Fire and Shadows 1
+	auto fire_and_shadows_1_activated_location = glGetUniformLocation(shader->programHandle, "FIRE_AND_SHADOWS_1");
+	glUniform1i(fire_and_shadows_1_activated_location, FIRE_AND_SHADOWS_1);
+
+	// Fire and Shadows 2
+	auto fire_and_shadows_2_activated_location = glGetUniformLocation(shader->programHandle, "FIRE_AND_SHADOWS_2");
+	glUniform1i(fire_and_shadows_2_activated_location, FIRE_AND_SHADOWS_2);
+
 	// Texture
 	auto tex_enabled = glGetUniformLocation(shader->programHandle, "hasTexture");
 	if (hasTexture) {
 		glUniform1i(tex_enabled, 1);
 
-		texture->bind(3);
+		texture->bind(TEXTURE_SLOT_MESH_DIFFUSE);
 
-		auto myTextureSampler_location = glGetUniformLocation(shader->programHandle, "myTextureSampler");
-		glUniform1i(myTextureSampler_location, 3);
+		auto modelTexture_location = glGetUniformLocation(shader->programHandle, "modelTexture");
+		glUniform1i(modelTexture_location, TEXTURE_SLOT_MESH_DIFFUSE);
 	}
 	else {
 		glUniform1i(tex_enabled, 0);
+	}
+
+	// Normal Texture
+	auto normal_tex_enabled = glGetUniformLocation(shader->programHandle, "hasNormalTexture");
+	if (hasNormalTexture && NORMAL_MAPPING) {
+		glUniform1i(normal_tex_enabled, 1);
+
+		normalTexture->bind(TEXTURE_SLOT_MESH_NORMAL);
+
+		auto modelNormalTexture_location = glGetUniformLocation(shader->programHandle, "modelNormalTexture");
+		glUniform1i(modelNormalTexture_location, TEXTURE_SLOT_MESH_NORMAL);
+	}
+	else {
+		glUniform1i(normal_tex_enabled, 0);
 	}
 }
 
