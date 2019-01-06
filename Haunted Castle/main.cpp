@@ -328,8 +328,104 @@ static void APIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum
 	//std::cout << std::endl;
 }
 
+const int countT = 8;
+const int polyGrad = 2;
+
+// T_0 to T_{n-1}, 3 following values (t[i],...,t[i+2]) must be the same such that the curve passes through the point P[i]
+float T[countT] = { 0, 0, 0, 3, 4, 5, 5, 5 };
+
+// P_0 to P_{n-p-2}
+vec3 P[countT - polyGrad - 1] = { vec3(1, 0, 0), vec3(2, 0, 0), vec3(3, 1, 0), vec3(4, 0, 0), vec3(5, 0, 0) };
+
+void einruecken(int p) {
+	for (int x = 0; x < 3 - p; x++) {
+		cout << "   ";
+	}
+}
+
+float calcN(int i, int p, float u) {
+	if (p <= 0) {
+		//einruecken(p);
+		if (u >= T[i] && u < T[i + 1]) {
+			//cout << "1" << endl;
+			return 1;
+		}
+		else {
+			//cout << "0" << endl;
+			return 0;
+		}
+	} else {
+		float N = 0;
+
+		if (T[i + p] != T[i]) {
+			//einruecken(p);
+			//cout << "a" << endl;
+			//cout << "u - T[i]: " << u - T[i] << endl;
+			N += (u - T[i]) / (T[i + p] - T[i]) * calcN(i, p - 1, u);
+		}
+
+		if (T[i + p + 1] != T[i + 1]) {
+			//einruecken(p);
+			//cout << "b" << endl;
+			//cout << "T[i + p + 1] - u: " << T[i + p + 1] - u << endl;
+			N += (T[i + p + 1] - u) / (T[i + p + 1] - T[i + 1]) * calcN(i + 1, p - 1, u);
+		}
+
+		//einruecken(p);
+		//cout << "return " << N;
+		return N;
+	}
+}
+
+float calcDerivativeN(int i, int p, float u) {
+	float D = 0;
+
+	if (T[i + p] != T[i]) {
+		D += (p / (T[i + p] - T[i])) * calcN(i, p - 1, u);
+	}
+
+	if (T[i + p + 1] != T[i + 1]) {
+		D -= (p / (T[i + p + 1] - T[i + 1])) * calcN(i + 1, p - 1, u);
+	}
+
+	return D;
+}
+
 int main(int argc, char** argv)
 {
+	for (float u = T[polyGrad]; u < T[countT - polyGrad - 1]; u += 0.1)
+	{
+		cout << "u = " << u << " ";
+		vec3 C = vec3(0);
+		vec3 D = vec3(0);
+		for (int i = 0; i <= countT - polyGrad - 2; i++) {
+			//cout << i << ": ";
+			//cout << "calcN:" << endl;
+			float PN = calcN(i, polyGrad, u);
+			//cout << "calcDerivativeN:" << endl;
+			float DN = calcDerivativeN(i, polyGrad, u);
+
+			//cout << "N " << PN << " ";
+			//cout << "D " << DN << endl;
+
+			C += P[i] * PN;
+			D += P[i] * DN;
+		}
+		if (D.x != 0 || D.y != 0 || D.z != 0) {
+			D = normalize(D);
+		}
+		else {
+			D = vec3(99, 0, 0);
+		}
+
+		cout << "C: " << C.x << ", " << C.y << ", " << C.z << " ";
+		cout << "D: " << D.x << ", " << D.y << ", " << D.z << endl;
+	}
+
+	system("pause");
+
+	exit(0);
+
 	cout << "Loading..." << endl;
 
 	// TODO implement full screen 
