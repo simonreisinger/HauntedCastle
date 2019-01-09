@@ -32,7 +32,7 @@ namespace cgue
 			
 		GLuint ssbo_pos[2];
 		GLuint ssbo_vel[2];
-		GLuint atomic_counter;
+		GLuint atomic_counter[2];
 		GLuint temp_buffer;
 
 		GLuint vaos[2]; // one VAO for each SSBO
@@ -43,7 +43,7 @@ namespace cgue
 
 		void draw(mat4x4 view, mat4x4 proj, float flameIntensity);
 
-		const int MAX_PARTICLES = 100000;
+		const int MAX_PARTICLES = 2000;
 
 		const float TTL_INIT = 1.0f; // time-to-live in seconds
 		const float spawnRatePerSecond = 1000.0f;
