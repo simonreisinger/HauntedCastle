@@ -30,13 +30,16 @@ Fire::Fire(Shader* shader, vec3 flame_pos, vec3 flame_dir) {
 
 	}
 
-	glGenBuffers(1, &atomic_counter);
-	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomic_counter);
-	glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(GLuint), NULL,
-		GL_DYNAMIC_DRAW);
-	GLuint value = 0;
-	glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &value);
-	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
+	for (int i = 0; i <= 1; i++)
+	{
+		glGenBuffers(1, &atomic_counter[i]);
+		glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomic_counter[i]);
+		glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(GLuint), NULL,
+			GL_DYNAMIC_DRAW);
+		GLuint value = i == 0 ? 0 : 1;
+		glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &value);
+		glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
+	}
 
 	// Because of a performance warning when reading the atomic counter, we
 	// create a buffer to move-to and read-from instead.
@@ -112,8 +115,8 @@ void Fire::calculate(double deltaTime)
 	glUseProgram(programID);
 
 	// set all uniforms, like deltaTime, current particle count, ...
-	auto LastCount_location = glGetUniformLocation(programID, "LastCount");
-	glUniform1ui(LastCount_location, particle_count);
+	//auto LastCount_location = glGetUniformLocation(programID, "LastCount");
+	//glUniform1ui(LastCount_location, particle_count);
 
 	auto MaximumCount_location = glGetUniformLocation(programID, "MaximumCount");
 	glUniform1ui(MaximumCount_location, MAX_PARTICLES);
@@ -147,11 +150,13 @@ void Fire::calculate(double deltaTime)
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 2, ssbo_pos[!iSSBO]);
 	glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, ssbo_vel[!iSSBO]);
 
-	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 4, atomic_counter);
+	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 4, atomic_counter[iSSBO]);
+	glBindBufferBase(GL_ATOMIC_COUNTER_BUFFER, 5, atomic_counter[!iSSBO]);
 
 	iSSBO = !iSSBO; // ping-pong between buffers
 	// Execute compute shader with a 16 x 16 work group size
-	GLuint groups = (particle_count / (32 * 32)) + 1;
+	GLuint groups = (MAX_PARTICLES / (32 * 32)) + 1;
+	//GLuint groups = (particle_count / (32 * 32)) + 1;
 	//GLuint groups = (particle_count / (16 * 16)) + 1;
 
 	glDispatchCompute(groups, 1, 1);
@@ -162,7 +167,7 @@ void Fire::calculate(double deltaTime)
 	glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
 	// declare a pointer to hold the values in the buffer
 	GLuint *userCounters;
-	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomic_counter);
+	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomic_counter[0]);
 	// map the buffer, userCounters will point to the buffers data
 	userCounters = (GLuint*)glMapBufferRange(GL_ATOMIC_COUNTER_BUFFER,
 		0,
@@ -198,12 +203,12 @@ void Fire::calculate(double deltaTime)
 	glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
 	//*/
 
-
-	//*
+	
+	/*
 	//glMemoryBarrier(GL_ATOMIC_COUNTER_BARRIER_BIT);
 
 	// Read atomic counter through a temporary buffer
-	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomic_counter);
+	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomic_counter[0]);
 	glBindBuffer(GL_COPY_WRITE_BUFFER, temp_buffer);
 	// from atomic counter to temp buffer:
 	glCopyBufferSubData(GL_ATOMIC_COUNTER_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0,
@@ -213,21 +218,52 @@ void Fire::calculate(double deltaTime)
 	GLuint *counterValue = (GLuint*)glMapBufferRange(GL_COPY_WRITE_BUFFER, 0,
 		sizeof(GLuint), GL_MAP_READ_BIT | GL_MAP_WRITE_BIT); // Needs so long for the first fire
 	auto time_glMapBufferRange_end = glfwGetTime();
-	//cout << "time_glMapBufferRange: " << (time_glMapBufferRange_end - time_glMapBufferRange_start) * 1000 << "ms, ";
+	cout << "time_glMapBufferRange: " << (time_glMapBufferRange_end - time_glMapBufferRange_start) * 1000 << "ms, ";
 
 	particle_count = counterValue[0];
-	//cout << "Particles: " << particle_count << endl;
-	counterValue[0] = 0; // reset atomic counter in temp buffer
+	cout << "Particles: " << particle_count << endl;
+	//counterValue[0] = 0; // reset atomic counter in temp buffer
 	glUnmapBuffer(GL_COPY_WRITE_BUFFER); // stop writing to temp buffer
 	// copy temp buffer to atomic counter:
-	glCopyBufferSubData(GL_COPY_WRITE_BUFFER, GL_ATOMIC_COUNTER_BUFFER, 0, 0,
-		sizeof(GLuint));
+	//glCopyBufferSubData(GL_COPY_WRITE_BUFFER, GL_ATOMIC_COUNTER_BUFFER, 0, 0, sizeof(GLuint));
 	// memory barrier, to make sure everything from the compute shader is written
 	glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
 	//*/
 
 
+	/*
+	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomic_counter[1]);
+	glBindBuffer(GL_COPY_WRITE_BUFFER, temp_buffer);
+	// from atomic counter to temp buffer:
+	glCopyBufferSubData(GL_ATOMIC_COUNTER_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0,
+		sizeof(GLuint));
 
+	auto time_glMapBufferRange_start2 = glfwGetTime();
+	GLuint *counterValue2 = (GLuint*)glMapBufferRange(GL_COPY_WRITE_BUFFER, 0,
+		sizeof(GLuint), GL_MAP_READ_BIT | GL_MAP_WRITE_BIT); // Needs so long for the first fire
+	auto time_glMapBufferRange_end2 = glfwGetTime();
+	cout << "time_glMapBufferRange: " << (time_glMapBufferRange_end2 - time_glMapBufferRange_start2) * 1000 << "ms, ";
+
+	particle_count = counterValue2[0];
+	cout << "Particles2: " << particle_count << endl;
+	//counterValue2[0] = 0; // reset atomic counter in temp buffer
+	glUnmapBuffer(GL_COPY_WRITE_BUFFER); // stop writing to temp buffer
+	// copy temp buffer to atomic counter:
+	//glCopyBufferSubData(GL_COPY_WRITE_BUFFER, GL_ATOMIC_COUNTER_BUFFER, 0, 0, sizeof(GLuint));
+	// memory barrier, to make sure everything from the compute shader is written
+	glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+	//*/
+
+	glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+	
+	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, atomic_counter[iSSBO]);
+	glBufferData(GL_ATOMIC_COUNTER_BUFFER, sizeof(GLuint), NULL,
+		GL_DYNAMIC_DRAW);
+	GLuint value = 0;
+	glBufferSubData(GL_ATOMIC_COUNTER_BUFFER, 0, sizeof(GLuint), &value);
+	glBindBuffer(GL_ATOMIC_COUNTER_BUFFER, 0);
+
+	glMemoryBarrier(GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
 
 	//cout << "particle_count: " << particle_count << endl;
 
@@ -274,7 +310,7 @@ void Fire::draw(mat4x4 view, mat4x4 proj, float flameIntensity)
 	glUniform3f(CameraUp_worldspace_ID, ViewMatrix[0][1], ViewMatrix[1][1], ViewMatrix[2][1]);
 
 	glBindVertexArray(vaos[iSSBO]); // bind VAO
-	glDrawArrays(GL_POINTS, 0, particle_count);
+	glDrawArrays(GL_POINTS, 0, MAX_PARTICLES);
 	glBindVertexArray(0);
 	glUseProgram(0);
 
