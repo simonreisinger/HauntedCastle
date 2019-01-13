@@ -280,7 +280,6 @@ void Camera::advance(float time_delta)
 					p = p1;
 					d = d1;
 					wait += time_delta;
-					cout << "wait: " << wait << " Start.getPause(): " << Start.getPause() << endl;
 					return;
 				}
 			} else {

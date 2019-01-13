@@ -33,6 +33,7 @@ namespace cgue
 		void setPhysX(PxPhysics* gPhysicsSDK, PxFoundation*	gFoundation, PxDefaultErrorCallback	gDefaultErrorCallback, PxDefaultAllocator gDefaultAllocatorCallback, PxScene* gScene);
 		virtual void initActor();
 		virtual mat4x4 getGlobalPose();
+		// //// TOODO
 
 		PxCooking* mCooking;
 
@@ -52,6 +53,7 @@ namespace cgue
 		float rotz = 0;
 
 		float scale = 1.0;
+
 	private:
 		GLuint vao;
 		GLuint positionBuffer, normalsBuffer, uvBuffer, indexBuffer;
