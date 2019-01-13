@@ -16,6 +16,7 @@
 #include "Resources\FrustumG.hpp"
 
 #include "Resources/Geometry.hpp"
+#include "Resources/BSpline.hpp"
 #include "Scene/Actor.hpp"
 #include "Scene/Knight1.hpp"
 #include "Scene/Knight2.hpp"
@@ -78,6 +79,7 @@ GLFWwindow* window;
 Shader* renderShader;
 Shader* directionalShadowsShader;
 Shader* pointShadowsShader;
+Shader* cameraPathShader;
 
 
 ///////////////////////////////////////////////////////////////
@@ -159,13 +161,11 @@ float pointShadowsFarPlane = 50.0f; // = farDist; //
 
 FrustumG* frustumG;
 
-float RING_HEIGHT_HIGH = 2.0f;
-float RING_HEIGHT_MEDIUM = 6.0f;
-float RING_HEIGHT_LOW = 10.0f;
-
 int width = 1600;
-int height = 1600;
+int height = 1000;
 float ratio;
+
+const unsigned int SHADOW_WIDTH = 1600, SHADOW_HEIGHT = 1600; // TODO change this line
 
 auto fullscreen = false;
 
@@ -545,11 +545,14 @@ int main(int argc, char** argv)
 		renderFire(time_delta);
 
 		auto time_fires_end = glfwGetTime();
-		auto time_total_end = glfwGetTime();
-		auto time_swap_start = glfwGetTime();
+		auto time_blur_start = glfwGetTime();
 
 		renderBlur();
 		renderCombine();
+
+		auto time_blur_end = glfwGetTime();
+		auto time_total_end = glfwGetTime();
+		auto time_swap_start = glfwGetTime();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -569,14 +572,14 @@ int main(int argc, char** argv)
 			if (CGUE_DISPLAY_FRAME_TIME)
 			{
 				//cout << "Frame time: " << (int)(time_delta * 1000) << "ms, Frame/sec: " << (int)(1.0f / time_delta) << endl;
-				cout << "Real Frame time: " << (time_total_end - time_total_start) * 1000 << "ms, Real Frame/sec: " << (int)(1.0f / (time_total_end - time_total_start)) << endl;
+				cout << "Time: " << time_abs << "s, Real Frame time: " << (time_total_end - time_total_start) * 1000 << "ms, Real Frame/sec: " << (int)(1.0f / (time_total_end - time_total_start)) << endl;
 
 				cout << "update: " << (time_update_end - time_update_start)*1000 << "ms, ";
 				cout << "PointShadows: " << (time_pointShadows_end - time_pointShadows_start) * 1000 << "ms, ";
 				cout << "DirectionalShadows: " << (time_directionalShadows_end - time_directionalShadows_start) * 1000 << "ms, ";
 				cout << "Screen: " << (time_screen_end - time_screen_start) * 1000 << "ms, ";
-				cout << "Fire: " << (time_fires_end - time_fires_start) * 1000 << "ms, ";
-				cout << "Swap: " << (time_swap_end - time_swap_start) * 1000 << "ms" << endl;
+				cout << "Blur: " << (time_blur_end - time_blur_start) * 1000 << "ms, ";
+				cout << "Fire: " << (time_fires_end - time_fires_start) * 1000 << "ms" << endl;
 			}
 			if (VIEWFRUSTUM_CULLING) {
 				cout << "Number of Culled Meshes: " << NUMBER_OF_CULLED_MESHES << endl;
@@ -595,6 +598,14 @@ int main(int argc, char** argv)
 
 void init()
 {
+
+
+	/*
+	for (float t = 0; t < 3; t += 0.1)
+	{
+		bezier(t);
+	}
+	*/
 
 
 	glEnable(GL_DEPTH_TEST);
@@ -703,6 +714,9 @@ void initScene(){
 
 	renderShader = new Shader("Shader/Screen.vert", "Shader/Screen.frag");
 
+
+	cameraPathShader = new Shader("Shader/CameraPath.vert", "Shader/CameraPath.frag");
+
 	frustumG = new FrustumG();
 	camera = new Camera();
 
@@ -761,29 +775,47 @@ void renderScreen(){
 
 	mat4x4 camera_model = camera->getCameraModel();
 
-	view = camera_model * pxMatToGlm(PxMat44(actor->actor->getGlobalPose().getInverse()));
+	//view = camera_model * pxMatToGlm(PxMat44(actor->actor->getGlobalPose().getInverse()));
 
 
 	proj = glm::perspective(fov, ratio, nearDist, farDist);
 
+	vec4 camera_pos;
+	vec4 look_pos;
+	vec4 up_pos;
+	if (camera->getAutomaticCameraMovementActivated())
+	{
+		camera_pos = vec4(camera->getCameraPos(), 1);
+		look_pos = vec4(camera->getCameraLookAt(), 1);
+		up_pos = vec4(camera->getCameraUp(), 1);
+	}
+	else
+	{
+		camera_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraPos(), 1);
+		look_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraLookAt(), 1);
+		up_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraUp(), 1);
+	}
 
-	vec4 camera_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraPos(), 1);
+
 	vec3 p = vec3(camera_pos.x, camera_pos.y, camera_pos.z);
 
-	vec4 look_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraLookAt(), 1);
 	vec3 l = vec3(look_pos.x, look_pos.y, look_pos.z);
 
-	vec4 up_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraUp(), 1);
 	vec3 u = vec3(up_pos.x, up_pos.y, up_pos.z);
 	u = u - p;
 	u = normalize(u);
 
-	mat4x4 lookAt = glm::lookAt(p, l, u);
+	view = glm::lookAt(p, l, u);
 
 	frustumG->setCamInternals(fov, ratio, nearDist, farDist);
 	frustumG->setCamDef(p, l, u);
 
-	renderScene(renderShader, lookAt, proj, camera_model);
+	renderScene(renderShader, view, proj, camera_model);
+
+	if (!camera->getAutomaticCameraMovementActivated()) {
+		camera->drawCurve(cameraPathShader, proj * view);
+	}
+
 }
 
 void initDirectionalShadows()
@@ -899,7 +931,6 @@ void initPointShadows(int index){
 
 	// Create cubemap textures
 	glGenTextures(1, &depthCubemap[index]);
-	const unsigned int SHADOW_WIDTH = 1600, SHADOW_HEIGHT = 1600; // TODO change this line
 
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap[index]);
 	for (unsigned int i = 0; i < 6; ++i){
@@ -930,7 +961,9 @@ void initPointShadows(int index){
 	// -------------
 	flameCenterPosition[index] = torchPos[index] + 0.5f * flameDir;
 
-	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), ratio, pointShadowsNearPlane, pointShadowsFarPlane);
+	float aspect = (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT;
+
+	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, pointShadowsNearPlane, pointShadowsFarPlane);
 
 	shadowTransforms[index].push_back(shadowProj * glm::lookAt(flameCenterPosition[index], flameCenterPosition[index] + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
 	shadowTransforms[index].push_back(shadowProj * glm::lookAt(flameCenterPosition[index], flameCenterPosition[index] + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
@@ -949,7 +982,7 @@ void renderDepthCubemap(int index) {
 	glBindFramebuffer(GL_FRAMEBUFFER, pointShadowsFBO[index]);
 	pointShadowsShader->useShader();
 
-	glViewport(0, 0, width, height);
+	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	// Use our shader
 	glm:mat4 model = mat4(1);
@@ -1178,91 +1211,126 @@ void update(float time_delta, float time_abs) // TODO change time_delta to delta
 	if (gScene)
 		StepPhysX(time_delta);
 
+	camera->advance(time_delta);
+
 	for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++)
 	{
 		flameIntensity[i] = rand(flameIntensityMin, flameIntensityMax);
+	}
+
+	if (!debugMode) {
+		FIRE_AND_SHADOWS_1 = time_abs >= 20.0f;
+		FIRE_AND_SHADOWS_2 = time_abs >= 38.0f;
 	}
 }
 
 float rand(float min, float max)
 {
-	return min + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (max - min)));;
+	return min + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (max - min)));
 }
+
+bool c_pressed = false;
 
 void handleInput(GLFWwindow* window, float time_delta)
 {
 
-	// Mouse
-	double mouseXPos, mouseYPos;
-	glfwGetCursorPos(window, &mouseXPos, &mouseYPos);
-
-	int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-	if (state == GLFW_PRESS && (mouseXPos != mouseXPosOld || mouseYPos != mouseYPosOld))
+	if (!camera->getAutomaticCameraMovementActivated())
 	{
-		double mouseXPosDiff = mouseXPos - mouseXPosOld;
-		double mouseYPosDiff = mouseYPos - mouseYPosOld;
+		// Mouse
 
-		actor->PxRotate(0, 0, ROTATESPEED * time_delta * mouseXPosDiff / 100);
+		double mouseXPos, mouseYPos;
+		glfwGetCursorPos(window, &mouseXPos, &mouseYPos);
 
-
-		if (mouseYPosDiff > 0)
+		int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+		if (state == GLFW_PRESS && (mouseXPos != mouseXPosOld || mouseYPos != mouseYPosOld))
 		{
-			camera->rotateDown(time_delta * mouseYPosDiff / 10);
+			double mouseXPosDiff = mouseXPos - mouseXPosOld;
+			double mouseYPosDiff = mouseYPos - mouseYPosOld;
+
+			actor->PxRotate(0, 0, ROTATESPEED * time_delta * mouseXPosDiff / 100);
+
+
+			if (mouseYPosDiff > 0)
+			{
+				camera->rotateDown(time_delta * mouseYPosDiff / 10);
+			}
+			if (mouseYPosDiff < 0)
+			{
+				camera->rotateUp(-time_delta * mouseYPosDiff / 10);
+			}
 		}
-		if (mouseYPosDiff < 0)
+
+		mouseXPosOld = mouseXPos;
+		mouseYPosOld = mouseYPos;
+
+
+		// camera - actor 0 
+
+		if (glfwGetKey(window, GLFW_KEY_RIGHT))
 		{
-			camera->rotateUp(-time_delta * mouseYPosDiff / 10);
+			actor->PxRotate(0, 0, -ROTATESPEED * time_delta);
+		}
+		if (glfwGetKey(window, GLFW_KEY_LEFT))
+		{
+			actor->PxRotate(0, 0, ROTATESPEED * time_delta);
+		}
+		if (glfwGetKey(window, GLFW_KEY_DOWN))
+		{
+			actor->PxTranslate(0, -MOVESPEED * time_delta, 0);
+		}
+		if (glfwGetKey(window, GLFW_KEY_UP))
+		{
+			actor->PxTranslate(0, MOVESPEED * time_delta, 0);
+		}
+
+
+		// actor 0 - rotate
+		if (glfwGetKey(window, GLFW_KEY_A))
+		{
+			actor->PxRotate(0, 0, ROTATESPEED * time_delta);
+		}
+		if (glfwGetKey(window, GLFW_KEY_D))
+		{
+			actor->PxRotate(0, 0, -ROTATESPEED * time_delta);
+		}
+		// actor 0 - move 
+		/*
+		if (glfwGetKey(window, GLFW_KEY_Q))
+		{
+			actor->PxTranslate(0, 0, -MOVESPEED * time_delta);
+		}
+		if (glfwGetKey(window, GLFW_KEY_E))
+		{
+			actor->PxTranslate(0, 0, MOVESPEED * time_delta);
+		}
+		*/
+		if (glfwGetKey(window, GLFW_KEY_W))
+		{
+			actor->PxTranslate(0, MOVESPEED * time_delta, 0);
+		}
+		if (glfwGetKey(window, GLFW_KEY_S))
+		{
+			actor->PxTranslate(0, -MOVESPEED * time_delta, 0);
 		}
 	}
 
-	mouseXPosOld = mouseXPos;
-	mouseYPosOld = mouseYPos;
-
-
-	// camera - actor 0
-
-	if (glfwGetKey(window, GLFW_KEY_RIGHT))
+	// C - close game
+	if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
 	{
-		actor->PxRotate(0, 0, -ROTATESPEED * time_delta);
+		if (!c_pressed)
+		{
+			camera->changeAutomaticCameraMovementActivatedState();
+			c_pressed = true;
+			debugMode = !debugMode;
+			if (debugMode) {
+				FIRE_AND_SHADOWS_1 = true;
+				FIRE_AND_SHADOWS_2 = true;
+			}
+		}
 	}
-	if (glfwGetKey(window, GLFW_KEY_LEFT))
+	else
 	{
-		actor->PxRotate(0, 0, ROTATESPEED * time_delta);
-	}
-	if (glfwGetKey(window, GLFW_KEY_DOWN))
-	{
-		actor->PxTranslate(0, -MOVESPEED * time_delta, 0);
-	}
-	if (glfwGetKey(window, GLFW_KEY_UP))
-	{
-		actor->PxTranslate(0, MOVESPEED * time_delta, 0);
-	}
-
-	// actor 0 - rotate
-	if (glfwGetKey(window, GLFW_KEY_A))
-	{
-		actor->PxRotate(0, 0, ROTATESPEED * time_delta);
-	}
-	if (glfwGetKey(window, GLFW_KEY_D))
-	{
-		actor->PxRotate(0, 0, -ROTATESPEED * time_delta);
-	}
-	// actor 0 - move
-	if (glfwGetKey(window, GLFW_KEY_Q))
-	{
-		actor->PxTranslate(0, 0, -MOVESPEED * time_delta);
-	}
-	if (glfwGetKey(window, GLFW_KEY_E))
-	{
-		actor->PxTranslate(0, 0, MOVESPEED * time_delta);
-	}
-	if (glfwGetKey(window, GLFW_KEY_W))
-	{
-		actor->PxTranslate(0, MOVESPEED * time_delta, 0);
-	}
-	if (glfwGetKey(window, GLFW_KEY_S))
-	{
-		actor->PxTranslate(0, -MOVESPEED * time_delta, 0);
+		c_pressed = false;
 	}
 
 	// ESC - close game
@@ -1410,7 +1478,7 @@ void handleInput(GLFWwindow* window, float time_delta)
 		CGUE_F9_PRESSED = false;
 	}
 
-	// F8 - Fire
+	// F10 - Fire
 	if (glfwGetKey(window, GLFW_KEY_F10)) {
 		if (CGUE_F10_PRESSED == false) {
 			BLOOM = !BLOOM;
@@ -1421,6 +1489,43 @@ void handleInput(GLFWwindow* window, float time_delta)
 	else {
 		CGUE_F10_PRESSED = false;
 	}
+
+	// F11 - Camera Pos
+	if (glfwGetKey(window, GLFW_KEY_F11)) {
+		if (CGUE_F11_PRESSED == false) {
+
+			vec4 camera_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraPos(), 1);
+			vec4 look_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraLookAt(), 1);
+
+			vec4 dir = look_pos - camera_pos;
+
+			cout << "CameraPoint(vec3(" << camera_pos.x << ", " << -camera_pos.z << ", " << camera_pos.y << "), vec3("
+				<< dir.x << ", " << -dir.z << ", " << dir.y << "))," << endl;
+		}
+		CGUE_F11_PRESSED = true;
+	}
+	else {
+		CGUE_F11_PRESSED = false;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_PAGE_UP)) {
+		AmbientIntensity += 0.01f;
+		if (AmbientIntensity > 1) {
+			AmbientIntensity = 1;
+		}
+		cout << "Ambient Intensity changed to: " << AmbientIntensity << endl;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_PAGE_DOWN)) {
+		AmbientIntensity -= 0.01f;
+		if (AmbientIntensity < 0) {
+			AmbientIntensity = 0;
+		}
+		cout << "Ambient Intensity changed to: " << AmbientIntensity << endl;
+	}
+
+
+
 }
 
 void OnShutdown()

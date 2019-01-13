@@ -38,6 +38,7 @@ extern bool FIRE_AND_SHADOWS_1;
 extern bool CGUE_F9_PRESSED;
 extern bool FIRE_AND_SHADOWS_2;
 extern bool CGUE_F10_PRESSED;
+extern bool CGUE_F11_PRESSED;
 extern bool BLOOM;
 extern int NUMBER_OF_CULLED_MESHES;
 
@@ -57,6 +58,8 @@ extern float flameIntensity[2];
 extern float flameIntensityMax;
 extern float flameIntensityMin;
 
+extern float AmbientIntensity;;
+
 extern vec3 SunDir;
 
 extern float wnear;
@@ -73,6 +76,7 @@ extern int countObjectsLoading;
 extern FrustumG* frustumG;
 
 extern bool renderObjects;
+extern bool debugMode;
 
 // Change the Axis from (x, z, y) to (x, z, -y)
 extern mat3x3 changeAxis;

@@ -33,6 +33,7 @@ uniform vec3 diffuseColor;
 uniform vec3 specularColor;
 uniform sampler2DShadow directionalShadowsDepthMap;
 uniform vec3 SunDirection_worldspace;
+uniform float AmbientIntensity;
 
 	//////////////// calculate point shadow ///////////////
 	uniform samplerCube pointShadowsDepthCubeMap1;
@@ -89,7 +90,7 @@ float ShadowCalculation(vec3 fragPos, vec3 flameCenterPosition, samplerCube poin
     float diskRadius = (1.0 + (viewDistance / pointShadowsFarPlane)) / 25.0;
     for(int i = 0; i < samples; ++i)
     {
-        float closestDepth = texture(pointShadowsDepthCubeMap, fragToLight + gridSamplingDisk[i] * diskRadius).r;
+        float closestDepth = texture(pointShadowsDepthCubeMap, fragToLight + gridSamplingDisk[i] * diskRadius * min(1, 1 / (currentDepth))).r;
         closestDepth *= pointShadowsFarPlane;   // undo mapping [0;1]
         if(currentDepth - bias > closestDepth)
             shadow += 1.0;
@@ -118,8 +119,6 @@ void main(){
 	float shadow1 = ShadowCalculation(FragPos, flameCenterPosition1, pointShadowsDepthCubeMap1);
 	float shadow2 = ShadowCalculation(FragPos, flameCenterPosition2, pointShadowsDepthCubeMap2);
 	//////////////////////////////////////////////////////
-
-	float AmbientIntensity = 0.1;
 
 	vec3 MaterialAmbientColor = AmbientIntensity * MaterialDiffuseColor;
 	vec3 MaterialSpecularColor = specularColor;
