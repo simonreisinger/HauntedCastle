@@ -158,6 +158,8 @@
     <None Include="Shader\Blur.vert" />
     <None Include="Shader\CameraPath.frag" />
     <None Include="Shader\CameraPath.vert" />
+    <None Include="Shader\Image.frag" />
+    <None Include="Shader\Image.vert" />
     <None Include="Shader\PointShadows.geom" />
     <None Include="Shader\Screen.frag" />
     <None Include="Shader\Screen.vert" />

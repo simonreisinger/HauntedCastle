@@ -74,6 +74,7 @@ void sendPointShadowsDataToScreenRenderer(int index);
 void sendDirectionalShadowsDataToScreenRenderer();
 float rand(float min, float max);
 void moveObjects(float time_delta, float time_abs);
+void renderImage(Texture &image);
 
 GLFWwindow* window;
 
@@ -81,6 +82,7 @@ Shader* renderShader;
 Shader* directionalShadowsShader;
 Shader* pointShadowsShader;
 Shader* cameraPathShader;
+Shader* imageShader;
 
 
 ///////////////////////////////////////////////////////////////
@@ -428,7 +430,7 @@ int main(int argc, char** argv)
 		}
 	}
 
-	glfwHideWindow(window);
+	//glfwHideWindow(window);
 
 	// Hide Cursor
 	// glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN); // blends out curser if nescessary
@@ -472,9 +474,6 @@ int main(int argc, char** argv)
 		}
 	#endif
 
-
-	init();
-
 	glfwSetWindowTitle(window, "Haunted Castle");
 
 	atexit(OnShutdown);			//Called on application exit
@@ -488,6 +487,17 @@ int main(int argc, char** argv)
 	glfwGetCursorPos(window, &mouseXPosOld, &mouseYPosOld);
 
 
+
+	imageShader = new Shader("Shader/Image.vert", "Shader/Image.frag");
+	Texture imageLoading = Texture("images", "loading.jpg");
+	renderImage(imageLoading);
+	glfwSwapBuffers(window);
+
+
+	init();
+
+
+	Texture imageWasted = Texture("images", "wasted.jpg");
 
 	// Game Loop
 	auto time = glfwGetTime();
@@ -532,6 +542,9 @@ int main(int argc, char** argv)
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 			glViewport(0, 0, width, height);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			if (time_abs >= 94) {
+				renderImage(imageWasted);
+			}
 		} else {
 			time_pointShadows_start = glfwGetTime();
 
@@ -1097,6 +1110,19 @@ void renderBlur(){
 	}
 }
 
+void renderImage(Texture &image) {
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glViewport(0, 0, width, height);
+	imageShader->useShader();
+
+	image.bind(10);
+	auto image_location = glGetUniformLocation(imageShader->programHandle, "image");
+	glUniform1i(image_location, 10);
+
+	renderQuad();
+}
+
 void intCombine(){
 	// Set up floating point framebuffer to render scene to
 	glGenFramebuffers(1, &combineFBO);
@@ -1598,6 +1624,8 @@ void OnShutdown()
 	delete renderShader; renderShader = nullptr;
 	delete directionalShadowsShader; directionalShadowsShader = nullptr;
 	delete pointShadowsShader; pointShadowsShader = nullptr;
+	delete shaderBlur; shaderBlur = nullptr;
+	delete imageShader; imageShader = nullptr;
 
 	delete frustumG; frustumG = nullptr;
 

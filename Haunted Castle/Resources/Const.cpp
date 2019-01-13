@@ -86,7 +86,7 @@ float flameIntensity[2] =
 float flameIntensityMax = 1.1;
 float flameIntensityMin = 0.9;
 
-float AmbientIntensity = 0.1f;
+float AmbientIntensity = 0.13f;
 
 vec3 SunDir = changeAxis * vec3(0.0, -1.0, 1.0);
 
