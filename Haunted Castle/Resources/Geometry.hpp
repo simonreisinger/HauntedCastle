@@ -33,6 +33,7 @@ namespace cgue
 		void setPhysX(PxPhysics* gPhysicsSDK, PxFoundation*	gFoundation, PxDefaultErrorCallback	gDefaultErrorCallback, PxDefaultAllocator gDefaultAllocatorCallback, PxScene* gScene);
 		virtual void initActor();
 		virtual mat4x4 getGlobalPose();
+		// //// TOODO
 
 		void translateLinear(string meshName, vec3 t, float time_start, float duration, float time, float time_delta);
 		void translateGravity(string meshName, float trans_y, float time_start, float time, float time_delta);
@@ -55,6 +56,7 @@ namespace cgue
 		float rotz = 0;
 
 		float scale = 1.0;
+
 	private:
 		GLuint vao;
 		GLuint positionBuffer, normalsBuffer, uvBuffer, indexBuffer;

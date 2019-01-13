@@ -9,7 +9,7 @@ SceneNode::SceneNode(aiNode* aiNode, const aiScene* scene, string modelDir, Shad
 {
 
 	name = aiNode->mName.data;
-	cout << "aiNode: " << name << endl;
+	//cout << "aiNode: " << name << endl;
 	transform = convertMatrix(aiNode->mTransformation);
 
 	size = countVertices(aiNode, scene);
@@ -142,7 +142,7 @@ void SceneNode::translateLinear(string meshName, vec3 trans, float time_start, f
 
 void SceneNode::translateGravity(string meshName, float trans_y_end, float time_start, float time, float time_delta) {
 	if (meshName.compare(name) == 0 && time >= time_start && transform[3][2] > trans_y_end) {
-		forces += vec3(0, 0, -9.8) * time_delta;
+		forces += vec3(0, 0, -2.0) * time_delta;
 		transform = translate(transform, forces);
 		if (transform[3][2] < trans_y_end) {
 			transform[3][2] = trans_y_end;

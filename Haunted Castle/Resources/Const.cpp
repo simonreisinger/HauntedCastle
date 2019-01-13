@@ -21,6 +21,7 @@ bool FIRE_AND_SHADOWS_1 = true;
 bool CGUE_F9_PRESSED = false;
 bool FIRE_AND_SHADOWS_2 = true;
 bool CGUE_F10_PRESSED = false;
+bool CGUE_F11_PRESSED = false;
 bool BLOOM = true;
 int NUMBER_OF_CULLED_MESHES = 0;
 
@@ -32,6 +33,8 @@ int TEXTURE_SLOT_MESH_NORMAL = 1;
 int TEXTURE_SLOT_DIRECTIONAL_SHADOW = 2;
 int TEXTURE_SLOT_POINT_SHADOWS[2] = { 3, 4 };
 int TEXTURE_SLOT_FIRE= 5;
+int TEXTURE_SLOT_BLOOM_COLORBUFFER = 6;
+int TEXTURE_SLOT_BLOOM_TOBEBLOOMED = 7; // TODO rename this
 
 mat4x4 pxMatToGlm(PxMat44 pxMat)
 {
@@ -83,6 +86,8 @@ float flameIntensity[2] =
 float flameIntensityMax = 1.1;
 float flameIntensityMin = 0.9;
 
+float AmbientIntensity = 0.15f;
+
 vec3 SunDir = changeAxis * vec3(0.0, -1.0, 1.0);
 
 float wnear = 0;
@@ -94,6 +99,7 @@ int iMeshesLoaded = 0;
 int countMeshesLoading = 73;
 
 int iObjectsLoaded = 0;
-int countObjectsLoading = 14;
+int countObjectsLoading = 15;
 
-bool renderObjects = false;
+bool renderObjects = true;
+bool debugMode = false;

@@ -74,7 +74,7 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 	bitangents = new float[size * 3];
 	uvs = new float[size * 2];
 
-	cout << "Mesh " << nameMesh << ":" << endl;
+	//cout << "Mesh " << nameMesh << ":" << endl;
 	int iVertices = 0;
 	for (int j = 0; j < mesh->mNumFaces; j++)
 	{
@@ -330,6 +330,10 @@ void Mesh::loadUniforms(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalP
 		auto flameIntensity_location = glGetUniformLocation(shader->programHandle, nameString.c_str());
 		glUniform1f(flameIntensity_location, flameIntensity[i]);
 	}
+
+	// Ambient
+	auto AmbientIntensity_location = glGetUniformLocation(shader->programHandle, "AmbientIntensity");
+	glUniform1f(AmbientIntensity_location, AmbientIntensity);
 
 	// Diffuse
 	auto diffuseColor = glGetUniformLocation(shader->programHandle, "diffuseColor");

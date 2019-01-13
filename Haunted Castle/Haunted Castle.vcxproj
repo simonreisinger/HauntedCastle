@@ -91,6 +91,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Resources\BSpline.cpp" />
+    <ClCompile Include="Resources\CameraPoint.cpp" />
     <ClCompile Include="Resources\Camera.cpp" />
     <ClCompile Include="Resources\Const.cpp" />
     <ClCompile Include="Resources\FrustumG.cpp" />
@@ -116,8 +118,11 @@
     <ClCompile Include="Scene\Torch1.cpp" />
     <ClCompile Include="Scene\Torch2.cpp" />
     <ClCompile Include="Scene\Wardrobe.cpp" />
+    <ClCompile Include="Scene\Windows.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Resources\BSpline.hpp" />
+    <ClInclude Include="Resources\CameraPoint.hpp" />
     <ClInclude Include="Resources\Camera.hpp" />
     <ClInclude Include="Resources\Const.hpp" />
     <ClInclude Include="Resources\FrustumG.hpp" />
@@ -144,11 +149,15 @@
     <ClInclude Include="Scene\Torch1.hpp" />
     <ClInclude Include="Scene\Torch2.hpp" />
     <ClInclude Include="Scene\Wardrobe.hpp" />
+    <ClInclude Include="Scene\Windows.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shader\Bloom.frag" />
-    <None Include="Shader\Bloom.vert" />
+    <None Include="Shader\Combine.frag" />
+    <None Include="Shader\Combine.vert" />
     <None Include="Shader\Blur.frag" />
+    <None Include="Shader\Blur.vert" />
+    <None Include="Shader\CameraPath.frag" />
+    <None Include="Shader\CameraPath.vert" />
     <None Include="Shader\PointShadows.geom" />
     <None Include="Shader\Screen.frag" />
     <None Include="Shader\Screen.vert" />

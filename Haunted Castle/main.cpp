@@ -16,6 +16,7 @@
 #include "Resources\FrustumG.hpp"
 
 #include "Resources/Geometry.hpp"
+#include "Resources/BSpline.hpp"
 #include "Scene/Actor.hpp"
 #include "Scene/Knight1.hpp"
 #include "Scene/Knight2.hpp"
@@ -32,19 +33,20 @@
 #include "Scene/Chess.hpp"
 #include "Scene/Coordinatesystem.hpp"
 #include "Scene/Fire.hpp"
+#include "Scene/Windows.hpp"
 
 
 //-------Loading PhysX libraries (32bit only)----------//
 
-#ifdef _DEBUG //If in 'Debug' load libraries for debug mode 
-#pragma comment(lib, "PhysX3DEBUG_x86.lib")				//Always be needed  
+#ifdef _DEBUG //If in 'Debug' load libraries for debug mode
+#pragma comment(lib, "PhysX3DEBUG_x86.lib")				//Always be needed
 #pragma comment(lib, "PhysX3CommonDEBUG_x86.lib")		//Always be needed
-#pragma comment(lib, "PhysX3ExtensionsDEBUG.lib")		//PhysX extended library 
-#pragma comment(lib, "PhysXVisualDebuggerSDKDEBUG.lib") //For PVD only 
+#pragma comment(lib, "PhysX3ExtensionsDEBUG.lib")		//PhysX extended library
+#pragma comment(lib, "PhysXVisualDebuggerSDKDEBUG.lib") //For PVD only
 
 #else //Else load libraries for 'Release' mode
-#pragma comment(lib, "PhysX3_x86.lib")	
-#pragma comment(lib, "PhysX3Common_x86.lib") 
+#pragma comment(lib, "PhysX3_x86.lib")
+#pragma comment(lib, "PhysX3Common_x86.lib")
 #pragma comment(lib, "PhysX3Extensions.lib")
 #pragma comment(lib, "PhysXVisualDebuggerSDK.lib")
 #endif
@@ -59,7 +61,6 @@ void update(float time_delta, float time_abs);
 void handleInput(GLFWwindow* window, float time_delta);
 void OnShutdown();
 mat4x4 pxMatToGlm(PxMat44 pxMat);
-void RenderQuad();
 void init();
 void initPhysics();
 void initScene();
@@ -78,12 +79,41 @@ GLFWwindow* window;
 Shader* renderShader;
 Shader* directionalShadowsShader;
 Shader* pointShadowsShader;
+Shader* cameraPathShader;
 
-GLuint directionalShadowsFBO = 0;
-GLuint directionalShadowsColorMap;
-GLuint colorBuffers[2];
+
+///////////////////////////////////////////////////////////////
+//Shader* shaderLight;
+Shader* shaderBlur;
+Shader* shaderCombine;
+
+bool bloom = true;
+bool horizontal = true, first_iteration = true;
+float exposure = 1.0f;
+
+// -----------------------------------------
+unsigned int quadVAO = 0;
+unsigned int quadVBO;
+
+GLuint hdrFBO;
+void initBlur();
+void renderBlur();
+void intCombine();
+void renderCombine();
+void renderQuad();
+
+GLuint directionalShadowsColorMap[2];
 GLuint pingpongFBO[2];
 GLuint pingpongColorbuffers[2];
+GLuint combineFBO;
+GLuint combineBuffer;
+
+GLuint colorBuffers[2];
+
+///////////////////////////////////////////////////////////////
+
+GLuint directionalShadowsFBO = 0;
+GLuint directionalShadowsColorFBO;
 
 const int numberOfTorches = 2;
 unsigned int pointShadowsFBO[numberOfTorches];
@@ -98,7 +128,7 @@ std::vector<glm::mat4> shadowTransforms[numberOfTorches];
 
 glm::mat4 depthVP;
 
-Actor* actor; 
+Actor* actor;
 Knight1* knight1;
 Knight2* knight2;
 Room* room;
@@ -115,6 +145,7 @@ Torch2* torch2;
 Chess* chess;
 Coordinatesystem* coordinatesystem;
 Fire** fire;
+Windows* windows;
 
 mat4x4 view;
 
@@ -130,13 +161,11 @@ float pointShadowsFarPlane = 50.0f; // = farDist; //
 
 FrustumG* frustumG;
 
-float RING_HEIGHT_HIGH = 2.0f;
-float RING_HEIGHT_MEDIUM = 6.0f;
-float RING_HEIGHT_LOW = 10.0f;
-
 int width = 1600;
-int height = 1600;
+int height = 1000;
 float ratio;
+
+const unsigned int SHADOW_WIDTH = 1600, SHADOW_HEIGHT = 1600; // TODO change this line
 
 auto fullscreen = false;
 
@@ -158,15 +187,15 @@ class SimulationEvents : public PxSimulationEventCallback
 	{
 	}
 
-	void onWake(PxActor** actor, PxU32 count)	//This is called during PxScene::fetchResults with the actors which have just been woken up.						
+	void onWake(PxActor** actor, PxU32 count)	//This is called during PxScene::fetchResults with the actors which have just been woken up.
 	{
 	}
 
-	void onSleep(PxActor** actor, PxU32 count)	////This is called during PxScene::fetchResults with the actors which have just been put to sleep.						
+	void onSleep(PxActor** actor, PxU32 count)	////This is called during PxScene::fetchResults with the actors which have just been put to sleep.
 	{
 	}
 
-	void onTrigger(PxTriggerPair* pairs, PxU32 nbPairs)	//This is called during PxScene::fetchResults with the current trigger pair events.		
+	void onTrigger(PxTriggerPair* pairs, PxU32 nbPairs)	//This is called during PxScene::fetchResults with the current trigger pair events.
 	{
 	}
 
@@ -183,7 +212,7 @@ static SimulationEvents gSimulationEventCallback;			//Instance of 'SimulationEve
 glm::mat4 proj;
 //glm::mat4 view;
 
-//Defining a custome filter shader 
+//Defining a custome filter shader
 PxFilterFlags customFilterShader(PxFilterObjectAttributes attributes0, PxFilterData filterData0,
 	PxFilterObjectAttributes attributes1, PxFilterData filterData1,
 	PxPairFlags& pairFlags, const void* constantBlock, PxU32 constantBlockSize)
@@ -192,7 +221,7 @@ PxFilterFlags customFilterShader(PxFilterObjectAttributes attributes0, PxFilterD
 	pairFlags = PxPairFlag::eCONTACT_DEFAULT
 		| PxPairFlag::eTRIGGER_DEFAULT
 		| PxPairFlag::eNOTIFY_CONTACT_POINTS
-		| PxPairFlag::eCCD_LINEAR; //Set flag to enable CCD (Continuous Collision Detection) 
+		| PxPairFlag::eCCD_LINEAR; //Set flag to enable CCD (Continuous Collision Detection)
 
 	return PxFilterFlag::eDEFAULT;
 }
@@ -317,11 +346,11 @@ static void APIENTRY DebugCallbackAMD(GLuint id, GLenum category, GLenum severit
 static void APIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) {
 	if (type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB || type == GL_DEBUG_TYPE_OTHER_ARB) {
 		/*
-		Error "Buffer detailed info: Buffer object 1 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW) 
+		Error "Buffer detailed info: Buffer object 1 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW)
 		will use VIDEO memory as the source for buffer object operations."
 		Can be ignored due to https://stackoverflow.com/questions/46771287/why-is-opengl-telling-me-ive-used-gl-static-draw-when-ive-specified-otherwise
 		*/
-		return; 
+		return;
 	}
 	std::string error = FormatDebugOutput(source, type, id, severity, message);
 	std::cout << error;
@@ -332,7 +361,7 @@ int main(int argc, char** argv)
 {
 	cout << "Loading..." << endl;
 
-	// TODO implement full screen 
+	// TODO implement full screen
 	ratio = (float)width / (float)height;
 
 	// Parameters
@@ -447,7 +476,7 @@ int main(int argc, char** argv)
 
 	glfwSetWindowTitle(window, "Haunted Castle");
 
-	atexit(OnShutdown);			//Called on application exit 
+	atexit(OnShutdown);			//Called on application exit
 
 	glfwShowWindow(window);
 
@@ -499,8 +528,8 @@ int main(int argc, char** argv)
 		auto time_screen_start = glfwGetTime();
 
 		// Render scene into floating point framebuffer
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-		glUseProgram(renderShader->programHandle);
+		glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+		renderShader->useShader();
 
 		sendDirectionalShadowsDataToScreenRenderer();
 
@@ -509,13 +538,19 @@ int main(int argc, char** argv)
 		}
 
 		renderScreen();
-	
+
 		auto time_screen_end = glfwGetTime();
 		auto time_fires_start = glfwGetTime();
 
 		renderFire(time_delta);
 
 		auto time_fires_end = glfwGetTime();
+		auto time_blur_start = glfwGetTime();
+
+		renderBlur();
+		renderCombine();
+
+		auto time_blur_end = glfwGetTime();
 		auto time_total_end = glfwGetTime();
 		auto time_swap_start = glfwGetTime();
 
@@ -528,20 +563,23 @@ int main(int argc, char** argv)
 		}
 		auto time_swap_end = glfwGetTime();
 
+		//////////////////////////////////////////////////////////////////////
+		//renderBlur(); // TODO i dont think this will be needed
+		//renderLightBox(); // Not needed
 
 		if (refreshTime > 1)
 		{
 			if (CGUE_DISPLAY_FRAME_TIME)
 			{
 				//cout << "Frame time: " << (int)(time_delta * 1000) << "ms, Frame/sec: " << (int)(1.0f / time_delta) << endl;
-				cout << "Real Frame time: " << (time_total_end - time_total_start) * 1000 << "ms, Real Frame/sec: " << (int)(1.0f / (time_total_end - time_total_start)) << endl;
+				cout << "Time: " << time_abs << "s, Real Frame time: " << (time_total_end - time_total_start) * 1000 << "ms, Real Frame/sec: " << (int)(1.0f / (time_total_end - time_total_start)) << endl;
 
 				cout << "update: " << (time_update_end - time_update_start)*1000 << "ms, ";
 				cout << "PointShadows: " << (time_pointShadows_end - time_pointShadows_start) * 1000 << "ms, ";
 				cout << "DirectionalShadows: " << (time_directionalShadows_end - time_directionalShadows_start) * 1000 << "ms, ";
 				cout << "Screen: " << (time_screen_end - time_screen_start) * 1000 << "ms, ";
-				cout << "Fire: " << (time_fires_end - time_fires_start) * 1000 << "ms, ";
-				cout << "Swap: " << (time_swap_end - time_swap_start) * 1000 << "ms" << endl;
+				cout << "Blur: " << (time_blur_end - time_blur_start) * 1000 << "ms, ";
+				cout << "Fire: " << (time_fires_end - time_fires_start) * 1000 << "ms" << endl;
 			}
 			if (VIEWFRUSTUM_CULLING) {
 				cout << "Number of Culled Meshes: " << NUMBER_OF_CULLED_MESHES << endl;
@@ -557,39 +595,18 @@ int main(int argc, char** argv)
 	return EXIT_SUCCESS;
 }
 
-void OnShutdown()
+
+void init()
 {
-	delete actor; actor = nullptr;
-	delete knight1; knight1 = nullptr;
-	delete knight2; knight2 = nullptr;
-	delete room; room = nullptr;
-	delete camera; camera = nullptr;
-	delete wardrobe; wardrobe = nullptr;
-	delete door; door = nullptr;
-	delete chair1; chair1 = nullptr;
-	delete chair2; chair2 = nullptr;
-	delete desk; desk = nullptr;
-	delete frame; frame = nullptr;
-	delete commode; commode = nullptr;
-	delete torch1; torch1 = nullptr;
-	delete torch2; torch2 = nullptr;
-	delete chess; chess = nullptr;
-	delete coordinatesystem; coordinatesystem = nullptr;
-	delete fire; fire = nullptr;
 
-	delete renderShader; renderShader = nullptr;
-	delete directionalShadowsShader; directionalShadowsShader = nullptr;
-	delete pointShadowsShader; pointShadowsShader = nullptr;
 
-	delete frustumG; frustumG = nullptr;
+	/*
+	for (float t = 0; t < 3; t += 0.1)
+	{
+		bezier(t);
+	}
+	*/
 
-	gPhysicsSDK->release();			//Removes any actors,  particle systems, and constraint shaders from this scene
-	gFoundation->release();			//Destroys the instance of foundation SDK
-}
-
-void init() 
-{
-	
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -599,6 +616,39 @@ void init()
 	for (int i = 0; i < numberOfTorches; i++){
 		initPointShadows(i);
 	}
+	///////////////////////////////////////////////////////////////////////
+
+
+	// Set up floating point framebuffer to render scene to
+	glGenFramebuffers(1, &hdrFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+	glGenTextures(2, colorBuffers);
+	for (GLuint i = 0; i < 2; i++)
+	{
+		glBindTexture(GL_TEXTURE_2D, colorBuffers[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_BGR, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		// attach texture to framebuffer
+		glFramebufferTexture2D(
+			GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorBuffers[i], 0
+			);
+	}
+
+
+	// - Create and attach depth buffer (renderbuffer)
+	GLuint rboDepth;
+	glGenRenderbuffers(1, &rboDepth);
+	glBindRenderbuffer(GL_RENDERBUFFER, rboDepth);
+	glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, width, height);
+	glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, rboDepth);
+	// - Tell OpenGL which color attachments we'll use (of this framebuffer) for rendering
+	GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+	glDrawBuffers(2, attachments);
+
+
 	// Always check that our framebuffer is ok
 	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
 	{
@@ -608,7 +658,17 @@ void init()
 		exit(EXIT_FAILURE);
 	}
 
-	
+	initBlur();
+	intCombine();
+
+	// Always check that our framebuffer is ok
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cout << "Couldn't load frame buffer ";
+		glfwTerminate();
+		system("PAUSE");
+		exit(EXIT_FAILURE);
+	}
 }
 
 void initPhysics(){
@@ -628,7 +688,7 @@ void initPhysics(){
 	}
 
 	//Creating scene
-	PxSceneDesc sceneDesc(gPhysicsSDK->getTolerancesScale());		//Descriptor class for scenes 
+	PxSceneDesc sceneDesc(gPhysicsSDK->getTolerancesScale());		//Descriptor class for scenes
 
 	sceneDesc.gravity = PxVec3(0.0f, 0.0f, 0.0f);					//Setting gravity
 	sceneDesc.cpuDispatcher = PxDefaultCpuDispatcherCreate(1);		//Creates default CPU dispatcher for the scene
@@ -636,10 +696,10 @@ void initPhysics(){
 	sceneDesc.filterShader = customFilterShader;					//Creates custom user collision filter shader for the scene
 	sceneDesc.simulationEventCallback = &gSimulationEventCallback;  //Resgistering for receiving simulation events
 
-	sceneDesc.flags |= PxSceneFlag::eENABLE_CCD;					//Set flag to enable CCD (Continuous Collision Detection) 
+	sceneDesc.flags |= PxSceneFlag::eENABLE_CCD;					//Set flag to enable CCD (Continuous Collision Detection)
 
-	gScene = gPhysicsSDK->createScene(sceneDesc);					//Creates a scene 
-	//*/This will enable basic visualization of PhysX objects like- actors collision shapes and their axes. 
+	gScene = gPhysicsSDK->createScene(sceneDesc);					//Creates a scene
+	//*/This will enable basic visualization of PhysX objects like- actors collision shapes and their axes.
 	//The function PxScene::getRenderBuffer() is used to render any active visualization for scene.
 	gScene->setVisualizationParameter(PxVisualizationParameter::eSCALE, 1.0);	//Global visualization scale which gets multiplied with the individual scales
 	gScene->setVisualizationParameter(PxVisualizationParameter::eCOLLISION_SHAPES, 1.0f);	//Enable visualization of actor's shape
@@ -654,6 +714,9 @@ void initScene(){
 
 	renderShader = new Shader("Shader/Screen.vert", "Shader/Screen.frag");
 
+
+	cameraPathShader = new Shader("Shader/CameraPath.vert", "Shader/CameraPath.frag");
+
 	frustumG = new FrustumG();
 	camera = new Camera();
 
@@ -662,6 +725,7 @@ void initScene(){
 	actor->initActor();
 
 	room = new Room(renderShader);
+	windows = new Windows(renderShader);
 
 	chair1 = new Chair1(renderShader);
 	chair2 = new Chair2(renderShader);
@@ -699,6 +763,8 @@ void initScene(){
 
 void renderScreen(){
 
+	// 1. Render scene into floating point framebuffer
+
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glViewport(0, 0, width, height);
 
@@ -710,29 +776,47 @@ void renderScreen(){
 
 	mat4x4 camera_model = camera->getCameraModel();
 
-	view = camera_model * pxMatToGlm(PxMat44(actor->actor->getGlobalPose().getInverse()));
+	//view = camera_model * pxMatToGlm(PxMat44(actor->actor->getGlobalPose().getInverse()));
 
 
 	proj = glm::perspective(fov, ratio, nearDist, farDist);
 
+	vec4 camera_pos;
+	vec4 look_pos;
+	vec4 up_pos;
+	if (camera->getAutomaticCameraMovementActivated())
+	{
+		camera_pos = vec4(camera->getCameraPos(), 1);
+		look_pos = vec4(camera->getCameraLookAt(), 1);
+		up_pos = vec4(camera->getCameraUp(), 1);
+	}
+	else
+	{
+		camera_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraPos(), 1);
+		look_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraLookAt(), 1);
+		up_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraUp(), 1);
+	}
 
-	vec4 camera_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraPos(), 1);
+
 	vec3 p = vec3(camera_pos.x, camera_pos.y, camera_pos.z);
 
-	vec4 look_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraLookAt(), 1);
 	vec3 l = vec3(look_pos.x, look_pos.y, look_pos.z);
 
-	vec4 up_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraUp(), 1);
 	vec3 u = vec3(up_pos.x, up_pos.y, up_pos.z);
 	u = u - p;
 	u = normalize(u);
 
-	mat4x4 lookAt = glm::lookAt(p, l, u);
+	view = glm::lookAt(p, l, u);
 
 	frustumG->setCamInternals(fov, ratio, nearDist, farDist);
 	frustumG->setCamDef(p, l, u);
 
-	renderScene(renderShader, lookAt, proj, camera_model);
+	renderScene(renderShader, view, proj, camera_model);
+
+	if (!camera->getAutomaticCameraMovementActivated()) {
+		camera->drawCurve(cameraPathShader, proj * view);
+	}
+
 }
 
 void initDirectionalShadows()
@@ -756,7 +840,7 @@ void initDirectionalShadows()
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_R_TO_TEXTURE);
-	
+
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, directionalShadowsDepthMap, 0);
 
 	// No color output in the bound framebuffer, only depth.
@@ -777,12 +861,12 @@ void initDirectionalShadows()
 	// TODO Still do not know what this FBO and Texture are for,
 	// but they are needed.
 	// Set up floating point framebuffer to render scene to
-	glGenFramebuffers(1, &directionalShadowsColorMap);
-	glBindFramebuffer(GL_FRAMEBUFFER, directionalShadowsColorMap);
-	glGenTextures(2, colorBuffers);
+	glGenFramebuffers(1, &directionalShadowsColorFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, directionalShadowsColorFBO);
+	glGenTextures(2, directionalShadowsColorMap);
 	for (GLuint i = 0; i < 2; i++)
 	{
-		glBindTexture(GL_TEXTURE_2D, colorBuffers[i]);
+		glBindTexture(GL_TEXTURE_2D, directionalShadowsColorMap[i]);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_BGR, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -790,11 +874,11 @@ void initDirectionalShadows()
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 		// attach texture to framebuffer
 		glFramebufferTexture2D(
-			GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, colorBuffers[i], 0
+			GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, directionalShadowsColorMap[i], 0
 		);
 	}
 
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0); // TODO
 }
 
 void renderDepthMap(){
@@ -802,15 +886,15 @@ void renderDepthMap(){
 	glBindFramebuffer(GL_FRAMEBUFFER, directionalShadowsFBO);
 	glViewport(0, 0, width, height); // Render on the whole framebuffer, complete from the lower left corner to the upper right
 
-	// We don't use bias in the shader, but instead we draw back faces, 
-	// which are already separated from the front faces by a small distance 
+	// We don't use bias in the shader, but instead we draw back faces,
+	// which are already separated from the front faces by a small distance
 	glDisable(GL_CULL_FACE);
 
 	// Clear the screen
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Use our shader
-	glUseProgram(directionalShadowsShader->programHandle);
+	directionalShadowsShader->useShader();
 
 	// Compute the MVP matrix from the light's point of view
 	glm::mat4 depthProjectionMatrix = glm::ortho<float>(-20, 20, 20, -20, -40.0f, 40.0f);
@@ -820,7 +904,7 @@ void renderDepthMap(){
 	depthVP = depthProjectionMatrix * depthViewMatrix;
 	glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
 
-	// Send our transformation to the currently bound shader, 
+	// Send our transformation to the currently bound shader,
 
 	renderScene(directionalShadowsShader, depthViewMatrix, depthProjectionMatrix, mat4x4(1.0f));
 }
@@ -842,15 +926,13 @@ void initPointShadows(int index){
 		"Shader/PointShadows.frag",
 		"Shader/PointShadows.geom");
 
-
 	// Create and bind FBO
 	glGenFramebuffers(1, &pointShadowsFBO[index]);
 	glBindFramebuffer(GL_FRAMEBUFFER, pointShadowsFBO[index]);
 
 	// Create cubemap textures
 	glGenTextures(1, &depthCubemap[index]);
-	const unsigned int SHADOW_WIDTH = 1600, SHADOW_HEIGHT = 1600; // TODO change this line
-	
+
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap[index]);
 	for (unsigned int i = 0; i < 6; ++i){
 		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT,
@@ -862,7 +944,7 @@ void initPointShadows(int index){
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-	
+
 	// attach depth texture as FBO's depth buffer
 	// (tells GPU that this texture should be the output of current bound FBO)
 	glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depthCubemap[index], 0);
@@ -880,7 +962,9 @@ void initPointShadows(int index){
 	// -------------
 	flameCenterPosition[index] = torchPos[index] + 0.5f * flameDir;
 
-	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), ratio, pointShadowsNearPlane, pointShadowsFarPlane);
+	float aspect = (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT;
+
+	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, pointShadowsNearPlane, pointShadowsFarPlane);
 
 	shadowTransforms[index].push_back(shadowProj * glm::lookAt(flameCenterPosition[index], flameCenterPosition[index] + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
 	shadowTransforms[index].push_back(shadowProj * glm::lookAt(flameCenterPosition[index], flameCenterPosition[index] + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
@@ -897,10 +981,9 @@ void renderDepthCubemap(int index) {
 
 	// Loads the FBO with the bound cubemap as output
 	glBindFramebuffer(GL_FRAMEBUFFER, pointShadowsFBO[index]);
-	glUseProgram(pointShadowsShader->programHandle);
+	pointShadowsShader->useShader();
 
-
-	glViewport(0, 0, width, height);
+	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	// Use our shader
 	glm:mat4 model = mat4(1);
@@ -922,10 +1005,9 @@ void renderDepthCubemap(int index) {
 }
 
 void sendPointShadowsDataToScreenRenderer(int index){
-	//cout << "xx: " << pointShadowsFarPlane << "xx: " << pointShadowsFarPlane << "xx: " << pointShadowsFarPlane << "xx: " << pointShadowsFarPlane << endl;
 	///////////////////////// same for both /////////////////////////
 	glUniform1f(glGetUniformLocation(renderShader->programHandle, "pointShadowsFarPlane"), pointShadowsFarPlane);
-	
+
 	mat4x4 camera_model = camera->getCameraModel();
 	mat4 viewPosMatrix = camera_model * pxMatToGlm(PxMat44(actor->actor->getGlobalPose().getInverse()));
 	vec3 viewPos = vec3(viewPosMatrix[3][0], viewPosMatrix[3][1], viewPosMatrix[3][2]);
@@ -944,40 +1026,105 @@ void sendPointShadowsDataToScreenRenderer(int index){
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap[index]);
 }
 
-void initBloom(){
-	/*
-	bloomShader = new Shader(
-		"Shader/PointShadows.vert",
-		"Shader/PointShadows.frag",
-		"Shader/PointShadows.geom");
-
-
-	// shader configuration
-	// --------------------
-	shader.use();
-	shader.setInt("diffuseTexture", 0);
-	shaderBlur.use();
-	shaderBlur.setInt("image", 0);
-	shaderBloomFinal.use();
-	shaderBloomFinal.setInt("scene", 0);
-	shaderBloomFinal.setInt("bloomBlur", 1);
-	*/
+void initBlur(){
+	// Ping pong framebuffer for
+	glGenFramebuffers(2, pingpongFBO);
+	glGenTextures(2, pingpongColorbuffers);
+	for (GLuint i = 0; i < 2; i++)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[i]);
+		glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[i]);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, width, height, 0, GL_BGR, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // We clamp to the edge as the blur filter would otherwise sample repeated texture values!
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, pingpongColorbuffers[i], 0);
+		// Also check if framebuffers are complete (no need for depth buffer)
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			std::cout << "Framebuffer not complete!" << std::endl;
+	}
+	shaderBlur = new Shader("Shader/Blur.vert", "Shader/Blur.frag");
 }
 
-void renderFire(float time_delta){
-	for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++) {
-		if ((i == 0 && FIRE_AND_SHADOWS_1) || (i == 1 && FIRE_AND_SHADOWS_2)) {
-			//cout << "Fire " << i+1 << ": ";
-			fire[i]->renderParticles(time_delta, view, proj, flameIntensity[i]);
-			//cout << endl;
+void renderBlur(){
+	// 2. Blur bright fragments w/ two-pass Gaussian Blur
+	GLboolean horizontal = true, first_iteration = true;
+	GLuint amount = 20;
+	for (GLuint i = 0; i < amount; i++)
+	{
+		glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[horizontal]);
+		shaderBlur->useShader();
+
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // We clamp to the edge as the blur filter would otherwise sample repeated texture values!
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+		glUniform1i(glGetUniformLocation(shaderBlur->programHandle, "horizontal"), horizontal);
+
+		glActiveTexture(GL_TEXTURE0 + TEXTURE_SLOT_BLOOM_TOBEBLOOMED);
+		glBindTexture(GL_TEXTURE_2D, first_iteration ? colorBuffers[1] : pingpongColorbuffers[!horizontal]);
+		GLuint BlurTextureID = glGetUniformLocation(shaderBlur->programHandle, "image");
+		glUniform1i(BlurTextureID, TEXTURE_SLOT_BLOOM_TOBEBLOOMED);
+
+		renderQuad();
+		horizontal = !horizontal;
+		if (first_iteration){
+			first_iteration = false;
 		}
 	}
-	//cout << endl;
 }
 
-GLuint quadVAO = 0;
-GLuint quadVBO;
-void RenderQuad()
+void intCombine(){
+	// Set up floating point framebuffer to render scene to
+	glGenFramebuffers(1, &combineFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, combineFBO);
+
+	glGenTextures(1, &combineBuffer);
+	glBindTexture(GL_TEXTURE_2D, combineBuffer);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_BGR, GL_FLOAT, NULL);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	// attach texture to framebuffer
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, combineBuffer, 0);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+	shaderCombine = new Shader("Shader/Combine.vert", "Shader/Combine.frag");
+}
+
+void renderCombine(){
+	// 2. Now render floating point color buffer to 2D quad and tonemap HDR colors to default framebuffer's (clamped) color range
+	//glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glViewport(0, 0, width, height);
+	//glViewport(iRender * drawWidth, 0, drawWidth, height);
+	shaderCombine->useShader();
+
+	glActiveTexture(GL_TEXTURE8);
+	glBindTexture(GL_TEXTURE_2D, colorBuffers[0]);
+	auto colorBuffers0_location = glGetUniformLocation(shaderCombine->programHandle, "scene");
+	glUniform1i(colorBuffers0_location, 8);
+
+	glActiveTexture(GL_TEXTURE9);
+	glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[1]);
+	auto colorBuffers1_location = glGetUniformLocation(shaderCombine->programHandle, "bloomBlur");
+	glUniform1i(colorBuffers1_location, 9);
+
+	GLboolean bloom = true;
+	GLfloat exposure = 0.9f;
+	glUniform1i(glGetUniformLocation(shaderCombine->programHandle, "bloom"), bloom);
+	glUniform1f(glGetUniformLocation(shaderCombine->programHandle, "exposure"), exposure);
+	renderQuad();
+
+}
+
+// renderQuad() renders a 1x1 XY quad in NDC
+void renderQuad()
 {
 	if (quadVAO == 0)
 	{
@@ -1004,6 +1151,17 @@ void RenderQuad()
 	glBindVertexArray(0);
 }
 
+void renderFire(float time_delta){
+	for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++) {
+		if ((i == 0 && FIRE_AND_SHADOWS_1) || (i == 1 && FIRE_AND_SHADOWS_2)) {
+			//cout << "Fire " << i+1 << ": ";
+			fire[i]->renderParticles(time_delta, view, proj, flameIntensity[i]);
+			//cout << endl;
+		}
+	}
+	//cout << endl;
+}
+
 void StepPhysX(float time_delta)					//Stepping PhysX
 {
 	gScene->simulate(time_delta > 0.0f ? time_delta : 0.001f);	//Advances the simulation by 'gTimeStep' time
@@ -1017,7 +1175,6 @@ void renderScene(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_mod
 		cull = true;
 	}
 
-
 	room->renderGeometry(drawShader, view, proj, camera_model, cull);
 
 	chair1->renderGeometry(drawShader, view, proj, camera_model, cull);
@@ -1029,30 +1186,24 @@ void renderScene(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_mod
 
 	commode->renderGeometry(drawShader, view, proj, camera_model, cull);
 
+	if (drawShader != directionalShadowsShader){
+		windows->renderGeometry(drawShader, view, proj, camera_model, cull);
+	}
+
 	if (renderObjects)
 	{
-		
 		torch1->renderGeometry(drawShader, view, proj, camera_model, cull);
 		torch2->renderGeometry(drawShader, view, proj, camera_model, cull);
-
 
 		knight1->renderGeometry(drawShader, view, proj, camera_model, cull);
 		knight2->renderGeometry(drawShader, view, proj, camera_model, cull);
 
 		wardrobe->renderGeometry(drawShader, view, proj, camera_model, cull);
 
-		
 		door->renderGeometry(drawShader, view, proj, camera_model, cull);
 
-
-
 		chess->renderGeometry(drawShader, view, proj, camera_model, cull);
-		
 	}
-
-
-	// Actor
-	//actor->draw(drawShader, view, proj, camera_model, cull);
 
 	glDisable(GL_CULL_FACE);
 }
@@ -1062,99 +1213,130 @@ void update(float time_delta, float time_abs) // TODO change time_delta to delta
 	if (gScene)
 		StepPhysX(time_delta);
 
+	camera->advance(time_delta);
+
 	for (int i = 0; i < sizeof(torchPos) / sizeof(*torchPos); i++)
 	{
 		flameIntensity[i] = rand(flameIntensityMin, flameIntensityMax);
 	}
 
-	cout << time_abs << endl;
+	chair1->translateLinear("Chair", vec3(0, -2, 0), 50.0, 2.0, time_abs, time_delta); 
 
-	chair1->translateLinear("Chair", vec3(0, -2, 0), 10.0, 2.0, time_abs, time_delta); 
+	frame->translateGravity("Frame", 4.44412, 72.0, time_abs, time_delta);
 
-	frame->translateGravity("Frame", 4.44412, 15.0, time_abs, time_delta);
-
+	if (!debugMode) {
+		FIRE_AND_SHADOWS_1 = time_abs >= 20.0f;
+		FIRE_AND_SHADOWS_2 = time_abs >= 38.0f;
+	}
 }
 
 float rand(float min, float max)
 {
-	return min + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (max - min)));;
+	return min + static_cast <float> (rand()) / (static_cast <float> (RAND_MAX / (max - min)));
 }
+
+bool c_pressed = false;
 
 void handleInput(GLFWwindow* window, float time_delta)
 {
 
-	// Mouse
-
-	double mouseXPos, mouseYPos;
-	glfwGetCursorPos(window, &mouseXPos, &mouseYPos);
-
-	int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-	if (state == GLFW_PRESS && (mouseXPos != mouseXPosOld || mouseYPos != mouseYPosOld))
+	if (!camera->getAutomaticCameraMovementActivated())
 	{
-		double mouseXPosDiff = mouseXPos - mouseXPosOld;
-		double mouseYPosDiff = mouseYPos - mouseYPosOld;
+		// Mouse
 
-		actor->PxRotate(0, 0, ROTATESPEED * time_delta * mouseXPosDiff / 100);
-		
+		double mouseXPos, mouseYPos;
+		glfwGetCursorPos(window, &mouseXPos, &mouseYPos);
 
-		if (mouseYPosDiff > 0)
+		int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+		if (state == GLFW_PRESS && (mouseXPos != mouseXPosOld || mouseYPos != mouseYPosOld))
 		{
-			camera->rotateDown(time_delta * mouseYPosDiff / 10);
+			double mouseXPosDiff = mouseXPos - mouseXPosOld;
+			double mouseYPosDiff = mouseYPos - mouseYPosOld;
+
+			actor->PxRotate(0, 0, ROTATESPEED * time_delta * mouseXPosDiff / 100);
+
+
+			if (mouseYPosDiff > 0)
+			{
+				camera->rotateDown(time_delta * mouseYPosDiff / 10);
+			}
+			if (mouseYPosDiff < 0)
+			{
+				camera->rotateUp(-time_delta * mouseYPosDiff / 10);
+			}
 		}
-		if (mouseYPosDiff < 0)
+
+		mouseXPosOld = mouseXPos;
+		mouseYPosOld = mouseYPos;
+
+
+		// camera - actor 0 
+
+		if (glfwGetKey(window, GLFW_KEY_RIGHT))
 		{
-			camera->rotateUp(-time_delta * mouseYPosDiff / 10);
+			actor->PxRotate(0, 0, -ROTATESPEED * time_delta);
+		}
+		if (glfwGetKey(window, GLFW_KEY_LEFT))
+		{
+			actor->PxRotate(0, 0, ROTATESPEED * time_delta);
+		}
+		if (glfwGetKey(window, GLFW_KEY_DOWN))
+		{
+			actor->PxTranslate(0, -MOVESPEED * time_delta, 0);
+		}
+		if (glfwGetKey(window, GLFW_KEY_UP))
+		{
+			actor->PxTranslate(0, MOVESPEED * time_delta, 0);
+		}
+
+
+		// actor 0 - rotate
+		if (glfwGetKey(window, GLFW_KEY_A))
+		{
+			actor->PxRotate(0, 0, ROTATESPEED * time_delta);
+		}
+		if (glfwGetKey(window, GLFW_KEY_D))
+		{
+			actor->PxRotate(0, 0, -ROTATESPEED * time_delta);
+		}
+		// actor 0 - move 
+		//*
+		if (glfwGetKey(window, GLFW_KEY_Q))
+		{
+			actor->PxTranslate(0, 0, -MOVESPEED * time_delta);
+		}
+		if (glfwGetKey(window, GLFW_KEY_E))
+		{
+			actor->PxTranslate(0, 0, MOVESPEED * time_delta);
+		}
+		//*/
+		if (glfwGetKey(window, GLFW_KEY_W))
+		{
+			actor->PxTranslate(0, MOVESPEED * time_delta, 0);
+		}
+		if (glfwGetKey(window, GLFW_KEY_S))
+		{
+			actor->PxTranslate(0, -MOVESPEED * time_delta, 0);
 		}
 	}
 
-	mouseXPosOld = mouseXPos;
-	mouseYPosOld = mouseYPos;
-
-
-	// camera - actor 0 
-	
-	if (glfwGetKey(window, GLFW_KEY_RIGHT))
+	// C - close game
+	if (glfwGetKey(window, GLFW_KEY_C) == GLFW_PRESS)
 	{
-		actor->PxRotate(0, 0, -ROTATESPEED * time_delta);
+		if (!c_pressed)
+		{
+			camera->changeAutomaticCameraMovementActivatedState();
+			c_pressed = true;
+			debugMode = !debugMode;
+			if (debugMode) {
+				FIRE_AND_SHADOWS_1 = true;
+				FIRE_AND_SHADOWS_2 = true;
+			}
+		}
 	}
-	if (glfwGetKey(window, GLFW_KEY_LEFT))
+	else
 	{
-		actor->PxRotate(0, 0, ROTATESPEED * time_delta);
-	}
-	if (glfwGetKey(window, GLFW_KEY_DOWN))
-	{
-		actor->PxTranslate(0, -MOVESPEED * time_delta, 0);
-	}
-	if (glfwGetKey(window, GLFW_KEY_UP))
-	{
-		actor->PxTranslate(0, MOVESPEED * time_delta, 0);
-	}
-
-	// actor 0 - rotate
-	if (glfwGetKey(window, GLFW_KEY_A))
-	{
-		actor->PxRotate(0, 0, ROTATESPEED * time_delta);
-	}
-	if (glfwGetKey(window, GLFW_KEY_D))
-	{
-		actor->PxRotate(0, 0, -ROTATESPEED * time_delta);
-	}
-	// actor 0 - move 
-	if (glfwGetKey(window, GLFW_KEY_Q))
-	{
-		actor->PxTranslate(0, 0, -MOVESPEED * time_delta);
-	}
-	if (glfwGetKey(window, GLFW_KEY_E))
-	{
-		actor->PxTranslate(0, 0, MOVESPEED * time_delta);
-	}
-	if (glfwGetKey(window, GLFW_KEY_W))
-	{
-		actor->PxTranslate(0, MOVESPEED * time_delta, 0);
-	}
-	if (glfwGetKey(window, GLFW_KEY_S))
-	{
-		actor->PxTranslate(0, -MOVESPEED * time_delta, 0);
+		c_pressed = false;
 	}
 
 	// ESC - close game
@@ -1302,7 +1484,7 @@ void handleInput(GLFWwindow* window, float time_delta)
 		CGUE_F9_PRESSED = false;
 	}
 
-	// F8 - Fire
+	// F10 - Fire
 	if (glfwGetKey(window, GLFW_KEY_F10)) {
 		if (CGUE_F10_PRESSED == false) {
 			BLOOM = !BLOOM;
@@ -1313,5 +1495,72 @@ void handleInput(GLFWwindow* window, float time_delta)
 	else {
 		CGUE_F10_PRESSED = false;
 	}
+
+	// F11 - Camera Pos
+	if (glfwGetKey(window, GLFW_KEY_F11)) {
+		if (CGUE_F11_PRESSED == false) {
+
+			vec4 camera_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraPos(), 1);
+			vec4 look_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraLookAt(), 1);
+
+			vec4 dir = look_pos - camera_pos;
+
+			cout << "CameraPoint(vec3(" << camera_pos.x << ", " << -camera_pos.z << ", " << camera_pos.y << "), vec3("
+				<< dir.x << ", " << -dir.z << ", " << dir.y << "))," << endl;
+		}
+		CGUE_F11_PRESSED = true;
+	}
+	else {
+		CGUE_F11_PRESSED = false;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_PAGE_UP)) {
+		AmbientIntensity += 0.01f;
+		if (AmbientIntensity > 1) {
+			AmbientIntensity = 1;
+		}
+		cout << "Ambient Intensity changed to: " << AmbientIntensity << endl;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_PAGE_DOWN)) {
+		AmbientIntensity -= 0.01f;
+		if (AmbientIntensity < 0) {
+			AmbientIntensity = 0;
+		}
+		cout << "Ambient Intensity changed to: " << AmbientIntensity << endl;
+	}
+
+
+
 }
 
+void OnShutdown()
+{
+	delete actor; actor = nullptr;
+	delete knight1; knight1 = nullptr;
+	delete knight2; knight2 = nullptr;
+	delete room; room = nullptr;
+	delete camera; camera = nullptr;
+	delete wardrobe; wardrobe = nullptr;
+	delete door; door = nullptr;
+	delete chair1; chair1 = nullptr;
+	delete chair2; chair2 = nullptr;
+	delete desk; desk = nullptr;
+	delete frame; frame = nullptr;
+	delete commode; commode = nullptr;
+	delete torch1; torch1 = nullptr;
+	delete torch2; torch2 = nullptr;
+	delete chess; chess = nullptr;
+	delete coordinatesystem; coordinatesystem = nullptr;
+	delete fire; fire = nullptr;
+	delete windows; windows = nullptr;
+
+	delete renderShader; renderShader = nullptr;
+	delete directionalShadowsShader; directionalShadowsShader = nullptr;
+	delete pointShadowsShader; pointShadowsShader = nullptr;
+
+	delete frustumG; frustumG = nullptr;
+
+	gPhysicsSDK->release();			//Removes any actors,  particle systems, and constraint shaders from this scene
+	gFoundation->release();			//Destroys the instance of foundation SDK
+}

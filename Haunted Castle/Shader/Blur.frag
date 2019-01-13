@@ -1,6 +1,5 @@
-#version 330 core
+#version 430 core
 out vec4 FragColor;
-
 in vec2 TexCoords;
 
 uniform sampler2D image;
@@ -28,5 +27,6 @@ void main()
              result += texture(image, TexCoords - vec2(0.0, tex_offset.y * i)).rgb * weight[i];
          }
      }
-     FragColor = vec4(result, 1.0);
+	 //result = vec3(1.0,1.0,0.0);
+     FragColor = vec4(result, 1.0) ; // vec4(texture(image, TexCoords).rgb, 1.0);
 }
