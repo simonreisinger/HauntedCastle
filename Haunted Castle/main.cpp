@@ -727,27 +727,28 @@ void initScene(){
 	room = new Room(renderShader);
 	windows = new Windows(renderShader);
 
+	chair1 = new Chair1(renderShader);
+	chair2 = new Chair2(renderShader);
+
+	desk = new Desk(renderShader);
+
+	commode = new Commode(renderShader);
+
+	frame = new Frame(renderShader);
+
 	if (renderObjects) {
 		wardrobe = new Wardrobe(renderShader);
 
 		torch1 = new Torch1(renderShader);
 		torch2 = new Torch2(renderShader);
 
-		desk = new Desk(renderShader);
 
-		commode = new Commode(renderShader);
-
-		chair1 = new Chair1(renderShader);
-		chair2 = new Chair2(renderShader);
+		chess = new Chess(renderShader);
 
 		knight1 = new Knight1(renderShader);
 		knight2 = new Knight2(renderShader);
 
 		door = new Door(renderShader);
-
-		chess = new Chess(renderShader);
-
-		frame = new Frame(renderShader);
 	}
 
 	fire = new Fire*[sizeof(torchPos) / sizeof(*torchPos)];
@@ -1175,30 +1176,31 @@ void renderScene(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_mod
 	}
 
 	room->renderGeometry(drawShader, view, proj, camera_model, cull);
+
+	chair1->renderGeometry(drawShader, view, proj, camera_model, cull);
+	chair2->renderGeometry(drawShader, view, proj, camera_model, cull);
+
+	desk->renderGeometry(drawShader, view, proj, camera_model, cull);
+
+	frame->renderGeometry(drawShader, view, proj, camera_model, cull);
+
+	commode->renderGeometry(drawShader, view, proj, camera_model, cull);
+
 	if (drawShader != directionalShadowsShader){
 		windows->renderGeometry(drawShader, view, proj, camera_model, cull);
 	}
+
 	if (renderObjects)
 	{
-
 		torch1->renderGeometry(drawShader, view, proj, camera_model, cull);
 		torch2->renderGeometry(drawShader, view, proj, camera_model, cull);
-
-		chair1->renderGeometry(drawShader, view, proj, camera_model, cull);
-		chair2->renderGeometry(drawShader, view, proj, camera_model, cull);
 
 		knight1->renderGeometry(drawShader, view, proj, camera_model, cull);
 		knight2->renderGeometry(drawShader, view, proj, camera_model, cull);
 
 		wardrobe->renderGeometry(drawShader, view, proj, camera_model, cull);
 
-		desk->renderGeometry(drawShader, view, proj, camera_model, cull);
-
 		door->renderGeometry(drawShader, view, proj, camera_model, cull);
-
-		frame->renderGeometry(drawShader, view, proj, camera_model, cull);
-
-		commode->renderGeometry(drawShader, view, proj, camera_model, cull);
 
 		chess->renderGeometry(drawShader, view, proj, camera_model, cull);
 	}
@@ -1217,6 +1219,10 @@ void update(float time_delta, float time_abs) // TODO change time_delta to delta
 	{
 		flameIntensity[i] = rand(flameIntensityMin, flameIntensityMax);
 	}
+
+	chair1->translateLinear("Chair", vec3(0, -2, 0), 50.0, 2.0, time_abs, time_delta); 
+
+	frame->translateGravity("Frame", 4.44412, 72.0, time_abs, time_delta);
 
 	if (!debugMode) {
 		FIRE_AND_SHADOWS_1 = time_abs >= 20.0f;
@@ -1294,7 +1300,7 @@ void handleInput(GLFWwindow* window, float time_delta)
 			actor->PxRotate(0, 0, -ROTATESPEED * time_delta);
 		}
 		// actor 0 - move 
-		/*
+		//*
 		if (glfwGetKey(window, GLFW_KEY_Q))
 		{
 			actor->PxTranslate(0, 0, -MOVESPEED * time_delta);
@@ -1303,7 +1309,7 @@ void handleInput(GLFWwindow* window, float time_delta)
 		{
 			actor->PxTranslate(0, 0, MOVESPEED * time_delta);
 		}
-		*/
+		//*/
 		if (glfwGetKey(window, GLFW_KEY_W))
 		{
 			actor->PxTranslate(0, MOVESPEED * time_delta, 0);

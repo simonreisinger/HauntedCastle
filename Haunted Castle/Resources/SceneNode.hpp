@@ -25,6 +25,9 @@ namespace cgue
 
 		void draw(Shader* drawShader, mat4x4 view, glm::mat4x4 proj, mat4x4 camera_model, bool cull);
 
+		void translateLinear(string meshName, vec3 trans, float time_start, float duration, float time, float time_delta);
+		void translateGravity(string meshName, float trans_y_end, float time_start, float time, float time_delta);
+
 	private:
 
 		int countVertices(aiNode* node, const aiScene* scene);
@@ -45,6 +48,8 @@ namespace cgue
 
 		string name;
 		mat4x4 transform;
+
+		vec3 forces = vec3(0);
 
 		bool init = false;
 	};

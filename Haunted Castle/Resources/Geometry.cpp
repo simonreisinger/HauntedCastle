@@ -91,3 +91,11 @@ void Geometry::setPhysX(PxPhysics* mPhysicsSDK, PxFoundation* mFoundation, PxDef
 	gDefaultAllocatorCallback = mDefaultAllocatorCallback;
 	gScene = mScene;
 }
+
+void Geometry::translateLinear(string meshName, vec3 t, float time_start, float duration, float time, float time_delta) {
+	sceneNode->translateLinear(meshName, t, time_start, duration, time, time_delta);
+}
+
+void Geometry::translateGravity(string meshName, float trans_y, float time_start, float time, float time_delta) {
+	sceneNode->translateGravity(meshName, trans_y, time_start, time, time_delta);
+}
