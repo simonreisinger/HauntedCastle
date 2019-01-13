@@ -212,7 +212,21 @@ void computePointBezierCurve(float t, vec3 &p, vec3 &d, vec3 p1, vec3 p2, vec3 d
 	d = normalize(BCD - ABC);
 }
 
-void computePointCubicHermiteCurve(float t, vec3 &p, vec3 &d, vec3 p1, vec3 p2, vec3 d1, vec3 d2)
+vec3 computePointLinearInterpolation(float t, vec3 p1, vec3 p2)
+{
+	float beta = 1.2f;
+	float t_scurve = 1 / (1 + pow(t / (1 - t), -beta));
+	return p1 * (1 - t_scurve) + p2 * t_scurve;
+}
+
+vec3 computeDerivativeLinearInterpolation(float t, vec3 d1, vec3 d2)
+{
+	float beta = 2;
+	float t_scurve = 1 / (1 + pow(t / (1 - t), -beta));
+	return d1 * (1 - t_scurve) + d2 * t_scurve;
+}
+
+vec3 computePointCubicHermiteCurve(float t, vec3 p1, vec3 p2, vec3 d1, vec3 d2)
 {
 
 	// Source: https://github.com/keshavnandan/OpenGL/blob/master/hermite_curve/hermite.cpp
@@ -226,33 +240,34 @@ void computePointCubicHermiteCurve(float t, vec3 &p, vec3 &d, vec3 p1, vec3 p2, 
 	h2 = t3 - 2 * t2 + t;
 	h3 = t3 - t2;
 
-	p = p1 * h0 + p2 * h1 + d1 * h2 + d2 * h3;
+	return p1 * h0 + p2 * h1 + d1 * h2 + d2 * h3;
+}
+
+vec3 computeDerivativeCubicHermiteCurve(float t, vec3 p1, vec3 p2, vec3 d1, vec3 d2)
+{
+
+	// Source: https://github.com/keshavnandan/OpenGL/blob/master/hermite_curve/hermite.cpp
+
+	float h0, h1, h2, h3, dh0, dh1, dh2, dh3, t2, t3;
+	t2 = t * t;
+	t3 = t2 * t;
+	//hermite blending functions
+	h0 = 2 * t3 - 3 * t2 + 1;
+	h1 = -2 * t3 + 3 * t2;
+	h2 = t3 - 2 * t2 + t;
+	h3 = t3 - t2;
 
 	//cout << t << " P(" << p.x << " " << p.y << " " << p.z << ") ";
 	//cout << " P1(" << p1.x << " " << p1.y << " " << p1.z << ") P2(" << p2.x << " " << p2.y << " " << p2.z << ")" << endl;
 
 	// Source: https://math.stackexchange.com/questions/2444650/cubic-hermite-spline-derivative
-
+	
 	dh0 = 6 * t2 - 6 * t;
 	dh1 = -6 * t2 + 6 * t;
 	dh2 = 3 * t2 - 4 * t + 1;
 	dh3 = 3 * t2 - 2 * t;
 
-	d = p1 * dh0 + p2 * dh1 + d1 * dh2 + d2 * dh3;
-}
-
-vec3 computePointLinearInterpolation(float t, vec3 &p, vec3 &d, vec3 p1, vec3 p2, vec3 d1, vec3 d2)
-{
-	float beta = 1.2f;
-	float t_scurve = 1 / (1 + pow(t / (1 - t), -beta));
-	return p1 * (1 - t_scurve) + p2 * t_scurve;
-}
-
-vec3 computeDerivativeLinearInterpolation(float t, vec3 &p, vec3 &d, vec3 p1, vec3 p2, vec3 d1, vec3 d2)
-{
-	float beta = 2;
-	float t_scurve = 1 / (1 + pow(t / (1 - t), -beta));
-	return d1 * (1 - t_scurve) + d2 * t_scurve;
+	return p1 * dh0 + p2 * dh1 + d1 * dh2 + d2 * dh3;
 }
 
 const int CURVE_LINEAR = 1;
@@ -261,7 +276,7 @@ const int CURVE_CATMULL = 3;
 const int CURVE_BEZIER = 4;
 const int CURVE_BSPLINE = 5;
 
-int method = CURVE_LINEAR;
+int method = CURVE_HERMITE;
 
 float wait = 0.0f;
 
@@ -311,11 +326,13 @@ void Camera::advance(float time_delta)
 			switch (method)
 			{
 			case CURVE_LINEAR:
-				p = computePointLinearInterpolation(advance_t, p, d, p1, p2, d1, d2);
-				d = computeDerivativeLinearInterpolation(advance_t, p, d, p1, p2, d1, d2);
+				p = computePointLinearInterpolation(advance_t, p1, p2);
+				d = computeDerivativeLinearInterpolation(advance_t, d1, d2);
 				break;
 			case CURVE_HERMITE:
-				computePointCubicHermiteCurve(advance_t, p, d, p1, p2, d1, d2);
+				p = computePointCubicHermiteCurve(advance_t, p1, p2, d1, d2);
+				d = computeDerivativeLinearInterpolation(advance_t, d1, d2);
+				//d = computeDerivativeCubicHermiteCurve(advance_t, p1, p2, d1, d2);
 				break;
 			case CURVE_CATMULL:
 				if (t < indexLastEndPoint - 2)
@@ -405,14 +422,24 @@ void Camera::drawCurve(Shader* shader, mat4x4 VP) {
 	points.push_back(vec3(5, -5, 5));
 	*/
 
-
-	for (int i = 0; i < sizeof(cameraPoints) / sizeof(*cameraPoints); i++) {
+	int countPoints = sizeof(cameraPoints) / sizeof(*cameraPoints);
+	for (int i = 0; i < countPoints; i++) {
 		vec3 point = cameraPoints[i].getPoint();
 		points.push_back(vec3(point.x, point.z, -point.y));
 		vec3 dir = cameraPoints[i].getDerivative();
 		vec3 pointDir = point + dir;
 		points.push_back(vec3(pointDir.x, pointDir.z, -pointDir.y));
 		points.push_back(vec3(point.x, point.z, -point.y));
+
+		if (i < countPoints - 1) {
+			vec3 point2 = cameraPoints[i+1].getPoint();
+			vec3 dir2 = cameraPoints[i+1].getDerivative();
+
+			for (float advance_t = 0.01f; advance_t < 1; advance_t += 0.01f) {
+				vec3 curvePoint = computePointCubicHermiteCurve(advance_t, point, point2, dir, dir2);
+				points.push_back(vec3(curvePoint.x, curvePoint.z, -curvePoint.y));
+			}
+		}
 	}
 	
 	/*

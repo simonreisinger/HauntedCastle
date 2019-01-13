@@ -61,7 +61,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;glew32.lib;glew32s.lib;assimp.lib;FreeImage.lib;freetype.lib;PhysX3DEBUG_x86.lib;PhysX3CommonDEBUG_x86.lib;PhysXProfileSDKDEBUG.lib;PhysX3ExtensionsDEBUG.lib;PhysX3CookingDEBUG_x86.lib;PhysX3CharacterKinematicDEBUG_x86.lib;freeglut.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;glew32.lib;glew32s.lib;assimp.lib;FreeImage.lib;freetype.lib;PhysX3DEBUG_x86.lib;PhysX3CommonDEBUG_x86.lib;PhysXProfileSDKDEBUG.lib;PhysX3ExtensionsDEBUG.lib;PhysX3CookingDEBUG_x86.lib;PhysX3CharacterKinematicDEBUG_x86.lib;freeglut.lib;fmodL_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)External\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBCMTD</IgnoreSpecificDefaultLibraries>
     </Link>
@@ -84,7 +84,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <AdditionalDependencies>opengl32.lib;glfw3.lib;glew32.lib;glew32s.lib;assimp.lib;FreeImage.lib;PhysX3_x86.lib;PhysX3Common_x86.lib;PhysXProfileSDK.lib;PhysX3Extensions.lib;PhysX3Cooking_x86.lib;PhysX3CharacterKinematic_x86.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;glew32.lib;glew32s.lib;assimp.lib;FreeImage.lib;PhysX3_x86.lib;PhysX3Common_x86.lib;PhysXProfileSDK.lib;PhysX3Extensions.lib;PhysX3Cooking_x86.lib;PhysX3CharacterKinematic_x86.lib;fmod_vc.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)External\Lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>LIBCMT</IgnoreSpecificDefaultLibraries>
     </Link>
@@ -98,6 +98,7 @@
     <ClCompile Include="Resources\FrustumG.cpp" />
     <ClCompile Include="Resources\Mesh.cpp" />
     <ClCompile Include="Resources\SceneNode.cpp" />
+    <ClCompile Include="Resources\SoundSystemClass.cpp" />
     <ClCompile Include="Resources\Texture.cpp" />
     <ClCompile Include="Scene\Actor.cpp" />
     <ClCompile Include="Resources\SceneObject.cpp" />
@@ -129,6 +130,7 @@
     <ClInclude Include="Resources\Mesh.hpp" />
     <ClInclude Include="Resources\RenderBuffer.h" />
     <ClInclude Include="Resources\SceneNode.hpp" />
+    <ClInclude Include="Resources\SoundSystemClass.hpp" />
     <ClInclude Include="Resources\Texture.hpp" />
     <ClInclude Include="Scene\Actor.hpp" />
     <ClInclude Include="Resources\SceneObject.hpp" />

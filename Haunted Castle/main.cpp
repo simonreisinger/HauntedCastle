@@ -14,6 +14,7 @@
 #include "Resources\RenderBuffer.h"
 #include "Resources\Const.hpp"
 #include "Resources\FrustumG.hpp"
+#include "Resources\SoundSystemClass.hpp"
 
 #include "Resources/Geometry.hpp"
 #include "Resources/BSpline.hpp"
@@ -35,6 +36,8 @@
 #include "Scene/Fire.hpp"
 #include "Scene/Windows.hpp"
 
+#include "fmod/fmod.hpp"
+#include "fmod/fmod_errors.h" // Only if you want error checking
 
 //-------Loading PhysX libraries (32bit only)----------//
 
@@ -360,8 +363,11 @@ static void APIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum
 	//std::cout << std::endl;
 }
 
+
+
 int main(int argc, char** argv)
 {
+
 	cout << "Loading..." << endl;
 
 	// TODO implement full screen
@@ -478,6 +484,17 @@ int main(int argc, char** argv)
 
 	atexit(OnShutdown);			//Called on application exit
 
+
+
+	// Initialize our sound system
+	SoundSystemClass sound = SoundSystemClass();
+
+	// Create a sample sound
+	SoundClass soundSample;
+	sound.createSound(&soundSample, "Datensatz/sound/spookyMusic.mp3");
+
+
+
 	glfwShowWindow(window);
 
 	// Define the color with which the screen is cleared
@@ -485,6 +502,10 @@ int main(int argc, char** argv)
 	// Define the area to draw on
 
 	glfwGetCursorPos(window, &mouseXPosOld, &mouseYPosOld);
+
+
+	// Play the sound, with loop mode
+	sound.playSound(soundSample, false);
 
 
 
@@ -538,7 +559,7 @@ int main(int argc, char** argv)
 		double time_blur_start = 0;
 		double time_blur_end = 0;
 
-		if (time_abs >= 93) {
+		if (!debugMode && time_abs >= 93) {
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 			glViewport(0, 0, width, height);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -622,6 +643,9 @@ int main(int argc, char** argv)
 			refreshTime = 0;
 		}
 	}
+
+	// Release the sound
+	sound.releaseSound(soundSample);
 
 	// Close GLFW Window
 	glfwTerminate();
