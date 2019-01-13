@@ -132,13 +132,11 @@ float pointShadowsFarPlane = 50.0f; // = farDist; //
 
 FrustumG* frustumG;
 
-float RING_HEIGHT_HIGH = 2.0f;
-float RING_HEIGHT_MEDIUM = 6.0f;
-float RING_HEIGHT_LOW = 10.0f;
-
 int width = 1600;
-int height = 1600;
+int height = 1000;
 float ratio;
+
+const unsigned int SHADOW_WIDTH = 1600, SHADOW_HEIGHT = 1600; // TODO change this line
 
 auto fullscreen = false;
 
@@ -329,124 +327,9 @@ static void APIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum
 	std::cout << error;
 	//std::cout << std::endl;
 }
-/*
-const int countT = 8;
-const int polyGrad = 2;
 
-// T_0 to T_{n-1}, 3 following values (t[i],...,t[i+2]) must be the same such that the curve passes through the point P[i]
-//float T[countT] = { 0, 0, 0, 3, 4, 5, 5, 5 };
-
-// P_0 to P_{n-p-2}
-//vec3 P[countT - polyGrad - 1] = { vec3(1, 0, 0), vec3(2, 0, 0), vec3(3, 1, 0), vec3(4, 0, 0), vec3(5, 0, 0) };
-
-void einruecken(int p) {
-	for (int x = 0; x < 3 - p; x++) {
-		cout << "   ";
-	}
-}
-
-float calcN(int i, int p, float u) {
-	if (p <= 0) {
-		//einruecken(p);
-		if (u >= T[i] && u < T[i + 1]) {
-			//cout << "1" << endl;
-			return 1;
-		}
-		else {
-			//cout << "0" << endl;
-			return 0;
-		}
-	} else {
-		float N = 0;
-
-		if (T[i + p] != T[i]) {
-			//einruecken(p);
-			//cout << "a" << endl;
-			//cout << "u - T[i]: " << u - T[i] << endl;
-			N += (u - T[i]) / (T[i + p] - T[i]) * calcN(i, p - 1, u);
-		}
-
-		if (T[i + p + 1] != T[i + 1]) {
-			//einruecken(p);
-			//cout << "b" << endl;
-			//cout << "T[i + p + 1] - u: " << T[i + p + 1] - u << endl;
-			N += (T[i + p + 1] - u) / (T[i + p + 1] - T[i + 1]) * calcN(i + 1, p - 1, u);
-		}
-
-		//einruecken(p);
-		//cout << "return " << N;
-		return N;
-	}
-}
-
-float calcDerivativeN(int i, int p, float u) {
-	float D = 0;
-
-	if (T[i + p] != T[i]) {
-		D += (p / (T[i + p] - T[i])) * calcN(i, p - 1, u);
-	}
-
-	if (T[i + p + 1] != T[i + 1]) {
-		D -= (p / (T[i + p + 1] - T[i + 1])) * calcN(i + 1, p - 1, u);
-	}
-
-	return D;
-}
-*/
 int main(int argc, char** argv)
 {
-	/*
-	for (float u = T[polyGrad]; u < T[countT - polyGrad - 1]; u += 0.1)
-	{
-		cout << "u = " << u << " ";
-		vec3 C = vec3(0);
-		vec3 D = vec3(0);
-		for (int i = 0; i <= countT - polyGrad - 2; i++) {
-			//cout << i << ": ";
-			//cout << "calcN:" << endl;
-			float PN = calcN(i, polyGrad, u);
-			//cout << "calcDerivativeN:" << endl;
-			float DN = calcDerivativeN(i, polyGrad, u);
-
-			//cout << "N " << PN << " ";
-			//cout << "D " << DN << endl;
-
-			C += P[i] * PN;
-			D += P[i] * DN;
-		}
-		if (D.x != 0 || D.y != 0 || D.z != 0) {
-			D = normalize(D);
-		}
-		else {
-			D = vec3(99, 0, 0);
-		}
-
-		cout << "C: " << C.x << ", " << C.y << ", " << C.z << " ";
-		cout << "D: " << D.x << ", " << D.y << ", " << D.z << endl;
-	}
-	*/
-
-	/*
-	BSpline bSpline = BSpline();
-	bSpline.addPoint(vec3(1, 0, 0), 0);
-	bSpline.addPoint(vec3(2, 0, 0), 1);
-	bSpline.addPoint(vec3(3, 0, 0), 1);
-	bSpline.addPoint(vec3(4, 0, 0), 1);
-	//bSpline.addPoint(vec3(5, 0, 0), 1);
-	bSpline.addLastPoint(vec3(4, 0, 0), 0.1, 0.1, 0.1);
-
-	for (float t = 0.0; t < 5; t += 0.95) {
-		cout << "t = " << t << " ";
-		vec3 C = bSpline.calcPoint(t);
-		vec3 D = bSpline.calcDerivative(t);
-		cout << "C: " << C.x << ", " << C.y << ", " << C.z << " ";
-		cout << "D: " << D.x << ", " << D.y << ", " << D.z << endl;
-	}
-
-	system("pause");
-
-	exit(0);
-	*/
 	cout << "Loading..." << endl;
 
 	// TODO implement full screen 
@@ -995,7 +878,6 @@ void initPointShadows(int index){
 
 	// Create cubemap textures
 	glGenTextures(1, &depthCubemap[index]);
-	const unsigned int SHADOW_WIDTH = 1600, SHADOW_HEIGHT = 1600; // TODO change this line
 	
 	glBindTexture(GL_TEXTURE_CUBE_MAP, depthCubemap[index]);
 	for (unsigned int i = 0; i < 6; ++i){
@@ -1026,7 +908,9 @@ void initPointShadows(int index){
 	// -------------
 	flameCenterPosition[index] = torchPos[index] + 0.5f * flameDir;
 
-	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), ratio, pointShadowsNearPlane, pointShadowsFarPlane);
+	float aspect = (float)SHADOW_WIDTH / (float)SHADOW_HEIGHT;
+
+	glm::mat4 shadowProj = glm::perspective(glm::radians(90.0f), aspect, pointShadowsNearPlane, pointShadowsFarPlane);
 
 	shadowTransforms[index].push_back(shadowProj * glm::lookAt(flameCenterPosition[index], flameCenterPosition[index] + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
 	shadowTransforms[index].push_back(shadowProj * glm::lookAt(flameCenterPosition[index], flameCenterPosition[index] + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)));
@@ -1046,7 +930,7 @@ void renderDepthCubemap(int index) {
 	glUseProgram(pointShadowsShader->programHandle);
 
 
-	glViewport(0, 0, width, height);
+	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	// Use our shader
 	glm:mat4 model = mat4(1);
@@ -1210,6 +1094,13 @@ void update(float time_delta, float time_abs) // TODO change time_delta to delta
 	{
 		flameIntensity[i] = rand(flameIntensityMin, flameIntensityMax);
 	}
+
+	if (!debugMode) {
+		FIRE_AND_SHADOWS_1 = time_abs >= 20.0f;
+		FIRE_AND_SHADOWS_2 = time_abs >= 38.0f;
+	}
+
+	cout << time_abs << endl;
 }
 
 float rand(float min, float max)
@@ -1281,6 +1172,7 @@ void handleInput(GLFWwindow* window, float time_delta)
 			actor->PxRotate(0, 0, -ROTATESPEED * time_delta);
 		}
 		// actor 0 - move 
+		/*
 		if (glfwGetKey(window, GLFW_KEY_Q))
 		{
 			actor->PxTranslate(0, 0, -MOVESPEED * time_delta);
@@ -1289,6 +1181,7 @@ void handleInput(GLFWwindow* window, float time_delta)
 		{
 			actor->PxTranslate(0, 0, MOVESPEED * time_delta);
 		}
+		*/
 		if (glfwGetKey(window, GLFW_KEY_W))
 		{
 			actor->PxTranslate(0, MOVESPEED * time_delta, 0);
@@ -1306,6 +1199,11 @@ void handleInput(GLFWwindow* window, float time_delta)
 		{
 			camera->changeAutomaticCameraMovementActivatedState();
 			c_pressed = true;
+			debugMode = !debugMode;
+			if (debugMode) {
+				FIRE_AND_SHADOWS_1 = true;
+				FIRE_AND_SHADOWS_2 = true;
+			}
 		}
 	}
 	else
@@ -1470,7 +1368,7 @@ void handleInput(GLFWwindow* window, float time_delta)
 		CGUE_F10_PRESSED = false;
 	}
 
-	// F12 - Camera Pos
+	// F11 - Camera Pos
 	if (glfwGetKey(window, GLFW_KEY_F11)) {
 		if (CGUE_F11_PRESSED == false) {
 
@@ -1480,13 +1378,31 @@ void handleInput(GLFWwindow* window, float time_delta)
 			vec4 dir = look_pos - camera_pos;
 
 			cout << "CameraPoint(vec3(" << camera_pos.x << ", " << -camera_pos.z << ", " << camera_pos.y << "), vec3("
-				<< dir.x << ", " << -dir.z << ", " << dir.y << "), 0)," << endl;
+				<< dir.x << ", " << -dir.z << ", " << dir.y << "))," << endl;
 		}
 		CGUE_F11_PRESSED = true;
 	}
 	else {
 		CGUE_F11_PRESSED = false;
 	}
+
+	if (glfwGetKey(window, GLFW_KEY_PAGE_UP)) {
+		AmbientIntensity += 0.01f;
+		if (AmbientIntensity > 1) {
+			AmbientIntensity = 1;
+		}
+		cout << "Ambient Intensity changed to: " << AmbientIntensity << endl;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_PAGE_DOWN)) {
+		AmbientIntensity -= 0.01f;
+		if (AmbientIntensity < 0) {
+			AmbientIntensity = 0;
+		}
+		cout << "Ambient Intensity changed to: " << AmbientIntensity << endl;
+	}
+
+
 
 }
 

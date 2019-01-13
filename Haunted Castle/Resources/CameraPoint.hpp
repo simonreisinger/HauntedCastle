@@ -9,16 +9,17 @@ namespace cgue {
 	class CameraPoint
 	{
 	public:
-		CameraPoint(vec3 point, vec3 derivative, float t);
+		CameraPoint(vec3 point, vec3 derivative);
+		CameraPoint(vec3 point, vec3 derivative, float pause);
 		virtual ~CameraPoint();
 
 		vec3 getPoint();
 		vec3 getDerivative();
-		float getTime();
+		float getPause();
 
 	private:
 		vec3 point;
 		vec3 derivative;
-		float t;
+		float pause;
 	};
 }

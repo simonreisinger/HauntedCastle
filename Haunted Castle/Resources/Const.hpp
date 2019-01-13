@@ -58,6 +58,8 @@ extern float flameIntensity[2];
 extern float flameIntensityMax;
 extern float flameIntensityMin;
 
+extern float AmbientIntensity;;
+
 extern vec3 SunDir;
 
 extern float wnear;
@@ -74,6 +76,7 @@ extern int countObjectsLoading;
 extern FrustumG* frustumG;
 
 extern bool renderObjects;
+extern bool debugMode;
 
 // Change the Axis from (x, z, y) to (x, z, -y)
 extern mat3x3 changeAxis;

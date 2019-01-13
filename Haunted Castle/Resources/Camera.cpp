@@ -20,7 +20,8 @@ CameraPoint cameraPoints[] =
 */
 
 // Manuell
-//*
+/*
+//Old:
 CameraPoint cameraPoints[] =
 {
 CameraPoint(vec3(-9.00599, 14.4593, 8.4675), vec3(0.319084, -0.919355, -0.230153), 0),
@@ -30,7 +31,30 @@ CameraPoint(vec3(6.81585, -12.4818, 5.61332), vec3(0.732864, 0.175303, 0.657404)
 };
 //*/
 
+// Manuell
+//*
+CameraPoint cameraPoints[] =
+{
+CameraPoint(vec3(0.0634554, 5.91694, 7.56216), vec3(0.00318702, -0.827023, -0.56216)),
+CameraPoint(vec3(-0.164355, -7.45748, 6.68061), vec3(0.0113447, -0.947555, 0.319392)),
+CameraPoint(vec3(4.98621, -12.7012, 6.89941), vec3(0.879675, -0.464813, 0.100593)),
+CameraPoint(vec3(7.66495, -12.7472, 6.5388), vec3(0.857222, 0.229049, 0.461201)),
+CameraPoint(vec3(9.04385, -6.18256, 6.64299), vec3(0.617988, -0.700453, 0.35701)),
+CameraPoint(vec3(10.3453, -3.67952, 6.85273), vec3(0.354056, 0.923556, 0.147273)),
+CameraPoint(vec3(8.58141, 4.23441, 6.58337), vec3(0.670123, 0.61429, 0.416633)),
+CameraPoint(vec3(11.1419, 8.20631, 6.97454), vec3(0.206903, 0.97803, 0.0254612)),
+CameraPoint(vec3(7.13014, 11.0796, 7.29768), vec3(-0.946423, 0.125172, -0.297685)),
+CameraPoint(vec3(0.570977, 10.8421, 7.59239), vec3(-0.805237, 0.0257921, -0.59239), 10.0f),
+CameraPoint(vec3(-1.11281, 6.09812, 6.89522), vec3(-0.920251, -0.377038, 0.104783)),
+CameraPoint(vec3(-3.64812, -0.685256, 6.83026), vec3(-0.197434, -0.96551, 0.169739)),
+CameraPoint(vec3(-0.809727, -11.1464, 6.96855), vec3(-0.995574, -0.0885563, 0.0314488)),
+CameraPoint(vec3(-2.26784, -11.2763, 6.37726), vec3(-0.782392, -0.00750256, 0.62274), 10.0f)
+};
+//*/
+
 Camera::Camera(){
+
+	automaticCameraMovementActivated = !debugMode;
 	//							CamPos			BallonPos			UP
 	modelMatrix = mat4x4(1.0);// = glm::lookAt(vec3(0, 0, 15), vec3(0, 0, 0), vec3(0, 1, 0));
 	//modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -15));
@@ -199,7 +223,7 @@ void computePointCubicHermiteCurve(float t, vec3 &p, vec3 &d, vec3 p1, vec3 p2, 
 
 vec3 computePointLinearInterpolation(float t, vec3 &p, vec3 &d, vec3 p1, vec3 p2, vec3 d1, vec3 d2)
 {
-	float beta = 1.5f;
+	float beta = 1.2f;
 	float t_scurve = 1 / (1 + pow(t / (1 - t), -beta));
 	return p1 * (1 - t_scurve) + p2 * t_scurve;
 }
@@ -211,57 +235,6 @@ vec3 computeDerivativeLinearInterpolation(float t, vec3 &p, vec3 &d, vec3 p1, ve
 	return d1 * (1 - t_scurve) + d2 * t_scurve;
 }
 
-float computeB(int i, int k, float x)
-{
-	int n = (sizeof(cameraPoints) / sizeof(*cameraPoints));
-	if (k == 0)
-	{
-		if (cameraPoints[i].getTime() <= x && x < cameraPoints[max(i+1, n-1)].getTime())
-		{
-			return 1;
-		}
-		else
-		{
-			return 0;
-		}
-	}
-	else
-	{
-
-		float a = 0;
-		if (i < n && i + k < n)
-		{
-			float t_i = cameraPoints[i].getTime();
-			float t_ik = cameraPoints[i + k].getTime();
-			a = (x - t_i) / (t_ik - t_i);
-		}
-		float b = 0;
-		if (i + 1 < n && i + k + 1 < n)
-		{
-			float t_ik1 = cameraPoints[i + k + 1].getTime();
-			float t_i1 = cameraPoints[i + 1].getTime();
-			b = (t_ik1 - x) / (t_ik1 - t_i1);
-		}
-
-		return (a == 0 ? 0 : a * computeB(i, k - 1, x)) + (b==0 ? 0 : b * computeB(i + 1, k - 1, x));
-	}
-}
-
-void computePointBSpline(float x)
-{
-	int n = (sizeof(cameraPoints) / sizeof(*cameraPoints));
-
-	vec3 point = vec3(0);
-	float weights = 0;
-	for (int i = 0; i < n; i++)
-	{
-		float weight = computeB(i, 2, x);
-		point += cameraPoints[i].getPoint() * weight;
-		weights += weight;
-	}
-	cout << "Weight: " << weights << " - Point: " << point.x << ", " << point.y << ", " << point.z << endl;
-}
-
 const int CURVE_LINEAR = 1;
 const int CURVE_HERMITE = 2;
 const int CURVE_CATMULL = 3;
@@ -269,6 +242,8 @@ const int CURVE_BEZIER = 4;
 const int CURVE_BSPLINE = 5;
 
 int method = CURVE_LINEAR;
+
+float wait = 0.0f;
 
 void Camera::advance(float time_delta)
 {
@@ -299,6 +274,18 @@ void Camera::advance(float time_delta)
 			vec3 p2 = End.getPoint();
 			vec3 d1 = Start.getDerivative();
 			vec3 d2 = End.getDerivative();
+
+			if (Start.getPause() > 0) {
+				if (Start.getPause() >= wait) {
+					p = p1;
+					d = d1;
+					wait += time_delta;
+					cout << "wait: " << wait << " Start.getPause(): " << Start.getPause() << endl;
+					return;
+				}
+			} else {
+				wait = 0;
+			}
 
 			float advance_t = (t - tfloor);
 
@@ -331,7 +318,7 @@ void Camera::advance(float time_delta)
 
 			if (method != CURVE_CATMULL && method != CURVE_BSPLINE)
 			{
-				t += 2.0f * time_delta / length(p1 - p2);
+				t += 1 * time_delta / length(p1 - p2);
 			}
 		}
 		if (method == CURVE_BSPLINE)
