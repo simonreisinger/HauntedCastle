@@ -21,10 +21,8 @@ void Actor::resetPosition()
 void Actor::initActor()
 {
 	mat4x4 matTrans = mat4x4(1.0);
-	/*
-	matTrans = translate(matTrans, changeAxis * vec3(posx, posy, posz));
+	matTrans = translate(matTrans, changeAxis * vec3(0, 0, 7));
 	matTrans = rotate(matTrans, radians(roty), changeAxis * vec3(0, 0, 1));
-	*/
 
 	PxTransform transform = PxTransform(glmToPxMat(matTrans));
 	actor = Geometry::gPhysicsSDK->createRigidDynamic(transform);

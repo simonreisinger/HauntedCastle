@@ -331,6 +331,10 @@ void Mesh::loadUniforms(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalP
 		glUniform1f(flameIntensity_location, flameIntensity[i]);
 	}
 
+	// Ambient
+	auto AmbientIntensity_location = glGetUniformLocation(shader->programHandle, "AmbientIntensity");
+	glUniform1f(AmbientIntensity_location, AmbientIntensity);
+
 	// Diffuse
 	auto diffuseColor = glGetUniformLocation(shader->programHandle, "diffuseColor");
 	glUniform3f(diffuseColor, diffuse.r, diffuse.g, diffuse.b);
