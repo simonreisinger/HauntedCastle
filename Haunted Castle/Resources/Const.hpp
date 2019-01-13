@@ -38,6 +38,7 @@ extern bool FIRE_AND_SHADOWS_1;
 extern bool CGUE_F9_PRESSED;
 extern bool FIRE_AND_SHADOWS_2;
 extern bool CGUE_F10_PRESSED;
+extern bool CGUE_F11_PRESSED;
 extern bool BLOOM;
 extern int NUMBER_OF_CULLED_MESHES;
 

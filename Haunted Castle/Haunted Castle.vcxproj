@@ -91,6 +91,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Resources\BSpline.cpp" />
     <ClCompile Include="Resources\CameraPoint.cpp" />
     <ClCompile Include="Resources\Camera.cpp" />
     <ClCompile Include="Resources\Const.cpp" />
@@ -119,6 +120,7 @@
     <ClCompile Include="Scene\Wardrobe.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Resources\BSpline.hpp" />
     <ClInclude Include="Resources\CameraPoint.hpp" />
     <ClInclude Include="Resources\Camera.hpp" />
     <ClInclude Include="Resources\Const.hpp" />
@@ -151,6 +153,8 @@
     <None Include="Shader\Bloom.frag" />
     <None Include="Shader\Bloom.vert" />
     <None Include="Shader\Blur.frag" />
+    <None Include="Shader\CameraPath.frag" />
+    <None Include="Shader\CameraPath.vert" />
     <None Include="Shader\PointShadows.geom" />
     <None Include="Shader\Screen.frag" />
     <None Include="Shader\Screen.vert" />

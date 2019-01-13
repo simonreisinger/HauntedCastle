@@ -21,6 +21,7 @@ bool FIRE_AND_SHADOWS_1 = true;
 bool CGUE_F9_PRESSED = false;
 bool FIRE_AND_SHADOWS_2 = true;
 bool CGUE_F10_PRESSED = false;
+bool CGUE_F11_PRESSED = false;
 bool BLOOM = true;
 int NUMBER_OF_CULLED_MESHES = 0;
 
@@ -96,4 +97,4 @@ int countMeshesLoading = 73;
 int iObjectsLoaded = 0;
 int countObjectsLoading = 14;
 
-bool renderObjects = false;
+bool renderObjects = true;

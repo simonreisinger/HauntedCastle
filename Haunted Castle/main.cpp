@@ -16,6 +16,7 @@
 #include "Resources\FrustumG.hpp"
 
 #include "Resources/Geometry.hpp"
+#include "Resources/BSpline.hpp"
 #include "Scene/Actor.hpp"
 #include "Scene/Knight1.hpp"
 #include "Scene/Knight2.hpp"
@@ -78,6 +79,7 @@ GLFWwindow* window;
 Shader* renderShader;
 Shader* directionalShadowsShader;
 Shader* pointShadowsShader;
+Shader* cameraPathShader;
 
 GLuint directionalShadowsFBO = 0;
 GLuint directionalShadowsColorMap;
@@ -327,15 +329,15 @@ static void APIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum
 	std::cout << error;
 	//std::cout << std::endl;
 }
-
+/*
 const int countT = 8;
 const int polyGrad = 2;
 
 // T_0 to T_{n-1}, 3 following values (t[i],...,t[i+2]) must be the same such that the curve passes through the point P[i]
-float T[countT] = { 0, 0, 0, 3, 4, 5, 5, 5 };
+//float T[countT] = { 0, 0, 0, 3, 4, 5, 5, 5 };
 
 // P_0 to P_{n-p-2}
-vec3 P[countT - polyGrad - 1] = { vec3(1, 0, 0), vec3(2, 0, 0), vec3(3, 1, 0), vec3(4, 0, 0), vec3(5, 0, 0) };
+//vec3 P[countT - polyGrad - 1] = { vec3(1, 0, 0), vec3(2, 0, 0), vec3(3, 1, 0), vec3(4, 0, 0), vec3(5, 0, 0) };
 
 void einruecken(int p) {
 	for (int x = 0; x < 3 - p; x++) {
@@ -390,9 +392,10 @@ float calcDerivativeN(int i, int p, float u) {
 
 	return D;
 }
-
+*/
 int main(int argc, char** argv)
 {
+	/*
 	for (float u = T[polyGrad]; u < T[countT - polyGrad - 1]; u += 0.1)
 	{
 		cout << "u = " << u << " ";
@@ -421,11 +424,29 @@ int main(int argc, char** argv)
 		cout << "C: " << C.x << ", " << C.y << ", " << C.z << " ";
 		cout << "D: " << D.x << ", " << D.y << ", " << D.z << endl;
 	}
+	*/
+
+	/*
+	BSpline bSpline = BSpline();
+	bSpline.addPoint(vec3(1, 0, 0), 0);
+	bSpline.addPoint(vec3(2, 0, 0), 1);
+	bSpline.addPoint(vec3(3, 0, 0), 1);
+	bSpline.addPoint(vec3(4, 0, 0), 1);
+	//bSpline.addPoint(vec3(5, 0, 0), 1);
+	bSpline.addLastPoint(vec3(4, 0, 0), 0.1, 0.1, 0.1);
+
+	for (float t = 0.0; t < 5; t += 0.95) {
+		cout << "t = " << t << " ";
+		vec3 C = bSpline.calcPoint(t);
+		vec3 D = bSpline.calcDerivative(t);
+		cout << "C: " << C.x << ", " << C.y << ", " << C.z << " ";
+		cout << "D: " << D.x << ", " << D.y << ", " << D.z << endl;
+	}
 
 	system("pause");
 
 	exit(0);
-
+	*/
 	cout << "Loading..." << endl;
 
 	// TODO implement full screen 
@@ -615,6 +636,7 @@ int main(int argc, char** argv)
 		auto time_total_end = glfwGetTime();
 		auto time_swap_start = glfwGetTime();
 
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 
@@ -758,6 +780,9 @@ void initScene(){
 
 	renderShader = new Shader("Shader/Screen.vert", "Shader/Screen.frag");
 
+
+	cameraPathShader = new Shader("Shader/CameraPath.vert", "Shader/CameraPath.frag");
+
 	frustumG = new FrustumG();
 	camera = new Camera();
 
@@ -813,7 +838,7 @@ void renderScreen(){
 
 	mat4x4 camera_model = camera->getCameraModel();
 
-	view = camera_model * pxMatToGlm(PxMat44(actor->actor->getGlobalPose().getInverse()));
+	//view = camera_model * pxMatToGlm(PxMat44(actor->actor->getGlobalPose().getInverse()));
 
 
 	proj = glm::perspective(fov, ratio, nearDist, farDist);
@@ -843,12 +868,17 @@ void renderScreen(){
 	u = u - p;
 	u = normalize(u);
 
-	mat4x4 lookAt = glm::lookAt(p, l, u);
+	view = glm::lookAt(p, l, u);
 
 	frustumG->setCamInternals(fov, ratio, nearDist, farDist);
 	frustumG->setCamDef(p, l, u);
 
-	renderScene(renderShader, lookAt, proj, camera_model);
+	renderScene(renderShader, view, proj, camera_model);
+
+	if (!camera->getAutomaticCameraMovementActivated()) {
+		camera->drawCurve(cameraPathShader, proj * view);
+	}
+
 }
 
 void initDirectionalShadows()
@@ -1428,7 +1458,7 @@ void handleInput(GLFWwindow* window, float time_delta)
 		CGUE_F9_PRESSED = false;
 	}
 
-	// F8 - Fire
+	// F10 - Fire
 	if (glfwGetKey(window, GLFW_KEY_F10)) {
 		if (CGUE_F10_PRESSED == false) {
 			BLOOM = !BLOOM;
@@ -1439,5 +1469,24 @@ void handleInput(GLFWwindow* window, float time_delta)
 	else {
 		CGUE_F10_PRESSED = false;
 	}
+
+	// F12 - Camera Pos
+	if (glfwGetKey(window, GLFW_KEY_F11)) {
+		if (CGUE_F11_PRESSED == false) {
+
+			vec4 camera_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraPos(), 1);
+			vec4 look_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraLookAt(), 1);
+
+			vec4 dir = look_pos - camera_pos;
+
+			cout << "CameraPoint(vec3(" << camera_pos.x << ", " << -camera_pos.z << ", " << camera_pos.y << "), vec3("
+				<< dir.x << ", " << -dir.z << ", " << dir.y << "), 0)," << endl;
+		}
+		CGUE_F11_PRESSED = true;
+	}
+	else {
+		CGUE_F11_PRESSED = false;
+	}
+
 }
 

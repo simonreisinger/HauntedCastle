@@ -5,6 +5,7 @@ using namespace glm;
 
 float eh = 6;
 
+/*
 CameraPoint cameraPoints[] =
 {
 	CameraPoint(vec3(0, 2, eh), vec3(0, -1, 0), 0),
@@ -16,11 +17,48 @@ CameraPoint cameraPoints[] =
 	CameraPoint(vec3(2, -9, eh), vec3(1, 0, 0), 6),
 	CameraPoint(vec3(3, -9, eh), vec3(1, 0, 0), 7)
 };
+*/
+
+// Manuell
+//*
+CameraPoint cameraPoints[] =
+{
+CameraPoint(vec3(-9.00599, 14.4593, 8.4675), vec3(0.319084, -0.919355, -0.230153), 0),
+CameraPoint(vec3(-6.57561, 6.1819, 8.02367), vec3(0.22869, -0.94976, 0.213676), 1),
+CameraPoint(vec3(3.8632, -10.4071, 6.33467), vec3(0.75546, -0.646688, 0.10523), 1),
+CameraPoint(vec3(6.81585, -12.4818, 5.61332), vec3(0.732864, 0.175303, 0.657404), 0)
+};
+//*/
 
 Camera::Camera(){
 	//							CamPos			BallonPos			UP
 	modelMatrix = mat4x4(1.0);// = glm::lookAt(vec3(0, 0, 15), vec3(0, 0, 0), vec3(0, 1, 0));
 	//modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -15));
+
+	//				+X = Tür, -Y = Fenster, +Z = Höhe
+	float height = 7.0;
+	bSpline.addPoint(vec3(0, 9, height), 1);
+	bSpline.addPoint(vec3(0, 7, height), 2);
+	bSpline.addPoint(vec3(0, 5, height - 0.6), 2);
+	bSpline.addPoint(vec3(0, 3, height - 0.8), 2);
+	bSpline.addPoint(vec3(0, 1, height - 0.4), 2);
+	bSpline.addPoint(vec3(0, -1, height), 2);
+	bSpline.addPoint(vec3(0, -3, height), 2);
+	bSpline.addPoint(vec3(1, -5, height), 2);
+	bSpline.addPoint(vec3(1, -7, height), 2);
+	bSpline.addPoint(vec3(2, -9, height), 2);
+	bSpline.addPoint(vec3(2, -11, height), 2);
+	bSpline.addPoint(vec3(3, -13, height), 2);
+	bSpline.addPoint(vec3(4, -13, height), 2);
+	bSpline.addPoint(vec3(6, -13, height), 2);
+	bSpline.addPoint(vec3(8, -13, height), 2);
+	/*
+	bSpline.addPoint(vec3(2, -5, height), 2);
+	bSpline.addPoint(vec3(4, -5, height), 2);
+	bSpline.addPoint(vec3(6, -3, height), 2);
+	bSpline.addPoint(vec3(6, 5, height), 2);
+	*/
+	bSpline.addLastPoint(vec3(6, -3, height), 1, 1, 1);
 }
 
 Camera::~Camera(){}
@@ -159,11 +197,18 @@ void computePointCubicHermiteCurve(float t, vec3 &p, vec3 &d, vec3 p1, vec3 p2, 
 	d = p1 * dh0 + p2 * dh1 + d1 * dh2 + d2 * dh3;
 }
 
-void computePointLinearInterpolation(float t, vec3 &p, vec3 &d, vec3 p1, vec3 p2, vec3 d1, vec3 d2)
+vec3 computePointLinearInterpolation(float t, vec3 &p, vec3 &d, vec3 p1, vec3 p2, vec3 d1, vec3 d2)
 {
-	p = p1 * (1 - t) + p2 * t;
+	float beta = 1.5f;
+	float t_scurve = 1 / (1 + pow(t / (1 - t), -beta));
+	return p1 * (1 - t_scurve) + p2 * t_scurve;
+}
 
-	d = d1 * (1 - t) + d2 * t;
+vec3 computeDerivativeLinearInterpolation(float t, vec3 &p, vec3 &d, vec3 p1, vec3 p2, vec3 d1, vec3 d2)
+{
+	float beta = 2;
+	float t_scurve = 1 / (1 + pow(t / (1 - t), -beta));
+	return d1 * (1 - t_scurve) + d2 * t_scurve;
 }
 
 float computeB(int i, int k, float x)
@@ -223,7 +268,7 @@ const int CURVE_CATMULL = 3;
 const int CURVE_BEZIER = 4;
 const int CURVE_BSPLINE = 5;
 
-int method = CURVE_BSPLINE;
+int method = CURVE_LINEAR;
 
 void Camera::advance(float time_delta)
 {
@@ -257,12 +302,11 @@ void Camera::advance(float time_delta)
 
 			float advance_t = (t - tfloor);
 
-
-
 			switch (method)
 			{
 			case CURVE_LINEAR:
-				computePointLinearInterpolation(advance_t, p, d, p1, p2, d1, d2);
+				p = computePointLinearInterpolation(advance_t, p, d, p1, p2, d1, d2);
+				d = computeDerivativeLinearInterpolation(advance_t, p, d, p1, p2, d1, d2);
 				break;
 			case CURVE_HERMITE:
 				computePointCubicHermiteCurve(advance_t, p, d, p1, p2, d1, d2);
@@ -282,20 +326,103 @@ void Camera::advance(float time_delta)
 			case CURVE_BEZIER:
 				computePointBezierCurve(advance_t, p, d, p1, p2, d1, d2);
 				break;
-			case CURVE_BSPLINE:
-				computePointBSpline(t);
-				break;
 			}
 			
 
 			if (method != CURVE_CATMULL && method != CURVE_BSPLINE)
 			{
-				t += 1 * time_delta / length(p1 - p2);
-			}
-			if (method == CURVE_BSPLINE)
-			{
-				t += 1 * time_delta;
+				t += 2.0f * time_delta / length(p1 - p2);
 			}
 		}
+		if (method == CURVE_BSPLINE)
+		{
+			t += 1 * time_delta;
+		}
+
+		switch (method)
+		{
+		case CURVE_BSPLINE:
+
+			cout << "t = " << t << " ";
+			p = bSpline.calcPoint(t);
+			d = bSpline.calcDerivative(t);
+			cout << "Point: " << p.x << ", " << p.y << ", " << p.z << " ";
+			cout << "Derivative: " << d.x << ", " << d.y << ", " << d.z << endl;
+
+			break;
+		}
 	}
+}
+
+void drawLineStrop(Shader *shader, mat4x4 VP, vector<vec3> points) {
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	GLuint vb;
+	glGenBuffers(1, &vb);
+	glBindBuffer(GL_ARRAY_BUFFER, vb);
+	glBufferData(GL_ARRAY_BUFFER, 3 * points.size() * sizeof(float), &points[0], GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ARRAY_BUFFER, vb);
+	glVertexAttribPointer(glGetAttribLocation(shader->programHandle, "pos"), 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(glGetAttribLocation(shader->programHandle, "pos"));
+	shader->useShader();
+
+	// Model View
+	auto view_proj_location = glGetUniformLocation(shader->programHandle, "VP");
+	glUniformMatrix4fv(view_proj_location, 1, GL_FALSE, value_ptr(VP));
+
+	glLineWidth(10.0);
+
+	glDrawArrays(GL_LINE_STRIP, 0, points.size());
+
+	glUseProgram(0);
+
+	glDisableVertexAttribArray(glGetAttribLocation(shader->programHandle, "pos"));
+	glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+
+
+	glBindVertexArray(0);
+}
+
+void Camera::drawCurve(Shader* shader, mat4x4 VP) {
+	vector<vec3> points;
+	/*
+	points.push_back(vec3(5, 5, -5));
+	points.push_back(vec3(-5, 5, -5));
+	points.push_back(vec3(-5, -5, -5));
+	points.push_back(vec3(5, -5, -5));
+	points.push_back(vec3(5, 5, 5));
+	points.push_back(vec3(-5, 5, 5));
+	points.push_back(vec3(-5, -5, 5));
+	points.push_back(vec3(5, -5, 5));
+	*/
+
+
+	for (int i = 0; i < sizeof(cameraPoints) / sizeof(*cameraPoints); i++) {
+		vec3 point = cameraPoints[i].getPoint();
+		points.push_back(vec3(point.x, point.z, -point.y));
+		vec3 dir = cameraPoints[i].getDerivative();
+		vec3 pointDir = point + dir;
+		points.push_back(vec3(pointDir.x, pointDir.z, -pointDir.y));
+		points.push_back(vec3(point.x, point.z, -point.y));
+	}
+	
+	/*
+	for (float t = 0; t < 30; t+=0.1) {
+		vec3 point = bSpline.calcPoint(t);
+		points.push_back(vec3(point.x, point.z, -point.y));
+
+		//cout << "Point: " << point.x << ", " << point.y << ", " << point.z << endl;
+	}
+	*/
+	
+
+	//cout << "points size: " << points.size() << endl;
+
+
+	drawLineStrop(shader, VP, points);
+
+	
 }
