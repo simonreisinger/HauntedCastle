@@ -162,7 +162,7 @@ void main(){
 	vec3 R1 = reflect( -l1, n1 );
 	float cosAlpha1 = clamp( dot( E1, R1 ), 0, 1 );
 
-	float I1 = 1 / distance( Torch1Position_worldspace, Position_worldspace );
+	float I1 = 1 / (0.5 * distance( Torch1Position_worldspace, Position_worldspace ));
 
 
 
@@ -174,7 +174,7 @@ void main(){
 	vec3 R2 = reflect( -l2, n2 );
 	float cosAlpha2 = clamp( dot( E2, R2 ), 0, 1 );
 
-	float I2 = 1 / distance( Torch2Position_worldspace, Position_worldspace );
+	float I2 = 1 / (0.5 * distance( Torch2Position_worldspace, Position_worldspace ));
 
 	float visibility=1.0;
 

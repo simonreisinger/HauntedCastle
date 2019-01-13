@@ -23,9 +23,6 @@ namespace cgue
 			void rotateUp( float value);
 			void rotateDown( float value);
 
-			void rotateYin( float value);
-			void rotateYout( float value);
-
 			void goRight( float value);
 			void goLeft( float value);
 

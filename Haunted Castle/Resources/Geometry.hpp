@@ -37,6 +37,7 @@ namespace cgue
 
 		void translateLinear(string meshName, vec3 t, float time_start, float duration, float time, float time_delta);
 		void translateGravity(string meshName, float trans_y, float time_start, float time, float time_delta);
+		void rotateLinear(string meshName, vec3 rotateAxis, float rotateValue, float time_start, float duration, float time, float time_delta);
 
 		PxCooking* mCooking;
 

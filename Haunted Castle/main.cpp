@@ -73,6 +73,7 @@ void renderFire(float time_delta);
 void sendPointShadowsDataToScreenRenderer(int index);
 void sendDirectionalShadowsDataToScreenRenderer();
 float rand(float min, float max);
+void moveObjects(float time_delta, float time_abs);
 
 GLFWwindow* window;
 
@@ -161,8 +162,8 @@ float pointShadowsFarPlane = 50.0f; // = farDist; //
 
 FrustumG* frustumG;
 
-int width = 1600;
-int height = 1000;
+int width = 1280;
+int height = 768;
 float ratio;
 
 const unsigned int SHADOW_WIDTH = 1600, SHADOW_HEIGHT = 1600; // TODO change this line
@@ -486,6 +487,8 @@ int main(int argc, char** argv)
 
 	glfwGetCursorPos(window, &mouseXPosOld, &mouseYPosOld);
 
+
+
 	// Game Loop
 	auto time = glfwGetTime();
 	auto refreshTime = 0.0f;
@@ -497,8 +500,8 @@ int main(int argc, char** argv)
 		for (int i = 0; i < numberOfTorches; i++){
 			cout << depthCubemap[i] << endl;
 		}*/
-		auto time_total_start = glfwGetTime();
-		auto time_update_start = glfwGetTime();
+		double time_total_start = glfwGetTime();
+		double time_update_start = glfwGetTime();
 
 		auto time_new = glfwGetTime();
 		auto time_delta = (float)(time_new - time);
@@ -512,47 +515,65 @@ int main(int argc, char** argv)
 
 		update(time_delta, time_abs);
 
-		auto time_update_end = glfwGetTime();
-		auto time_pointShadows_start = glfwGetTime();
+		double time_update_end = glfwGetTime();
 
-		for (int i = 0; i < numberOfTorches; i++) {
-			renderDepthCubemap(i);
+		double time_pointShadows_start = 0;
+		double time_pointShadows_end = 0;
+		double time_directionalShadows_start = 0;
+		double time_directionalShadows_end = 0;
+		double time_screen_start = 0;
+		double time_screen_end = 0;
+		double time_fires_start = 0;
+		double time_fires_end = 0;
+		double time_blur_start = 0;
+		double time_blur_end = 0;
+
+		if (time_abs >= 93) {
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			glViewport(0, 0, width, height);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		} else {
+			time_pointShadows_start = glfwGetTime();
+
+			for (int i = 0; i < numberOfTorches; i++) {
+				renderDepthCubemap(i);
+			}
+
+			time_pointShadows_end = glfwGetTime();
+			time_directionalShadows_start = glfwGetTime();
+
+			renderDepthMap();
+
+			time_directionalShadows_end = glfwGetTime();
+			time_screen_start = glfwGetTime();
+
+			// Render scene into floating point framebuffer
+			glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+			renderShader->useShader();
+
+			sendDirectionalShadowsDataToScreenRenderer();
+
+			for (int i = 0; i < numberOfTorches; i++) {
+				sendPointShadowsDataToScreenRenderer(i);
+			}
+
+			renderScreen();
+
+			time_screen_end = glfwGetTime();
+			time_fires_start = glfwGetTime();
+
+			renderFire(time_delta);
+
+			time_fires_end = glfwGetTime();
+			time_blur_start = glfwGetTime();
+
+			renderBlur();
+			renderCombine();
+
+			time_blur_end = glfwGetTime();
 		}
-
-		auto time_pointShadows_end = glfwGetTime();
-		auto time_directionalShadows_start = glfwGetTime();
-
-		renderDepthMap();
-
-		auto time_directionalShadows_end = glfwGetTime();
-		auto time_screen_start = glfwGetTime();
-
-		// Render scene into floating point framebuffer
-		glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
-		renderShader->useShader();
-
-		sendDirectionalShadowsDataToScreenRenderer();
-
-		for (int i = 0; i < numberOfTorches; i++) {
-			sendPointShadowsDataToScreenRenderer(i);
-		}
-
-		renderScreen();
-
-		auto time_screen_end = glfwGetTime();
-		auto time_fires_start = glfwGetTime();
-
-		renderFire(time_delta);
-
-		auto time_fires_end = glfwGetTime();
-		auto time_blur_start = glfwGetTime();
-
-		renderBlur();
-		renderCombine();
-
-		auto time_blur_end = glfwGetTime();
-		auto time_total_end = glfwGetTime();
-		auto time_swap_start = glfwGetTime();
+		double time_total_end = glfwGetTime();
+		double time_swap_start = glfwGetTime();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -561,7 +582,7 @@ int main(int argc, char** argv)
 		{
 			cout << "ERROR: OpenGL Error" << endl;
 		}
-		auto time_swap_end = glfwGetTime();
+		double time_swap_end = glfwGetTime();
 
 		//////////////////////////////////////////////////////////////////////
 		//renderBlur(); // TODO i dont think this will be needed
@@ -1220,14 +1241,33 @@ void update(float time_delta, float time_abs) // TODO change time_delta to delta
 		flameIntensity[i] = rand(flameIntensityMin, flameIntensityMax);
 	}
 
-	chair1->translateLinear("Chair", vec3(0, -2, 0), 50.0, 2.0, time_abs, time_delta); 
-
-	frame->translateGravity("Frame", 4.44412, 72.0, time_abs, time_delta);
+	moveObjects(time_delta, time_abs);
 
 	if (!debugMode) {
 		FIRE_AND_SHADOWS_1 = time_abs >= 20.0f;
 		FIRE_AND_SHADOWS_2 = time_abs >= 38.0f;
 	}
+}
+
+void moveObjects(float time_delta, float time_abs)
+{
+	torch2->rotateLinear("Stab", vec3(1, 0, 0), -45, 36.0, 1.0, time_abs, time_delta);
+
+	chair1->translateLinear("Chair", vec3(0, -1.8, 0), 50.0, 2.0, time_abs, time_delta);
+
+	float chessDistField = 0.23f;
+
+	chess->translateLinear("White_Pawn_005", vec3(0, -1 * chessDistField, 0), 58.0, 0.5, time_abs, time_delta);
+	chess->translateLinear("White_Pawn_012", vec3(0, 2 * chessDistField, 0), 60.0, 1, time_abs, time_delta);
+	chess->translateLinear("White_Pawn_006", vec3(0, -2 * chessDistField, 0), 62.0, 1, time_abs, time_delta);
+	chess->translateLinear("Queen_001", vec3(-4 * chessDistField, 4 * chessDistField, 0), 64.0, 2, time_abs, time_delta);
+
+
+	frame->translateGravity("Frame", 4.44412, 72.0, time_abs, time_delta);
+
+	wardrobe->rotateLinear("wardrobe_door_right", vec3(0, 0, 1), -90, 80.0, 1.0, time_abs, time_delta);
+
+	wardrobe->rotateLinear("wardrobe_body", vec3(0, 1, 0), 90, 92.0, 2.0, time_abs, time_delta);
 }
 
 float rand(float min, float max)
