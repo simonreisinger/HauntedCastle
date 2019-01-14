@@ -573,9 +573,12 @@ int main(int argc, char** argv)
 		} else {
 			time_pointShadows_start = glfwGetTime();
 
-			for (int i = 0; i < numberOfTorches; i++) {
-				renderDepthCubemap(i);
+			if (objectMoved) {
+				for (int i = 0; i < numberOfTorches; i++) {
+					renderDepthCubemap(i);
+				}
 			}
+			objectMoved = false;
 
 			time_pointShadows_end = glfwGetTime();
 			time_screen_start = glfwGetTime();
@@ -1047,7 +1050,7 @@ void renderDepthCubemap(int index) {
 		glUniformMatrix4fv(DepthMapVPID, 1, GL_FALSE, &shadowTransforms[index][i][0][0]);
 	}
 
-	glUniform1f(glGetUniformLocation(pointShadowsShader->programHandle, "pointShadowsFarPlane"), pointShadowsFarPlane);
+	glUniform1f(glGetUniformLocation(pointShadowsShader->programHandle, "pointShadowsFarPlaneInv"), 1/pointShadowsFarPlane);
 
 	auto flameCenterPositionID = glGetUniformLocation(pointShadowsShader->programHandle, "flameCenterPosition");
 	glUniform3f(flameCenterPositionID, flameCenterPosition[index].x, flameCenterPosition[index].y, flameCenterPosition[index].z);

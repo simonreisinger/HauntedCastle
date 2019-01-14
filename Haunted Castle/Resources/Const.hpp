@@ -45,6 +45,7 @@ extern bool LIGHT_SHAFTS;
 extern bool CGUE_P_PRESSED;
 extern bool BLOOM;
 extern int NUMBER_OF_CULLED_MESHES;
+extern bool objectMoved;
 
 extern mat4x4 pxMatToGlm(PxMat44 pxMat);
 extern PxMat44 glmToPxMat(mat4x4 mat);

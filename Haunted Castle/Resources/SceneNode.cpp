@@ -135,6 +135,7 @@ void printMatrixOfNode(string name, mat4x4 mat)
 void SceneNode::translateLinear(string meshName, vec3 trans, float time_start, float duration, float time, float time_delta) {
 	if (meshName.compare(name) == 0 && time >= time_start && time <= time_start + duration) {
 		transform = translate(transform, trans * time_delta / duration);
+		objectMoved = true;
 	}
 
 	for (int i = 0; i < childNodeCount; i++)
@@ -150,6 +151,7 @@ void SceneNode::translateGravity(string meshName, float trans_y_end, float time_
 		if (transform[3][2] < trans_y_end) {
 			transform[3][2] = trans_y_end;
 		}
+		objectMoved = true;
 	}
 
 	for (int i = 0; i < childNodeCount; i++)
@@ -162,9 +164,11 @@ void SceneNode::rotateLinear(string meshName, vec3 rotateAxis, float rotateValue
 	if (meshName.compare(name) == 0 && time >= time_start) {
 		if (time <= time_start + duration) {
 			transform = glm::rotate(transform, (float)(rotateValue * M_PI * time_delta / (duration * 180.0)), rotateAxis);
+			objectMoved = true;
 		}
-		else if(exactEndValue) {
+		else if(exactEndValue && time - time_delta <= time_start + duration) {
 			transform = glm::rotate(transformOriginal, (float)(rotateValue * M_PI / 180.0), rotateAxis);
+			objectMoved = true;
 		}
 	}
 

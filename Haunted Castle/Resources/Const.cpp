@@ -28,6 +28,7 @@ bool CGUE_P_PRESSED = false;
 bool LIGHT_SHAFTS = true;
 bool BLOOM = true;
 int NUMBER_OF_CULLED_MESHES = 0;
+bool objectMoved = true;
 
 bool CGUE_SHOT_ACTOR1_PRESSED = false;
 bool CGUE_SHOT_ACTOR2_PRESSED = false;
