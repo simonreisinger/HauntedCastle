@@ -14,6 +14,8 @@ Geometry::Geometry()
 
 void Geometry::init(const std::string& displayFile, Shader* _shader)
 {
+	auto time_start = glfwGetTime();
+
 	modelMatrix = mat4x4(1);
 	shader = _shader;
 
@@ -36,8 +38,6 @@ void Geometry::init(const std::string& displayFile, Shader* _shader)
 		system("PAUSE");
 		exit(EXIT_FAILURE);
 	}
-
-	auto time_start = glfwGetTime();
 
 	aiNode* rootNode = scene->mRootNode;
 
@@ -90,4 +90,16 @@ void Geometry::setPhysX(PxPhysics* mPhysicsSDK, PxFoundation* mFoundation, PxDef
 	gDefaultErrorCallback = mDefaultErrorCallback;
 	gDefaultAllocatorCallback = mDefaultAllocatorCallback;
 	gScene = mScene;
+}
+
+void Geometry::translateLinear(string meshName, vec3 t, float time_start, float duration, float time, float time_delta) {
+	sceneNode->translateLinear(meshName, t, time_start, duration, time, time_delta);
+}
+
+void Geometry::translateGravity(string meshName, float trans_y, float time_start, float time, float time_delta) {
+	sceneNode->translateGravity(meshName, trans_y, time_start, time, time_delta);
+}
+
+void Geometry::rotateLinear(string meshName, vec3 rotateAxis, float rotateValue, bool exactEndValue, float time_start, float duration, float time, float time_delta){
+	sceneNode->rotateLinear(meshName, rotateAxis, rotateValue, exactEndValue, time_start, duration, time, time_delta);
 }

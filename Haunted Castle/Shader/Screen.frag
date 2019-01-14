@@ -18,6 +18,8 @@ in vec4 ShadowCoord;
 uniform int NORMAL_MAPPING;
 uniform int FIRE_AND_SHADOWS_1;
 uniform int FIRE_AND_SHADOWS_2;
+uniform float FIRE_AND_SHADOWS_INTENSITY_1;
+uniform float FIRE_AND_SHADOWS_INTENSITY_2;
 
 
 
@@ -162,7 +164,7 @@ void main(){
 	vec3 R1 = reflect( -l1, n1 );
 	float cosAlpha1 = clamp( dot( E1, R1 ), 0, 1 );
 
-	float I1 = 1 / distance( Torch1Position_worldspace, Position_worldspace );
+	float I1 = 1 / (0.5 * distance( Torch1Position_worldspace, Position_worldspace ));
 
 
 
@@ -174,7 +176,7 @@ void main(){
 	vec3 R2 = reflect( -l2, n2 );
 	float cosAlpha2 = clamp( dot( E2, R2 ), 0, 1 );
 
-	float I2 = 1 / distance( Torch2Position_worldspace, Position_worldspace );
+	float I2 = 1 / (0.5 * distance( Torch2Position_worldspace, Position_worldspace ));
 
 	float visibility=1.0;
 
@@ -199,7 +201,7 @@ void main(){
 		// Ambient
 		vec3(MaterialAmbientColor) +
 
-		FIRE_AND_SHADOWS_1 *
+		FIRE_AND_SHADOWS_1 * FIRE_AND_SHADOWS_INTENSITY_1 *
 		(1.0-shadow1) *
 		(
 			flameIntensity[0]*
@@ -211,7 +213,7 @@ void main(){
 			)
 		)
 		+
-		FIRE_AND_SHADOWS_2 *
+		FIRE_AND_SHADOWS_2 * FIRE_AND_SHADOWS_INTENSITY_2 *
 		(1.0-shadow2) *
 		(
 			flameIntensity[1] *

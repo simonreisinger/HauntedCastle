@@ -29,6 +29,8 @@
     <ClCompile Include="Scene\Torch2.cpp" />
     <ClCompile Include="Scene\Wardrobe.cpp" />
     <ClCompile Include="Resources\BSpline.cpp" />
+    <ClCompile Include="Scene\Windows.cpp" />
+    <ClCompile Include="Resources\SoundSystemClass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Resources\SceneObject.cpp">
@@ -109,92 +111,38 @@
     <ClCompile Include="Scene\Fire.cpp">
       <Filter>Quelldateien</Filter>
     </ClCompile>
-    <ClCompile Include="Scene\Windows.cpp">
-      <Filter>Quelldateien</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Resources\SceneObject.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Resources\Shader.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Resources\Texture.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Resources\Camera.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Resources\Mesh.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Resources\Const.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Resources\FrustumG.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\Knight1.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\Knight2.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\Actor.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\Room.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\Wardrobe.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\Door.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\Chair1.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\Desk.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\Chair2.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\Frame.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\Commode.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\Torch1.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\Torch2.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\Chess.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Resources\Geometry.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Resources\SceneNode.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\Coordinatesystem.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Resources\RenderBuffer.h">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\Fire.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
-    <ClInclude Include="Scene\Windows.hpp">
-      <Filter>Headerdateien</Filter>
-    </ClInclude>
+    <ClInclude Include="Resources\BSpline.hpp" />
+    <ClInclude Include="Resources\CameraPoint.hpp" />
+    <ClInclude Include="Resources\Camera.hpp" />
+    <ClInclude Include="Resources\Const.hpp" />
+    <ClInclude Include="Resources\FrustumG.hpp" />
+    <ClInclude Include="Resources\Mesh.hpp" />
+    <ClInclude Include="Resources\RenderBuffer.h" />
+    <ClInclude Include="Resources\SceneNode.hpp" />
+    <ClInclude Include="Resources\Texture.hpp" />
+    <ClInclude Include="Scene\Actor.hpp" />
+    <ClInclude Include="Resources\SceneObject.hpp" />
+    <ClInclude Include="Scene\Chair2.hpp" />
+    <ClInclude Include="Scene\Chess.hpp" />
+    <ClInclude Include="Scene\Commode.hpp" />
+    <ClInclude Include="Scene\Coordinatesystem.hpp" />
+    <ClInclude Include="Scene\Desk.hpp" />
+    <ClInclude Include="Scene\Door.hpp" />
+    <ClInclude Include="Scene\Fire.hpp" />
+    <ClInclude Include="Scene\Frame.hpp" />
+    <ClInclude Include="Resources\Geometry.hpp" />
+    <ClInclude Include="Resources\Shader.hpp" />
+    <ClInclude Include="Scene\Knight1.hpp" />
+    <ClInclude Include="Scene\Knight2.hpp" />
+    <ClInclude Include="Scene\Room.hpp" />
+    <ClInclude Include="Scene\Chair1.hpp" />
+    <ClInclude Include="Scene\Torch1.hpp" />
+    <ClInclude Include="Scene\Torch2.hpp" />
+    <ClInclude Include="Scene\Wardrobe.hpp" />
+    <ClInclude Include="Scene\Windows.hpp" />
+    <ClInclude Include="Resources\SoundSystemClass.hpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shader\FireParticle.geom" />
@@ -204,8 +152,6 @@
     <None Include="Shader\DirectionalShadows.frag" />
     <None Include="Shader\DirectionalShadows.vert" />
     <None Include="Shader\PointShadows.frag" />
-    <None Include="Shader\Bloom.frag" />
-    <None Include="Shader\Bloom.vert" />
     <None Include="Shader\Blur.frag" />
     <None Include="Shader\PointShadows.geom" />
     <None Include="Shader\Screen.frag" />
@@ -224,5 +170,7 @@
     <None Include="Shader\DirectionalShadows.vert" />
     <None Include="Shader\CameraPath.vert" />
     <None Include="Shader\CameraPath.frag" />
+    <None Include="Shader\Image.vert" />
+    <None Include="Shader\Image.frag" />
   </ItemGroup>
 </Project>

@@ -30,8 +30,6 @@ Texture::Texture(const std::string& modelDir, const std::string& path)
 	BYTE* bits(0);
 	//image width and height
 	unsigned int width(0), height(0);
-	//OpenGL's image ID to map to
-	GLuint gl_texID;
 
 	//check the file signature and deduce its format
 	fif = FreeImage_GetFileType(filename, 0);

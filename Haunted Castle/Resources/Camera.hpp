@@ -27,7 +27,7 @@ namespace cgue {
 	private:
 		float t = 0;
 
-		float automaticCameraMovementActivated = true;
+		bool automaticCameraMovementActivated = true;
 
 		vec3 p, d;
 		BSpline bSpline = BSpline();

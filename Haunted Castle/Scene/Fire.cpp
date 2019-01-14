@@ -107,7 +107,7 @@ int ParticlesCount = 0;
 float deltaSum = 0.0f;
 float creationThreshold = 0.001f;
 
-void Fire::calculate(double deltaTime)
+void Fire::calculate(float deltaTime)
 {
 	//cout << "Start calculate" << endl;
 

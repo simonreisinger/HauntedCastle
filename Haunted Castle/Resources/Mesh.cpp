@@ -40,7 +40,7 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 	hasTexture = false;
 	hasNormalTexture = false;
 
-	for (int texIndex = 0; texIndex < material->GetTextureCount(aiTextureType_DIFFUSE); texIndex++)
+	for (unsigned int texIndex = 0; texIndex < material->GetTextureCount(aiTextureType_DIFFUSE); texIndex++)
 	{
 		if (material->GetTexture(aiTextureType_DIFFUSE, texIndex, &path) == AI_SUCCESS)
 		{
@@ -53,7 +53,7 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 		}
 	}
 
-	for (int texIndex = 0; texIndex < material->GetTextureCount(aiTextureType_NORMALS); texIndex++)
+	for (unsigned int texIndex = 0; texIndex < material->GetTextureCount(aiTextureType_NORMALS); texIndex++)
 	{
 		if (material->GetTexture(aiTextureType_NORMALS, texIndex, &path) == AI_SUCCESS)
 		{
@@ -76,14 +76,14 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 
 	//cout << "Mesh " << nameMesh << ":" << endl;
 	int iVertices = 0;
-	for (int j = 0; j < mesh->mNumFaces; j++)
+	for (unsigned int j = 0; j < mesh->mNumFaces; j++)
 	{
 		const aiFace& face = mesh->mFaces[j];
 
 		//cout << "  Face " << j << ":" << endl;
 
 
-		for (int k = 0; k < face.mNumIndices; k++)
+		for (unsigned int k = 0; k < face.mNumIndices; k++)
 		{
 			//cout << "    Face Index " << k << ":" << endl;
 
@@ -351,9 +351,15 @@ void Mesh::loadUniforms(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalP
 	auto fire_and_shadows_1_activated_location = glGetUniformLocation(shader->programHandle, "FIRE_AND_SHADOWS_1");
 	glUniform1i(fire_and_shadows_1_activated_location, FIRE_AND_SHADOWS_1);
 
+	auto fire_and_shadows_intensity_1_location = glGetUniformLocation(shader->programHandle, "FIRE_AND_SHADOWS_INTENSITY_1");
+	glUniform1f(fire_and_shadows_intensity_1_location, debugMode ? 1.0f : FIRE_AND_SHADOWS_INTENSITY_1);
+
 	// Fire and Shadows 2
 	auto fire_and_shadows_2_activated_location = glGetUniformLocation(shader->programHandle, "FIRE_AND_SHADOWS_2");
 	glUniform1i(fire_and_shadows_2_activated_location, FIRE_AND_SHADOWS_2);
+
+	auto fire_and_shadows_intensity_2_location = glGetUniformLocation(shader->programHandle, "FIRE_AND_SHADOWS_INTENSITY_2");
+	glUniform1f(fire_and_shadows_intensity_2_location, debugMode ? 1.0f : FIRE_AND_SHADOWS_INTENSITY_2);
 
 	// Texture
 	auto tex_enabled = glGetUniformLocation(shader->programHandle, "hasTexture");

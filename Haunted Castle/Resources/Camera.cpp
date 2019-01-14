@@ -32,7 +32,8 @@ CameraPoint(vec3(6.81585, -12.4818, 5.61332), vec3(0.732864, 0.175303, 0.657404)
 //*/
 
 // Manuell
-//*
+/*
+// Old 2
 CameraPoint cameraPoints[] =
 {
 CameraPoint(vec3(0.0634554, 5.91694, 7.56216), vec3(0.00318702, -0.827023, -0.56216)),
@@ -49,6 +50,25 @@ CameraPoint(vec3(-1.11281, 6.09812, 6.89522), vec3(-0.920251, -0.377038, 0.10478
 CameraPoint(vec3(-3.64812, -0.685256, 6.83026), vec3(-0.197434, -0.96551, 0.169739)),
 CameraPoint(vec3(-0.809727, -11.1464, 6.96855), vec3(-0.995574, -0.0885563, 0.0314488)),
 CameraPoint(vec3(-2.26784, -11.2763, 6.37726), vec3(-0.782392, -0.00750256, 0.62274), 10.0f)
+};
+//*/
+//*
+CameraPoint cameraPoints[] =
+{
+CameraPoint(vec3(0.0634554, 5.91694, 7), vec3(0.00318702, -0.827023, -0.56216)),
+CameraPoint(vec3(-0.164355, -7.45748, 7), vec3(0.0113447, -0.947555, 0.319392)),
+CameraPoint(vec3(4.98621, -12.7012, 7), vec3(0.879675, -0.464813, 0.100593)),
+CameraPoint(vec3(7.66495, -12.7472, 7), vec3(0.857222, 0.229049, 0.461201)),
+CameraPoint(vec3(9.04385, -6.18256, 7), vec3(0.617988, -0.700453, 0.35701)),
+CameraPoint(vec3(10.3453, -3.67952, 7), vec3(0.354056, 0.923556, 0.147273)),
+CameraPoint(vec3(8.58141, 4.23441, 7), vec3(0.670123, 0.61429, 0.416633)),
+CameraPoint(vec3(11.1419, 8.20631, 7), vec3(0.206903, 0.97803, 0.0254612)),
+CameraPoint(vec3(7.13014, 11.0796, 7), vec3(-0.946423, 0.125172, -0.297685)),
+CameraPoint(vec3(0.570977, 10.8421, 7), vec3(-0.805237, 0.0257921, -0.59239), 10.0f),
+CameraPoint(vec3(-1.11281, 6.09812, 7), vec3(-0.920251, -0.377038, 0.104783)),
+CameraPoint(vec3(-3.64812, -0.685256, 7), vec3(-0.197434, -0.96551, 0.169739)),
+CameraPoint(vec3(-0.809727, -11.1464, 7), vec3(-0.995574, -0.0885563, 0.0314488)),
+CameraPoint(vec3(-2.26784, -11.2763, 7), vec3(-0.782392, -0.00750256, 0.62274), 10.0f)
 };
 //*/
 
@@ -192,7 +212,38 @@ void computePointBezierCurve(float t, vec3 &p, vec3 &d, vec3 p1, vec3 p2, vec3 d
 	d = normalize(BCD - ABC);
 }
 
-void computePointCubicHermiteCurve(float t, vec3 &p, vec3 &d, vec3 p1, vec3 p2, vec3 d1, vec3 d2)
+vec3 computePointLinearInterpolation(float t, vec3 p1, vec3 p2)
+{
+	float beta = 1.2f;
+	float t_scurve = 1 / (1 + pow(t / (1 - t), -beta));
+	return p1 * (1 - t_scurve) + p2 * t_scurve;
+}
+
+vec3 computeDerivativeLinearInterpolation(float t, vec3 d1, vec3 d2)
+{
+	float beta = 2;
+	float t_scurve = 1 / (1 + pow(t / (1 - t), -beta));
+	return d1 * (1 - t_scurve) + d2 * t_scurve;
+}
+
+vec3 computePointCubicHermiteCurve(float t, vec3 p1, vec3 p2, vec3 d1, vec3 d2)
+{
+
+	// Source: https://github.com/keshavnandan/OpenGL/blob/master/hermite_curve/hermite.cpp
+
+	float h0, h1, h2, h3, t2, t3;
+	t2 = t * t;
+	t3 = t2 * t;
+	//hermite blending functions
+	h0 = 2 * t3 - 3 * t2 + 1;
+	h1 = -2 * t3 + 3 * t2;
+	h2 = t3 - 2 * t2 + t;
+	h3 = t3 - t2;
+
+	return p1 * h0 + p2 * h1 + d1 * h2 + d2 * h3;
+}
+
+vec3 computeDerivativeCubicHermiteCurve(float t, vec3 p1, vec3 p2, vec3 d1, vec3 d2)
 {
 
 	// Source: https://github.com/keshavnandan/OpenGL/blob/master/hermite_curve/hermite.cpp
@@ -206,33 +257,17 @@ void computePointCubicHermiteCurve(float t, vec3 &p, vec3 &d, vec3 p1, vec3 p2, 
 	h2 = t3 - 2 * t2 + t;
 	h3 = t3 - t2;
 
-	p = p1 * h0 + p2 * h1 + d1 * h2 + d2 * h3;
-
 	//cout << t << " P(" << p.x << " " << p.y << " " << p.z << ") ";
 	//cout << " P1(" << p1.x << " " << p1.y << " " << p1.z << ") P2(" << p2.x << " " << p2.y << " " << p2.z << ")" << endl;
 
 	// Source: https://math.stackexchange.com/questions/2444650/cubic-hermite-spline-derivative
-
+	
 	dh0 = 6 * t2 - 6 * t;
 	dh1 = -6 * t2 + 6 * t;
 	dh2 = 3 * t2 - 4 * t + 1;
 	dh3 = 3 * t2 - 2 * t;
 
-	d = p1 * dh0 + p2 * dh1 + d1 * dh2 + d2 * dh3;
-}
-
-vec3 computePointLinearInterpolation(float t, vec3 &p, vec3 &d, vec3 p1, vec3 p2, vec3 d1, vec3 d2)
-{
-	float beta = 1.2f;
-	float t_scurve = 1 / (1 + pow(t / (1 - t), -beta));
-	return p1 * (1 - t_scurve) + p2 * t_scurve;
-}
-
-vec3 computeDerivativeLinearInterpolation(float t, vec3 &p, vec3 &d, vec3 p1, vec3 p2, vec3 d1, vec3 d2)
-{
-	float beta = 2;
-	float t_scurve = 1 / (1 + pow(t / (1 - t), -beta));
-	return d1 * (1 - t_scurve) + d2 * t_scurve;
+	return p1 * dh0 + p2 * dh1 + d1 * dh2 + d2 * dh3;
 }
 
 const int CURVE_LINEAR = 1;
@@ -241,7 +276,7 @@ const int CURVE_CATMULL = 3;
 const int CURVE_BEZIER = 4;
 const int CURVE_BSPLINE = 5;
 
-int method = CURVE_LINEAR;
+int method = CURVE_HERMITE;
 
 float wait = 0.0f;
 
@@ -291,11 +326,13 @@ void Camera::advance(float time_delta)
 			switch (method)
 			{
 			case CURVE_LINEAR:
-				p = computePointLinearInterpolation(advance_t, p, d, p1, p2, d1, d2);
-				d = computeDerivativeLinearInterpolation(advance_t, p, d, p1, p2, d1, d2);
+				p = computePointLinearInterpolation(advance_t, p1, p2);
+				d = computeDerivativeLinearInterpolation(advance_t, d1, d2);
 				break;
 			case CURVE_HERMITE:
-				computePointCubicHermiteCurve(advance_t, p, d, p1, p2, d1, d2);
+				p = computePointCubicHermiteCurve(advance_t, p1, p2, d1, d2);
+				d = computeDerivativeLinearInterpolation(advance_t, d1, d2);
+				//d = computeDerivativeCubicHermiteCurve(advance_t, p1, p2, d1, d2);
 				break;
 			case CURVE_CATMULL:
 				if (t < indexLastEndPoint - 2)
@@ -385,14 +422,24 @@ void Camera::drawCurve(Shader* shader, mat4x4 VP) {
 	points.push_back(vec3(5, -5, 5));
 	*/
 
-
-	for (int i = 0; i < sizeof(cameraPoints) / sizeof(*cameraPoints); i++) {
+	int countPoints = sizeof(cameraPoints) / sizeof(*cameraPoints);
+	for (int i = 0; i < countPoints; i++) {
 		vec3 point = cameraPoints[i].getPoint();
 		points.push_back(vec3(point.x, point.z, -point.y));
 		vec3 dir = cameraPoints[i].getDerivative();
 		vec3 pointDir = point + dir;
 		points.push_back(vec3(pointDir.x, pointDir.z, -pointDir.y));
 		points.push_back(vec3(point.x, point.z, -point.y));
+
+		if (i < countPoints - 1) {
+			vec3 point2 = cameraPoints[i+1].getPoint();
+			vec3 dir2 = cameraPoints[i+1].getDerivative();
+
+			for (float advance_t = 0.01f; advance_t < 1; advance_t += 0.01f) {
+				vec3 curvePoint = computePointCubicHermiteCurve(advance_t, point, point2, dir, dir2);
+				points.push_back(vec3(curvePoint.x, curvePoint.z, -curvePoint.y));
+			}
+		}
 	}
 	
 	/*

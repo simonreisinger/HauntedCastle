@@ -18,8 +18,10 @@ bool CGUE_F7_PRESSED = false;
 bool NORMAL_MAPPING = true;
 bool CGUE_F8_PRESSED = false;
 bool FIRE_AND_SHADOWS_1 = true;
+float FIRE_AND_SHADOWS_INTENSITY_1 = 0.0f;
 bool CGUE_F9_PRESSED = false;
 bool FIRE_AND_SHADOWS_2 = true;
+float FIRE_AND_SHADOWS_INTENSITY_2 = 0.0f;
 bool CGUE_F10_PRESSED = false;
 bool CGUE_F11_PRESSED = false;
 bool BLOOM = true;
@@ -83,10 +85,10 @@ float flameIntensity[2] =
 	1,
 	1
 };
-float flameIntensityMax = 1.1;
-float flameIntensityMin = 0.9;
+float flameIntensityMax = 1.1f;
+float flameIntensityMin = 0.9f;
 
-float AmbientIntensity = 0.15f;
+float AmbientIntensity = 0.13f;
 
 vec3 SunDir = changeAxis * vec3(0.0, -1.0, 1.0);
 
@@ -103,3 +105,5 @@ int countObjectsLoading = 15;
 
 bool renderObjects = true;
 bool debugMode = false;
+bool playSound = true;
+bool fullscreen = false;

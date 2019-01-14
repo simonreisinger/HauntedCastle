@@ -14,6 +14,7 @@
 #include "Resources\RenderBuffer.h"
 #include "Resources\Const.hpp"
 #include "Resources\FrustumG.hpp"
+#include "Resources\SoundSystemClass.hpp"
 
 #include "Resources/Geometry.hpp"
 #include "Resources/BSpline.hpp"
@@ -35,6 +36,8 @@
 #include "Scene/Fire.hpp"
 #include "Scene/Windows.hpp"
 
+#include "fmod/fmod.hpp"
+#include "fmod/fmod_errors.h" // Only if you want error checking
 
 //-------Loading PhysX libraries (32bit only)----------//
 
@@ -73,6 +76,8 @@ void renderFire(float time_delta);
 void sendPointShadowsDataToScreenRenderer(int index);
 void sendDirectionalShadowsDataToScreenRenderer();
 float rand(float min, float max);
+void moveObjects(float time_delta, float time_abs);
+void renderImage(Texture &image);
 
 GLFWwindow* window;
 
@@ -80,6 +85,7 @@ Shader* renderShader;
 Shader* directionalShadowsShader;
 Shader* pointShadowsShader;
 Shader* cameraPathShader;
+Shader* imageShader;
 
 
 ///////////////////////////////////////////////////////////////
@@ -147,6 +153,10 @@ Coordinatesystem* coordinatesystem;
 Fire** fire;
 Windows* windows;
 
+// Initialize our sound system
+SoundSystemClass sound = SoundSystemClass();
+SoundClass soundSample;
+
 mat4x4 view;
 
 double mouseXPosOld, mouseYPosOld;
@@ -155,19 +165,17 @@ double mouseXPosOld, mouseYPosOld;
 float nearDist = 0.01f;
 float farDist = 200.0f;
 float fov = 100.0f;
-float pointShadowsNearPlane = 0.1; // = 1.0f;
+float pointShadowsNearPlane = 0.1f; // = 1.0f;
 float pointShadowsFarPlane = 50.0f; // = farDist; //
 ///////////////////////////////////////////
 
 FrustumG* frustumG;
 
-int width = 1600;
-int height = 1000;
+int width = 1280;
+int height = 768;
 float ratio;
 
 const unsigned int SHADOW_WIDTH = 1600, SHADOW_HEIGHT = 1600; // TODO change this line
-
-auto fullscreen = false;
 
 float MOVESPEED = 80000.0f;
 float ROTATESPEED = 5000.0f;
@@ -357,8 +365,11 @@ static void APIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum
 	//std::cout << std::endl;
 }
 
+
+
 int main(int argc, char** argv)
 {
+
 	cout << "Loading..." << endl;
 
 	// TODO implement full screen
@@ -427,7 +438,7 @@ int main(int argc, char** argv)
 		}
 	}
 
-	glfwHideWindow(window);
+	//glfwHideWindow(window);
 
 	// Hide Cursor
 	// glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN); // blends out curser if nescessary
@@ -471,12 +482,17 @@ int main(int argc, char** argv)
 		}
 	#endif
 
-
-	init();
-
 	glfwSetWindowTitle(window, "Haunted Castle");
 
 	atexit(OnShutdown);			//Called on application exit
+
+
+
+
+	// Create a sample sound
+	sound.createSound(&soundSample, "Datensatz/sound/spookyMusic.mp3");
+
+
 
 	glfwShowWindow(window);
 
@@ -485,6 +501,25 @@ int main(int argc, char** argv)
 	// Define the area to draw on
 
 	glfwGetCursorPos(window, &mouseXPosOld, &mouseYPosOld);
+
+
+	if (playSound) {
+		// Play the sound, with loop mode
+		sound.playSound(soundSample, false);
+	}
+
+
+
+	imageShader = new Shader("Shader/Image.vert", "Shader/Image.frag");
+	Texture imageLoading = Texture("images", "loading.jpg");
+	renderImage(imageLoading);
+	glfwSwapBuffers(window);
+
+
+	init();
+
+
+	Texture imageWasted = Texture("images", "wasted.jpg");
 
 	// Game Loop
 	auto time = glfwGetTime();
@@ -497,8 +532,8 @@ int main(int argc, char** argv)
 		for (int i = 0; i < numberOfTorches; i++){
 			cout << depthCubemap[i] << endl;
 		}*/
-		auto time_total_start = glfwGetTime();
-		auto time_update_start = glfwGetTime();
+		double time_total_start = glfwGetTime();
+		double time_update_start = glfwGetTime();
 
 		auto time_new = glfwGetTime();
 		auto time_delta = (float)(time_new - time);
@@ -512,47 +547,68 @@ int main(int argc, char** argv)
 
 		update(time_delta, time_abs);
 
-		auto time_update_end = glfwGetTime();
-		auto time_pointShadows_start = glfwGetTime();
+		double time_update_end = glfwGetTime();
 
-		for (int i = 0; i < numberOfTorches; i++) {
-			renderDepthCubemap(i);
+		double time_pointShadows_start = 0;
+		double time_pointShadows_end = 0;
+		double time_directionalShadows_start = 0;
+		double time_directionalShadows_end = 0;
+		double time_screen_start = 0;
+		double time_screen_end = 0;
+		double time_fires_start = 0;
+		double time_fires_end = 0;
+		double time_blur_start = 0;
+		double time_blur_end = 0;
+
+		if (!debugMode && time_abs >= 93) {
+			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+			glViewport(0, 0, width, height);
+			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			if (time_abs >= 94) {
+				renderImage(imageWasted);
+			}
+		} else {
+			time_pointShadows_start = glfwGetTime();
+
+			for (int i = 0; i < numberOfTorches; i++) {
+				renderDepthCubemap(i);
+			}
+
+			time_pointShadows_end = glfwGetTime();
+			time_directionalShadows_start = glfwGetTime();
+
+			renderDepthMap();
+
+			time_directionalShadows_end = glfwGetTime();
+			time_screen_start = glfwGetTime();
+
+			// Render scene into floating point framebuffer
+			glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+			renderShader->useShader();
+
+			sendDirectionalShadowsDataToScreenRenderer();
+
+			for (int i = 0; i < numberOfTorches; i++) {
+				sendPointShadowsDataToScreenRenderer(i);
+			}
+
+			renderScreen();
+
+			time_screen_end = glfwGetTime();
+			time_fires_start = glfwGetTime();
+
+			renderFire(time_delta);
+
+			time_fires_end = glfwGetTime();
+			time_blur_start = glfwGetTime();
+
+			renderBlur();
+			renderCombine();
+
+			time_blur_end = glfwGetTime();
 		}
-
-		auto time_pointShadows_end = glfwGetTime();
-		auto time_directionalShadows_start = glfwGetTime();
-
-		renderDepthMap();
-
-		auto time_directionalShadows_end = glfwGetTime();
-		auto time_screen_start = glfwGetTime();
-
-		// Render scene into floating point framebuffer
-		glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
-		renderShader->useShader();
-
-		sendDirectionalShadowsDataToScreenRenderer();
-
-		for (int i = 0; i < numberOfTorches; i++) {
-			sendPointShadowsDataToScreenRenderer(i);
-		}
-
-		renderScreen();
-
-		auto time_screen_end = glfwGetTime();
-		auto time_fires_start = glfwGetTime();
-
-		renderFire(time_delta);
-
-		auto time_fires_end = glfwGetTime();
-		auto time_blur_start = glfwGetTime();
-
-		renderBlur();
-		renderCombine();
-
-		auto time_blur_end = glfwGetTime();
-		auto time_total_end = glfwGetTime();
-		auto time_swap_start = glfwGetTime();
+		double time_total_end = glfwGetTime();
+		double time_swap_start = glfwGetTime();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -561,7 +617,7 @@ int main(int argc, char** argv)
 		{
 			cout << "ERROR: OpenGL Error" << endl;
 		}
-		auto time_swap_end = glfwGetTime();
+		double time_swap_end = glfwGetTime();
 
 		//////////////////////////////////////////////////////////////////////
 		//renderBlur(); // TODO i dont think this will be needed
@@ -588,6 +644,9 @@ int main(int argc, char** argv)
 			refreshTime = 0;
 		}
 	}
+
+	// Release the sound
+	sound.releaseSound(soundSample);
 
 	// Close GLFW Window
 	glfwTerminate();
@@ -727,27 +786,28 @@ void initScene(){
 	room = new Room(renderShader);
 	windows = new Windows(renderShader);
 
+	chair1 = new Chair1(renderShader);
+	chair2 = new Chair2(renderShader);
+
+	desk = new Desk(renderShader);
+
+	commode = new Commode(renderShader);
+
+	frame = new Frame(renderShader);
+
 	if (renderObjects) {
 		wardrobe = new Wardrobe(renderShader);
 
 		torch1 = new Torch1(renderShader);
 		torch2 = new Torch2(renderShader);
 
-		desk = new Desk(renderShader);
 
-		commode = new Commode(renderShader);
-
-		chair1 = new Chair1(renderShader);
-		chair2 = new Chair2(renderShader);
+		chess = new Chess(renderShader);
 
 		knight1 = new Knight1(renderShader);
 		knight2 = new Knight2(renderShader);
 
 		door = new Door(renderShader);
-
-		chess = new Chess(renderShader);
-
-		frame = new Frame(renderShader);
 	}
 
 	fire = new Fire*[sizeof(torchPos) / sizeof(*torchPos)];
@@ -985,7 +1045,7 @@ void renderDepthCubemap(int index) {
 	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	// Use our shader
-	glm:mat4 model = mat4(1);
+	mat4 model = mat4(1);
 	auto model_location = glGetUniformLocation(pointShadowsShader->programHandle, "model");
 	glUniformMatrix4fv(model_location, 1, GL_FALSE, value_ptr(model));
 
@@ -1073,6 +1133,19 @@ void renderBlur(){
 			first_iteration = false;
 		}
 	}
+}
+
+void renderImage(Texture &image) {
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glViewport(0, 0, width, height);
+	imageShader->useShader();
+
+	image.bind(10);
+	auto image_location = glGetUniformLocation(imageShader->programHandle, "image");
+	glUniform1i(image_location, 10);
+
+	renderQuad();
 }
 
 void intCombine(){
@@ -1175,30 +1248,31 @@ void renderScene(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_mod
 	}
 
 	room->renderGeometry(drawShader, view, proj, camera_model, cull);
+
+	chair1->renderGeometry(drawShader, view, proj, camera_model, cull);
+	chair2->renderGeometry(drawShader, view, proj, camera_model, cull);
+
+	desk->renderGeometry(drawShader, view, proj, camera_model, cull);
+
+	frame->renderGeometry(drawShader, view, proj, camera_model, cull);
+
+	commode->renderGeometry(drawShader, view, proj, camera_model, cull);
+
 	if (drawShader != directionalShadowsShader){
 		windows->renderGeometry(drawShader, view, proj, camera_model, cull);
 	}
+
 	if (renderObjects)
 	{
-
 		torch1->renderGeometry(drawShader, view, proj, camera_model, cull);
 		torch2->renderGeometry(drawShader, view, proj, camera_model, cull);
-
-		chair1->renderGeometry(drawShader, view, proj, camera_model, cull);
-		chair2->renderGeometry(drawShader, view, proj, camera_model, cull);
 
 		knight1->renderGeometry(drawShader, view, proj, camera_model, cull);
 		knight2->renderGeometry(drawShader, view, proj, camera_model, cull);
 
 		wardrobe->renderGeometry(drawShader, view, proj, camera_model, cull);
 
-		desk->renderGeometry(drawShader, view, proj, camera_model, cull);
-
 		door->renderGeometry(drawShader, view, proj, camera_model, cull);
-
-		frame->renderGeometry(drawShader, view, proj, camera_model, cull);
-
-		commode->renderGeometry(drawShader, view, proj, camera_model, cull);
 
 		chess->renderGeometry(drawShader, view, proj, camera_model, cull);
 	}
@@ -1218,10 +1292,41 @@ void update(float time_delta, float time_abs) // TODO change time_delta to delta
 		flameIntensity[i] = rand(flameIntensityMin, flameIntensityMax);
 	}
 
+	moveObjects(time_delta, time_abs);
+
 	if (!debugMode) {
 		FIRE_AND_SHADOWS_1 = time_abs >= 20.0f;
 		FIRE_AND_SHADOWS_2 = time_abs >= 38.0f;
+		if (FIRE_AND_SHADOWS_1) {
+			FIRE_AND_SHADOWS_INTENSITY_1 = FIRE_AND_SHADOWS_INTENSITY_1 >= 1 ? 1.0f : FIRE_AND_SHADOWS_INTENSITY_1 + time_delta;
+		}
+		if (FIRE_AND_SHADOWS_2) {
+			FIRE_AND_SHADOWS_INTENSITY_2 = FIRE_AND_SHADOWS_INTENSITY_2 >= 1 ? 1.0f : FIRE_AND_SHADOWS_INTENSITY_2 + time_delta;
+		}
 	}
+}
+
+void moveObjects(float time_delta, float time_abs)
+{
+	torch2->rotateLinear("Stab", vec3(1, 0, 0), -45, true, 36.0, 1.0, time_abs, time_delta);
+
+	chair1->translateLinear("Chair", vec3(0, -1.8, 0), 50.0, 2.0, time_abs, time_delta);
+
+	float chessDistField = 0.23f;
+
+	chess->translateLinear("White_Pawn_005", vec3(0, -1 * chessDistField, 0), 58.0f, 0.5f, time_abs, time_delta);
+	chess->translateLinear("White_Pawn_012", vec3(0, 2 * chessDistField, 0), 60.0f, 1.0f, time_abs, time_delta);
+	chess->translateLinear("White_Pawn_006", vec3(0, -2 * chessDistField, 0), 62.0f, 1.0f, time_abs, time_delta);
+	chess->translateLinear("Queen_001", vec3(-4 * chessDistField, 4 * chessDistField, 0), 64.0f, 2.0f, time_abs, time_delta);
+
+
+	frame->rotateLinear("Frame", vec3(1, 0, 0), -40.0f, false, 71.5f, 0.25f, time_abs, time_delta);
+	frame->rotateLinear("Frame", vec3(1, 0, 0), 10.0f, false, 71.75f, 0.25f, time_abs, time_delta);
+	frame->translateGravity("Empty", 4.44412f, 72.0f, time_abs, time_delta);
+
+	wardrobe->rotateLinear("wardrobe_door_right", vec3(0, 0, 1), -90.0f, true, 80.0f, 1.0f, time_abs, time_delta);
+
+	wardrobe->rotateLinear("wardrobe_body", vec3(0, 1, 0), 90.0f, true, 92.0f, 2.0f, time_abs, time_delta);
 }
 
 float rand(float min, float max)
@@ -1244,19 +1349,19 @@ void handleInput(GLFWwindow* window, float time_delta)
 		int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
 		if (state == GLFW_PRESS && (mouseXPos != mouseXPosOld || mouseYPos != mouseYPosOld))
 		{
-			double mouseXPosDiff = mouseXPos - mouseXPosOld;
-			double mouseYPosDiff = mouseYPos - mouseYPosOld;
+			float mouseXPosDiff = (float)(mouseXPos - mouseXPosOld);
+			float mouseYPosDiff = (float)(mouseYPos - mouseYPosOld);
 
-			actor->PxRotate(0, 0, ROTATESPEED * time_delta * mouseXPosDiff / 100);
+			actor->PxRotate(0, 0, ROTATESPEED * time_delta * mouseXPosDiff / 100.0f);
 
 
 			if (mouseYPosDiff > 0)
 			{
-				camera->rotateDown(time_delta * mouseYPosDiff / 10);
+				camera->rotateDown(time_delta * mouseYPosDiff / 10.0f);
 			}
 			if (mouseYPosDiff < 0)
 			{
-				camera->rotateUp(-time_delta * mouseYPosDiff / 10);
+				camera->rotateUp(-time_delta * mouseYPosDiff / 10.0f);
 			}
 		}
 
@@ -1294,7 +1399,7 @@ void handleInput(GLFWwindow* window, float time_delta)
 			actor->PxRotate(0, 0, -ROTATESPEED * time_delta);
 		}
 		// actor 0 - move 
-		/*
+		//*
 		if (glfwGetKey(window, GLFW_KEY_Q))
 		{
 			actor->PxTranslate(0, 0, -MOVESPEED * time_delta);
@@ -1303,7 +1408,7 @@ void handleInput(GLFWwindow* window, float time_delta)
 		{
 			actor->PxTranslate(0, 0, MOVESPEED * time_delta);
 		}
-		*/
+		//*/
 		if (glfwGetKey(window, GLFW_KEY_W))
 		{
 			actor->PxTranslate(0, MOVESPEED * time_delta, 0);
@@ -1508,7 +1613,7 @@ void handleInput(GLFWwindow* window, float time_delta)
 		CGUE_F11_PRESSED = false;
 	}
 
-	if (glfwGetKey(window, GLFW_KEY_PAGE_UP)) {
+	if (glfwGetKey(window, GLFW_KEY_PAGE_UP) || glfwGetKey(window, GLFW_KEY_KP_ADD)) {
 		AmbientIntensity += 0.01f;
 		if (AmbientIntensity > 1) {
 			AmbientIntensity = 1;
@@ -1516,14 +1621,14 @@ void handleInput(GLFWwindow* window, float time_delta)
 		cout << "Ambient Intensity changed to: " << AmbientIntensity << endl;
 	}
 
-	if (glfwGetKey(window, GLFW_KEY_PAGE_DOWN)) {
+	if (glfwGetKey(window, GLFW_KEY_PAGE_DOWN) || glfwGetKey(window, GLFW_KEY_KP_SUBTRACT)) {
 		AmbientIntensity -= 0.01f;
 		if (AmbientIntensity < 0) {
 			AmbientIntensity = 0;
 		}
 		cout << "Ambient Intensity changed to: " << AmbientIntensity << endl;
 	}
-
+	
 
 
 }
@@ -1552,6 +1657,8 @@ void OnShutdown()
 	delete renderShader; renderShader = nullptr;
 	delete directionalShadowsShader; directionalShadowsShader = nullptr;
 	delete pointShadowsShader; pointShadowsShader = nullptr;
+	delete shaderBlur; shaderBlur = nullptr;
+	delete imageShader; imageShader = nullptr;
 
 	delete frustumG; frustumG = nullptr;
 
