@@ -76,6 +76,8 @@ namespace cgue
 		float zmin = 0.0;
 		float zmax = 0.0;
 
+		bool renderRayShafts = false;
+
 		string nameMesh;
 		mat4x4 updateTrans;
 

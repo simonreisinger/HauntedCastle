@@ -47,6 +47,11 @@ uniform float AmbientIntensity;
 	in vec3 FragPos;
 	//////////////////////////////////////////////////////
 
+
+uniform mat4 light_projection_matrix;
+uniform int renderRayShafts;
+
+
 vec2 disk[16] = vec2[](
    vec2( -0.94202634, -0.39907226 ),
    vec2( 0.94558508, -0.76891735 ),
@@ -100,6 +105,55 @@ float ShadowCalculation(vec3 fragPos, vec3 flameCenterPosition, samplerCube poin
     shadow /= float(samples);
 
     return shadow;
+}
+
+mat4 biasMatrix = mat4(0.5, 0.0, 0.0, 0.0,
+	0.0, 0.5, 0.0, 0.0,
+	0.0, 0.0, 0.5, 0.0,
+	0.5, 0.5, 0.5, 1.0);
+
+float PI = 3.14159265359;
+float PI_RCP = 0.31830988618;
+float tau = 0.02; // Thickness of medium
+float phi = 20.0; // Light strength
+
+vec3 light_position = vec3(0, 12, 20) + 10.0 * vec3(0, 1, 1);
+
+float lightShaft(vec3 FragPos_worldspace, vec3 Camera_worldspace) {
+
+	float raymarch_distance_worldspace = length(Camera_worldspace - FragPos_worldspace);
+	vec3 delta_lightview = normalize(Camera_worldspace - FragPos_worldspace);
+	vec3 delta_worldspace = delta_lightview;
+
+	float step_size_worldspace = 0.005 * raymarch_distance_worldspace;
+	float step_size_lightview = step_size_worldspace;
+
+	vec3 ray_position_lightview = FragPos_worldspace;
+	vec3 ray_position_worldspace = FragPos_worldspace;
+
+
+
+
+	float light_contribution = 0;
+	for (float l = raymarch_distance_worldspace; l > step_size_worldspace; l -= step_size_worldspace) {
+		vec4 ray_position_lightclipspace = biasMatrix * light_projection_matrix * vec4(ray_position_lightview, 1);
+
+		float shadow_term = texture( directionalShadowsDepthMap, ray_position_lightclipspace.xyz );
+		
+		// get distance in world space
+		float d = length(vec3(0, FragPos_worldspace.y - light_position.y, FragPos_worldspace.z - light_position.z));
+		// multiplication is faster than division, so do it once
+		float d_rcp = 1.0/d;
+		
+		light_contribution += shadow_term * (phi * 0.25 * PI_RCP) * d_rcp * d_rcp * 
+			exp(-d*tau) *
+			exp(-l*tau);
+
+		ray_position_lightview += step_size_lightview * delta_lightview;
+		ray_position_worldspace += step_size_lightview * delta_lightview;
+	}
+
+	return light_contribution;
 }
 
 
@@ -196,6 +250,9 @@ void main(){
 
 	visibility = visibility * visibilityPosible;
 
+	
+	float lightshaft = renderRayShafts == 1 ? lightShaft(FragPos, viewPos) : 0;
+	
 	vec3 result = vec3(
 	//FragColor = vec4(
 		// Ambient
@@ -225,7 +282,9 @@ void main(){
 			)
 		) +
 		// Window
-		MaterialDiffuseColor * visibility
+		MaterialDiffuseColor * visibility + 
+
+		vec3(lightshaft)
 	);
 
 	//float brightness = dot(result, vec3(1.0, 1.0, 1.0));

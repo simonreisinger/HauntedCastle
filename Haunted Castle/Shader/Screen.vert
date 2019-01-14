@@ -33,16 +33,16 @@ uniform vec3 Torch1Position_worldspace;
 uniform vec3 Torch2Position_worldspace;
 uniform vec3 SunDirection_worldspace;
 
+mat4 biasMatrix = mat4(0.5, 0.0, 0.0, 0.0,
+	0.0, 0.5, 0.0, 0.0,
+	0.0, 0.0, 0.5, 0.0,
+	0.5, 0.5, 0.5, 1.0);
+
 void main(){
 
 	gl_Position =  MVP * vec4(vertexPosition_modelspace,1);
 
 	FragPos = (M * vec4(vertexPosition_modelspace,1)).xyz; // vec3(model * vec4(aPos, 1.0));
-
-	mat4 biasMatrix = mat4(0.5, 0.0, 0.0, 0.0,
-						 0.0, 0.5, 0.0, 0.0,
-						 0.0, 0.0, 0.5, 0.0,
-						 0.5, 0.5, 0.5, 1.0);
 	
 	ShadowCoord = biasMatrix * directionalShadowsDepthVP * M * vec4(vertexPosition_modelspace,1);
 	
