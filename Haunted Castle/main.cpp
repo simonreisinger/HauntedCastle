@@ -439,7 +439,7 @@ int main(int argc, char** argv)
 		}
 	}
 
-	//glfwHideWindow(window);
+	glfwHideWindow(window);
 
 	// Hide Cursor
 	// glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_HIDDEN); // blends out curser if nescessary
@@ -657,21 +657,6 @@ int main(int argc, char** argv)
 
 void init()
 {
-	float c = length(vec3(-0.164355, -7.45748, 7) - vec3(4.98621, -12.7012, 7));
-	float a = length(vec3(-0.164355, -7.45748, 7) - vec3(3.14251, -14.2715, 7));
-	float b = length(vec3(4.98621, -12.7012, 7) - vec3(3.14251, -14.2715, 7));
-	float verzoegert = (a + b) - c;
-	cout << "verzögert: " << verzoegert << endl;
-	vec3 neuerStartpunkt = vec3(0.0634554, 5.91694, 7) + normalize(vec3(-0.164355, -7.45748, 7) - vec3(0.0634554, 5.91694, 7)) * (verzoegert - 2.0f);
-	cout << "neuer Startpunkt: vec3(" << neuerStartpunkt.x << ", " << neuerStartpunkt.y << ", " << neuerStartpunkt.z << ")" <<endl;
-
-	/*
-	for (float t = 0; t < 3; t += 0.1)
-	{
-		bezier(t);
-	}
-	*/
-
 
 	glEnable(GL_DEPTH_TEST);
 
@@ -878,7 +863,7 @@ void renderScreen(){
 	renderScene(renderShader, view, proj, camera_model);
 
 	if (!camera->getAutomaticCameraMovementActivated()) {
-		camera->drawCurve(cameraPathShader, proj * view);
+		//camera->drawCurve(cameraPathShader, proj * view);
 	}
 
 }
