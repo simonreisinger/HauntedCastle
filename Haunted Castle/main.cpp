@@ -527,6 +527,10 @@ int main(int argc, char** argv)
 	auto refreshTime = 0.0f;
 	auto time_abs = 0.0f;
 
+	double time_directionalShadows_start = glfwGetTime();
+	renderDepthMap();
+	double time_directionalShadows_end = glfwGetTime();
+
 	while (!glfwWindowShouldClose(window))
 	{
 		/*
@@ -552,8 +556,6 @@ int main(int argc, char** argv)
 
 		double time_pointShadows_start = 0;
 		double time_pointShadows_end = 0;
-		double time_directionalShadows_start = 0;
-		double time_directionalShadows_end = 0;
 		double time_screen_start = 0;
 		double time_screen_end = 0;
 		double time_fires_start = 0;
@@ -576,11 +578,6 @@ int main(int argc, char** argv)
 			}
 
 			time_pointShadows_end = glfwGetTime();
-			time_directionalShadows_start = glfwGetTime();
-
-			renderDepthMap();
-
-			time_directionalShadows_end = glfwGetTime();
 			time_screen_start = glfwGetTime();
 
 			// Render scene into floating point framebuffer
