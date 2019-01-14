@@ -175,7 +175,7 @@ int width = 1280;
 int height = 768;
 float ratio;
 
-const unsigned int SHADOW_WIDTH = 1000, SHADOW_HEIGHT = 1000; // TODO change this line
+const unsigned int SHADOW_WIDTH = 1600, SHADOW_HEIGHT = 1600; // TODO change this line
 
 float MOVESPEED = 80000.0f;
 float ROTATESPEED = 5000.0f;
@@ -863,7 +863,7 @@ void renderScreen(){
 	renderScene(renderShader, view, proj, camera_model);
 
 	if (!camera->getAutomaticCameraMovementActivated()) {
-		//camera->drawCurve(cameraPathShader, proj * view);
+		camera->drawCurve(cameraPathShader, proj * view);
 	}
 
 }
@@ -1247,32 +1247,39 @@ void renderScene(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_mod
 		cull = true;
 	}
 
-	room->renderGeometry(drawShader, view, proj, camera_model, cull);
-
-	if (renderObjects)
-	{
-		chair1->renderGeometry(drawShader, view, proj, camera_model, cull);
-		chair2->renderGeometry(drawShader, view, proj, camera_model, cull);
-
-		desk->renderGeometry(drawShader, view, proj, camera_model, cull);
-
-		frame->renderGeometry(drawShader, view, proj, camera_model, cull);
-
-		commode->renderGeometry(drawShader, view, proj, camera_model, cull);
-
-		torch1->renderGeometry(drawShader, view, proj, camera_model, cull);
-		torch2->renderGeometry(drawShader, view, proj, camera_model, cull);
-
-		knight1->renderGeometry(drawShader, view, proj, camera_model, cull);
-		knight2->renderGeometry(drawShader, view, proj, camera_model, cull);
-
-		wardrobe->renderGeometry(drawShader, view, proj, camera_model, cull);
-
-		door->renderGeometry(drawShader, view, proj, camera_model, cull);
-
-		chess->renderGeometry(drawShader, view, proj, camera_model, cull);
+	if (drawShader == directionalShadowsShader) {
+		glDisable(GL_CULL_FACE);
+		room->renderGeometry(drawShader, view, proj, camera_model, cull);
 	}
+	else {
+		glEnable(GL_CULL_FACE);
 
+		room->renderGeometry(drawShader, view, proj, camera_model, cull);
+
+		if (renderObjects)
+		{
+			chair1->renderGeometry(drawShader, view, proj, camera_model, cull);
+			chair2->renderGeometry(drawShader, view, proj, camera_model, cull);
+
+			desk->renderGeometry(drawShader, view, proj, camera_model, cull);
+
+			frame->renderGeometry(drawShader, view, proj, camera_model, cull);
+
+			commode->renderGeometry(drawShader, view, proj, camera_model, cull);
+
+			torch1->renderGeometry(drawShader, view, proj, camera_model, cull);
+			torch2->renderGeometry(drawShader, view, proj, camera_model, cull);
+
+			knight1->renderGeometry(drawShader, view, proj, camera_model, cull);
+			knight2->renderGeometry(drawShader, view, proj, camera_model, cull);
+
+			wardrobe->renderGeometry(drawShader, view, proj, camera_model, cull);
+
+			door->renderGeometry(drawShader, view, proj, camera_model, cull);
+
+			chess->renderGeometry(drawShader, view, proj, camera_model, cull);
+		}
+	}
 	glDisable(GL_CULL_FACE);
 }
 

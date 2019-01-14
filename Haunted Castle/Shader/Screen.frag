@@ -97,7 +97,7 @@ float ShadowCalculation(vec3 fragPos, vec3 flameCenterPosition, samplerCube poin
     float diskRadius = (1.0 + (viewDistance / pointShadowsFarPlane)) / 25.0;
     for(int i = 0; i < samples; ++i)
     {
-        float closestDepth = texture(pointShadowsDepthCubeMap, fragToLight + gridSamplingDisk[i] * diskRadius * min(1, 1 / (currentDepth))).r;
+        float closestDepth = texture(pointShadowsDepthCubeMap, fragToLight + gridSamplingDisk[i] * diskRadius * min(1, 1 / sqrt(currentDepth))).r;
         closestDepth *= pointShadowsFarPlane;   // undo mapping [0;1]
         if(currentDepth - bias > closestDepth)
             shadow += 1.0;
@@ -115,7 +115,7 @@ mat4 biasMatrix = mat4(0.5, 0.0, 0.0, 0.0,
 float PI = 3.14159265359;
 float PI_RCP = 0.31830988618;
 float tau = 0.02; // Thickness of medium
-float phi = 100.0; // Light strength
+float phi = 200.0; // Light strength
 
 vec3 light_position = vec3(0, 12, 20) + 10.0 * vec3(0, 1, 1);
 
