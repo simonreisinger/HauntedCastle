@@ -1246,17 +1246,17 @@ void renderScene(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_mod
 
 	room->renderGeometry(drawShader, view, proj, camera_model, cull);
 
-	chair1->renderGeometry(drawShader, view, proj, camera_model, cull);
-	chair2->renderGeometry(drawShader, view, proj, camera_model, cull);
-
-	desk->renderGeometry(drawShader, view, proj, camera_model, cull);
-
-	frame->renderGeometry(drawShader, view, proj, camera_model, cull);
-
-	commode->renderGeometry(drawShader, view, proj, camera_model, cull);
-
 	if (renderObjects)
 	{
+		chair1->renderGeometry(drawShader, view, proj, camera_model, cull);
+		chair2->renderGeometry(drawShader, view, proj, camera_model, cull);
+
+		desk->renderGeometry(drawShader, view, proj, camera_model, cull);
+
+		frame->renderGeometry(drawShader, view, proj, camera_model, cull);
+
+		commode->renderGeometry(drawShader, view, proj, camera_model, cull);
+
 		torch1->renderGeometry(drawShader, view, proj, camera_model, cull);
 		torch2->renderGeometry(drawShader, view, proj, camera_model, cull);
 
@@ -1301,25 +1301,27 @@ void update(float time_delta, float time_abs) // TODO change time_delta to delta
 
 void moveObjects(float time_delta, float time_abs)
 {
-	torch2->rotateLinear("Stab", vec3(1, 0, 0), -45, true, 36.0, 1.0, time_abs, time_delta);
+	if (renderObjects) {
+		torch2->rotateLinear("Stab", vec3(1, 0, 0), -45, true, 36.0, 1.0, time_abs, time_delta);
 
-	chair1->translateLinear("Chair", vec3(0, -1.8, 0), 50.0, 2.0, time_abs, time_delta);
+		chair1->translateLinear("Chair", vec3(0, -1.8, 0), 50.0, 2.0, time_abs, time_delta);
 
-	float chessDistField = 0.23f;
+		float chessDistField = 0.23f;
 
-	chess->translateLinear("White_Pawn_005", vec3(0, -1 * chessDistField, 0), 58.0f, 0.5f, time_abs, time_delta);
-	chess->translateLinear("White_Pawn_012", vec3(0, 2 * chessDistField, 0), 60.0f, 1.0f, time_abs, time_delta);
-	chess->translateLinear("White_Pawn_006", vec3(0, -2 * chessDistField, 0), 62.0f, 1.0f, time_abs, time_delta);
-	chess->translateLinear("Queen_001", vec3(-4 * chessDistField, 4 * chessDistField, 0), 64.0f, 2.0f, time_abs, time_delta);
+		chess->translateLinear("White_Pawn_005", vec3(0, -1 * chessDistField, 0), 58.0f, 0.5f, time_abs, time_delta);
+		chess->translateLinear("White_Pawn_012", vec3(0, 2 * chessDistField, 0), 60.0f, 1.0f, time_abs, time_delta);
+		chess->translateLinear("White_Pawn_006", vec3(0, -2 * chessDistField, 0), 62.0f, 1.0f, time_abs, time_delta);
+		chess->translateLinear("Queen_001", vec3(-4 * chessDistField, 4 * chessDistField, 0), 64.0f, 2.0f, time_abs, time_delta);
 
 
-	frame->rotateLinear("Frame", vec3(1, 0, 0), -40.0f, false, 71.5f, 0.25f, time_abs, time_delta);
-	frame->rotateLinear("Frame", vec3(1, 0, 0), 10.0f, false, 71.75f, 0.25f, time_abs, time_delta);
-	frame->translateGravity("Empty", 4.44412f, 72.0f, time_abs, time_delta);
+		frame->rotateLinear("Frame", vec3(1, 0, 0), -40.0f, false, 71.5f, 0.25f, time_abs, time_delta);
+		frame->rotateLinear("Frame", vec3(1, 0, 0), 10.0f, false, 71.75f, 0.25f, time_abs, time_delta);
+		frame->translateGravity("Empty", 4.44412f, 72.0f, time_abs, time_delta);
 
-	wardrobe->rotateLinear("wardrobe_door_right", vec3(0, 0, 1), -90.0f, true, 80.0f, 1.0f, time_abs, time_delta);
+		wardrobe->rotateLinear("wardrobe_door_right", vec3(0, 0, 1), -90.0f, true, 80.0f, 1.0f, time_abs, time_delta);
 
-	wardrobe->rotateLinear("wardrobe_body", vec3(0, 1, 0), 90.0f, true, 92.0f, 2.0f, time_abs, time_delta);
+		wardrobe->rotateLinear("wardrobe_body", vec3(0, 1, 0), 90.0f, true, 92.0f, 2.0f, time_abs, time_delta);
+	}
 }
 
 float rand(float min, float max)
