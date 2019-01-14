@@ -103,7 +103,7 @@ int countMeshesLoading = 73;
 int iObjectsLoaded = 0;
 int countObjectsLoading = 14;
 
-bool renderObjects = false;
+bool renderObjects = true;
 bool debugMode = false;
-bool playSound = false;
+bool playSound = true;
 bool fullscreen = false;
