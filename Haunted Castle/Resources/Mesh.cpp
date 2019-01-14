@@ -366,7 +366,7 @@ void Mesh::loadUniforms(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalP
 	glUniform1f(fire_and_shadows_intensity_2_location, debugMode ? 1.0f : FIRE_AND_SHADOWS_INTENSITY_2);
 
 	auto renderRayShafts_location = glGetUniformLocation(shader->programHandle, "renderRayShafts");
-	glUniform1i(renderRayShafts_location, renderRayShafts);
+	glUniform1i(renderRayShafts_location, LIGHT_SHAFTS ? renderRayShafts : 0);
 
 	// Texture
 	auto tex_enabled = glGetUniformLocation(shader->programHandle, "hasTexture");

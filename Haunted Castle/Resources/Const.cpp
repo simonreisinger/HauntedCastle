@@ -24,6 +24,8 @@ bool FIRE_AND_SHADOWS_2 = true;
 float FIRE_AND_SHADOWS_INTENSITY_2 = 0.0f;
 bool CGUE_F10_PRESSED = false;
 bool CGUE_F11_PRESSED = false;
+bool CGUE_P_PRESSED = false;
+bool LIGHT_SHAFTS = true;
 bool BLOOM = true;
 int NUMBER_OF_CULLED_MESHES = 0;
 
@@ -105,5 +107,5 @@ int countObjectsLoading = 14;
 
 bool renderObjects = true;
 bool debugMode = false;
-bool playSound = true;
+bool playSound = false;
 bool fullscreen = false;

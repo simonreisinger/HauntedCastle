@@ -175,7 +175,7 @@ int width = 1280;
 int height = 768;
 float ratio;
 
-const unsigned int SHADOW_WIDTH = 1600, SHADOW_HEIGHT = 1600; // TODO change this line
+const unsigned int SHADOW_WIDTH = 1000, SHADOW_HEIGHT = 1000; // TODO change this line
 
 float MOVESPEED = 80000.0f;
 float ROTATESPEED = 5000.0f;
@@ -1592,6 +1592,17 @@ void handleInput(GLFWwindow* window, float time_delta)
 	// F11 - Camera Pos
 	if (glfwGetKey(window, GLFW_KEY_F11)) {
 		if (CGUE_F11_PRESSED == false) {
+			LIGHT_SHAFTS = !LIGHT_SHAFTS;
+		}
+		CGUE_F11_PRESSED = true;
+	}
+	else {
+		CGUE_F11_PRESSED = false;
+	}
+
+	// P - Camera Pos
+	if (glfwGetKey(window, GLFW_KEY_P)) {
+		if (CGUE_P_PRESSED == false) {
 
 			vec4 camera_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraPos(), 1);
 			vec4 look_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraLookAt(), 1);
@@ -1601,10 +1612,10 @@ void handleInput(GLFWwindow* window, float time_delta)
 			cout << "CameraPoint(vec3(" << camera_pos.x << ", " << -camera_pos.z << ", " << camera_pos.y << "), vec3("
 				<< dir.x << ", " << -dir.z << ", " << dir.y << "))," << endl;
 		}
-		CGUE_F11_PRESSED = true;
+		CGUE_P_PRESSED = true;
 	}
 	else {
-		CGUE_F11_PRESSED = false;
+		CGUE_P_PRESSED = false;
 	}
 
 	if (glfwGetKey(window, GLFW_KEY_PAGE_UP) || glfwGetKey(window, GLFW_KEY_KP_ADD)) {
