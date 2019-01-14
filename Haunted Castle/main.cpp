@@ -131,7 +131,9 @@ GLuint depthMapFBO;
 
 std::vector<glm::mat4> shadowTransforms[numberOfTorches];
 
-glm::mat4 depthVP;
+mat4 depthVP;
+mat4 depthProjectionMatrix;
+mat4 depthViewMatrix;
 
 Actor* actor;
 Knight1* knight1;
@@ -350,7 +352,7 @@ static void APIENTRY DebugCallbackAMD(GLuint id, GLenum category, GLenum severit
 }
 
 static void APIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const GLvoid* userParam) {
-	if (type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB || type == GL_DEBUG_TYPE_OTHER_ARB) {
+	if (type == GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB || type == GL_DEBUG_TYPE_OTHER_ARB || type == GL_NO_ERROR) {
 		/*
 		Error "Buffer detailed info: Buffer object 1 (bound to GL_ARRAY_BUFFER_ARB, usage hint is GL_STATIC_DRAW)
 		will use VIDEO memory as the source for buffer object operations."
@@ -559,11 +561,11 @@ int main(int argc, char** argv)
 		double time_blur_start = 0;
 		double time_blur_end = 0;
 
-		if (!debugMode && time_abs >= 93) {
+		if (!debugMode && time_abs >= 95.5f) {
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 			glViewport(0, 0, width, height);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			if (time_abs >= 94) {
+			if (time_abs >= 96.5f) {
 				renderImage(imageWasted);
 			}
 		} else {
@@ -616,7 +618,7 @@ int main(int argc, char** argv)
 
 		if (glGetError() != GL_NO_ERROR)
 		{
-			cout << "ERROR: OpenGL Error" << endl;
+			cout << "ERROR: OpenGL Error " << glGetError() << endl;
 		}
 
 		if (refreshTime > 1)
@@ -655,7 +657,13 @@ int main(int argc, char** argv)
 
 void init()
 {
-
+	float c = length(vec3(-0.164355, -7.45748, 7) - vec3(4.98621, -12.7012, 7));
+	float a = length(vec3(-0.164355, -7.45748, 7) - vec3(3.14251, -14.2715, 7));
+	float b = length(vec3(4.98621, -12.7012, 7) - vec3(3.14251, -14.2715, 7));
+	float verzoegert = (a + b) - c;
+	cout << "verzögert: " << verzoegert << endl;
+	vec3 neuerStartpunkt = vec3(0.0634554, 5.91694, 7) + normalize(vec3(-0.164355, -7.45748, 7) - vec3(0.0634554, 5.91694, 7)) * (verzoegert - 2.0f);
+	cout << "neuer Startpunkt: vec3(" << neuerStartpunkt.x << ", " << neuerStartpunkt.y << ", " << neuerStartpunkt.z << ")" <<endl;
 
 	/*
 	for (float t = 0; t < 3; t += 0.1)
@@ -935,6 +943,14 @@ void initDirectionalShadows()
 	}
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0); // TODO
+
+	// Compute the MVP matrix from the light's point of view
+	depthProjectionMatrix = glm::ortho<float>(-20, 20, 20, -20, -40.0f, 40.0f);
+	depthViewMatrix = glm::lookAt(SunDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+
+	mat4 depthModelMatrix = glm::mat4(1.0);
+	depthVP = depthProjectionMatrix * depthViewMatrix;
+	//glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
 }
 
 void renderDepthMap(){
@@ -952,13 +968,7 @@ void renderDepthMap(){
 	// Use our shader
 	directionalShadowsShader->useShader();
 
-	// Compute the MVP matrix from the light's point of view
-	glm::mat4 depthProjectionMatrix = glm::ortho<float>(-20, 20, 20, -20, -40.0f, 40.0f);
-	glm::mat4 depthViewMatrix = glm::lookAt(SunDir, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
-
-	glm::mat4 depthModelMatrix = glm::mat4(1.0);
-	depthVP = depthProjectionMatrix * depthViewMatrix;
-	glm::mat4 depthMVP = depthProjectionMatrix * depthViewMatrix * depthModelMatrix;
+	
 
 	// Send our transformation to the currently bound shader,
 
@@ -966,6 +976,9 @@ void renderDepthMap(){
 }
 
 void sendDirectionalShadowsDataToScreenRenderer(){
+	GLuint light_projection_matrix_location = glGetUniformLocation(renderShader->programHandle, "light_projection_matrix");
+	glUniformMatrix4fv(light_projection_matrix_location, 1, GL_FALSE, &depthVP[0][0]);
+
 	GLuint DepthVPID = glGetUniformLocation(renderShader->programHandle, "directionalShadowsDepthVP");
 	glUniformMatrix4fv(DepthVPID, 1, GL_FALSE, &depthVP[0][0]);
 
@@ -1064,12 +1077,17 @@ void sendPointShadowsDataToScreenRenderer(int index){
 	///////////////////////// same for both /////////////////////////
 	glUniform1f(glGetUniformLocation(renderShader->programHandle, "pointShadowsFarPlane"), pointShadowsFarPlane);
 
-	mat4x4 camera_model = camera->getCameraModel();
-	mat4 viewPosMatrix = camera_model * pxMatToGlm(PxMat44(actor->actor->getGlobalPose().getInverse()));
-	vec3 viewPos = vec3(viewPosMatrix[3][0], viewPosMatrix[3][1], viewPosMatrix[3][2]);
-	//cout << "Pos:" << viewPos.x << ", " << viewPos.y << ", " << viewPos.z << endl;
+	vec4 camera_pos;
+	if (camera->getAutomaticCameraMovementActivated())
+	{
+		camera_pos = vec4(camera->getCameraPos(), 1);
+	}
+	else
+	{
+		camera_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraPos(), 1);
+	}
 
-	glUniform3f(glGetUniformLocation(renderShader->programHandle, "viewPos"), viewPos.x, viewPos.y, viewPos.z);
+	glUniform3f(glGetUniformLocation(renderShader->programHandle, "viewPos"), camera_pos.x, camera_pos.y, camera_pos.z);
 
 
 	///////////////////////// different for both /////////////////////////
@@ -1288,8 +1306,8 @@ void update(float time_delta, float time_abs) // TODO change time_delta to delta
 	moveObjects(time_delta, time_abs);
 
 	if (!debugMode) {
-		FIRE_AND_SHADOWS_1 = time_abs >= 20.0f;
-		FIRE_AND_SHADOWS_2 = time_abs >= 38.0f;
+		FIRE_AND_SHADOWS_1 = time_abs >= 23.0f;
+		FIRE_AND_SHADOWS_2 = time_abs >= 41.0f;
 		if (FIRE_AND_SHADOWS_1) {
 			FIRE_AND_SHADOWS_INTENSITY_1 = FIRE_AND_SHADOWS_INTENSITY_1 >= 1 ? 1.0f : FIRE_AND_SHADOWS_INTENSITY_1 + time_delta;
 		}
@@ -1302,25 +1320,25 @@ void update(float time_delta, float time_abs) // TODO change time_delta to delta
 void moveObjects(float time_delta, float time_abs)
 {
 	if (renderObjects) {
-		torch2->rotateLinear("Stab", vec3(1, 0, 0), -45, true, 36.0, 1.0, time_abs, time_delta);
+		torch2->rotateLinear("Stab", vec3(1, 0, 0), -45, true, 39.0, 1.0, time_abs, time_delta);
 
-		chair1->translateLinear("Chair", vec3(0, -1.8, 0), 50.0, 2.0, time_abs, time_delta);
+		chair1->translateLinear("Chair", vec3(0, -1.8, 0), 53.0, 2.0, time_abs, time_delta);
 
-		float chessDistField = 0.23f;
+		float chessDistField = 0.24f;
 
-		chess->translateLinear("White_Pawn_005", vec3(0, -1 * chessDistField, 0), 58.0f, 0.5f, time_abs, time_delta);
-		chess->translateLinear("White_Pawn_012", vec3(0, 2 * chessDistField, 0), 60.0f, 1.0f, time_abs, time_delta);
-		chess->translateLinear("White_Pawn_006", vec3(0, -2 * chessDistField, 0), 62.0f, 1.0f, time_abs, time_delta);
-		chess->translateLinear("Queen_001", vec3(-4 * chessDistField, 4 * chessDistField, 0), 64.0f, 2.0f, time_abs, time_delta);
+		chess->translateLinear("White_Pawn_005", vec3(0, -1 * chessDistField, 0), 61.0f, 0.5f, time_abs, time_delta);
+		chess->translateLinear("White_Pawn_012", vec3(0, 2 * chessDistField, 0), 63.0f, 1.0f, time_abs, time_delta);
+		chess->translateLinear("White_Pawn_006", vec3(0, -2 * chessDistField, 0), 65.0f, 1.0f, time_abs, time_delta);
+		chess->translateLinear("Queen_001", vec3(-4 * chessDistField, 4 * chessDistField, 0), 67.0f, 2.0f, time_abs, time_delta);
 
 
-		frame->rotateLinear("Frame", vec3(1, 0, 0), -40.0f, false, 71.5f, 0.25f, time_abs, time_delta);
-		frame->rotateLinear("Frame", vec3(1, 0, 0), 10.0f, false, 71.75f, 0.25f, time_abs, time_delta);
-		frame->translateGravity("Empty", 4.44412f, 72.0f, time_abs, time_delta);
+		frame->rotateLinear("Frame", vec3(1, 0, 0), -40.0f, false, 74.5f, 0.25f, time_abs, time_delta);
+		frame->rotateLinear("Frame", vec3(1, 0, 0), 10.0f, false, 74.75f, 0.25f, time_abs, time_delta);
+		frame->translateGravity("Empty", 4.44412f, 75.0f, time_abs, time_delta);
 
-		wardrobe->rotateLinear("wardrobe_door_right", vec3(0, 0, 1), -90.0f, true, 80.0f, 1.0f, time_abs, time_delta);
+		wardrobe->rotateLinear("wardrobe_door_right", vec3(0, 0, 1), -90.0f, true, 83.0f, 1.0f, time_abs, time_delta);
 
-		wardrobe->rotateLinear("wardrobe_body", vec3(0, 1, 0), 90.0f, true, 92.0f, 2.0f, time_abs, time_delta);
+		wardrobe->rotateLinear("wardrobe_body", vec3(0, 1, 0), 90.0f, true, 94.5f, 2.0f, time_abs, time_delta);
 	}
 }
 
@@ -1422,10 +1440,6 @@ void handleInput(GLFWwindow* window, float time_delta)
 			camera->changeAutomaticCameraMovementActivatedState();
 			c_pressed = true;
 			debugMode = !debugMode;
-			if (debugMode) {
-				FIRE_AND_SHADOWS_1 = true;
-				FIRE_AND_SHADOWS_2 = true;
-			}
 		}
 	}
 	else

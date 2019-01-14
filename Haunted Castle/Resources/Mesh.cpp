@@ -20,6 +20,10 @@ Mesh::Mesh(string modelDir, char* nameMesh, aiMesh* mesh, const aiMaterial* mate
 	this->nameMesh = str;
 	this->updateTrans = mat4x4(1.0f);
 
+	if (strcmp(nameMesh, "Room") == 0) {
+		renderRayShafts = true;
+	}
+
 	shader->useShader();
 
 	iMeshesLoaded++;
@@ -360,6 +364,9 @@ void Mesh::loadUniforms(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalP
 
 	auto fire_and_shadows_intensity_2_location = glGetUniformLocation(shader->programHandle, "FIRE_AND_SHADOWS_INTENSITY_2");
 	glUniform1f(fire_and_shadows_intensity_2_location, debugMode ? 1.0f : FIRE_AND_SHADOWS_INTENSITY_2);
+
+	auto renderRayShafts_location = glGetUniformLocation(shader->programHandle, "renderRayShafts");
+	glUniform1i(renderRayShafts_location, renderRayShafts);
 
 	// Texture
 	auto tex_enabled = glGetUniformLocation(shader->programHandle, "hasTexture");

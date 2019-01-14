@@ -47,6 +47,11 @@ uniform float AmbientIntensity;
 	in vec3 FragPos;
 	//////////////////////////////////////////////////////
 
+
+uniform mat4 light_projection_matrix;
+uniform int renderRayShafts;
+
+
 vec2 disk[16] = vec2[](
    vec2( -0.94202634, -0.39907226 ),
    vec2( 0.94558508, -0.76891735 ),
@@ -100,6 +105,31 @@ float ShadowCalculation(vec3 fragPos, vec3 flameCenterPosition, samplerCube poin
     shadow /= float(samples);
 
     return shadow;
+}
+
+mat4 biasMatrix = mat4(0.5, 0.0, 0.0, 0.0,
+	0.0, 0.5, 0.0, 0.0,
+	0.0, 0.0, 0.5, 0.0,
+	0.5, 0.5, 0.5, 1.0);
+
+float lightShaft(vec3 FragPos_worldspace, vec3 Camera_worldspace) {
+
+	float raymarch_distance_worldspace = length(Camera_worldspace - FragPos_worldspace);
+	vec3 delta_lightview = normalize(Camera_worldspace - FragPos_worldspace);
+	float step_size_worldspace = 0.01 * raymarch_distance_worldspace;
+	float step_size_lightview = step_size_worldspace;
+
+	vec3 ray_position_lightview = FragPos_worldspace;
+
+	float shadow_term;
+	for (float l = raymarch_distance_worldspace; l > step_size_worldspace; l -= step_size_worldspace) {
+		vec4 ray_position_lightclipspace = biasMatrix * light_projection_matrix * vec4(ray_position_lightview, 1);
+
+		shadow_term += texture( directionalShadowsDepthMap, ray_position_lightclipspace.xyz );
+
+		ray_position_lightview += step_size_lightview * delta_lightview;
+	}
+	return 0.1 * shadow_term / (raymarch_distance_worldspace);
 }
 
 
@@ -196,6 +226,9 @@ void main(){
 
 	visibility = visibility * visibilityPosible;
 
+	
+	float lightshaft = renderRayShafts == 1 ? lightShaft(FragPos, viewPos) : 0;
+	
 	vec3 result = vec3(
 	//FragColor = vec4(
 		// Ambient
@@ -225,7 +258,9 @@ void main(){
 			)
 		) +
 		// Window
-		MaterialDiffuseColor * visibility
+		MaterialDiffuseColor * visibility + 
+
+		vec3(lightshaft)
 	);
 
 	//float brightness = dot(result, vec3(1.0, 1.0, 1.0));

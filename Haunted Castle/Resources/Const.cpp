@@ -105,5 +105,5 @@ int countObjectsLoading = 14;
 
 bool renderObjects = true;
 bool debugMode = false;
-bool playSound = true;
+bool playSound = false;
 bool fullscreen = false;
