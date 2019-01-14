@@ -25,7 +25,7 @@ SceneNode::SceneNode(aiNode* aiNode, const aiScene* scene, string modelDir, Shad
 	meshCount = aiNode->mNumMeshes;
 	mesh = new Mesh*[meshCount];
 
-	for (int i = 0; i < aiNode->mNumMeshes; i++)
+	for (unsigned int i = 0; i < aiNode->mNumMeshes; i++)
 	{
 		int iMesh = aiNode->mMeshes[i];
 		aiMesh* aiMesh = scene->mMeshes[iMesh];
@@ -82,7 +82,7 @@ void SceneNode::draw(Shader* drawShader, mat4x4 view, glm::mat4x4 proj, mat4x4 g
 int SceneNode::countVertices(aiNode* node, const aiScene* scene)
 {
 	int count = 0;
-	for (int i = 0; i < node->mNumMeshes; i++)
+	for (unsigned int i = 0; i < node->mNumMeshes; i++)
 	{
 		int iMesh = node->mMeshes[i];
 		aiMesh* mesh = scene->mMeshes[iMesh];
@@ -90,7 +90,7 @@ int SceneNode::countVertices(aiNode* node, const aiScene* scene)
 		for (int j = 0; j < iMeshFaces; j++)
 		{
 			const aiFace& face = mesh->mFaces[j];
-			for (int k = 0; k < face.mNumIndices; k++)
+			for (unsigned int k = 0; k < face.mNumIndices; k++)
 			{
 				count++;
 			}
@@ -145,7 +145,7 @@ void SceneNode::translateLinear(string meshName, vec3 trans, float time_start, f
 
 void SceneNode::translateGravity(string meshName, float trans_y_end, float time_start, float time, float time_delta) {
 	if (meshName.compare(name) == 0 && time >= time_start && transform[3][2] > trans_y_end) {
-		forces += vec3(0, 0, -2.0) * time_delta;
+		forces += vec3(0, 0, -5.0) * time_delta;
 		transform = translate(transform, forces);
 		if (transform[3][2] < trans_y_end) {
 			transform[3][2] = trans_y_end;
@@ -158,18 +158,18 @@ void SceneNode::translateGravity(string meshName, float trans_y_end, float time_
 	}
 }
 
-void SceneNode::rotateLinear(string meshName, vec3 rotateAxis, float rotateValue, float time_start, float duration, float time, float time_delta) {
+void SceneNode::rotateLinear(string meshName, vec3 rotateAxis, float rotateValue, bool exactEndValue, float time_start, float duration, float time, float time_delta) {
 	if (meshName.compare(name) == 0 && time >= time_start) {
 		if (time <= time_start + duration) {
 			transform = glm::rotate(transform, (float)(rotateValue * M_PI * time_delta / (duration * 180.0)), rotateAxis);
 		}
-		else {
+		else if(exactEndValue) {
 			transform = glm::rotate(transformOriginal, (float)(rotateValue * M_PI / 180.0), rotateAxis);
 		}
 	}
 
 	for (int i = 0; i < childNodeCount; i++)
 	{
-		childNode[i]->rotateLinear(meshName, rotateAxis, rotateValue, time_start, duration, time, time_delta);
+		childNode[i]->rotateLinear(meshName, rotateAxis, rotateValue, exactEndValue, time_start, duration, time, time_delta);
 	}
 }

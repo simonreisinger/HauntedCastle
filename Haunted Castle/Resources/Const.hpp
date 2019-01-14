@@ -35,8 +35,10 @@ extern bool CGUE_F7_PRESSED;
 extern bool NORMAL_MAPPING;
 extern bool CGUE_F8_PRESSED;
 extern bool FIRE_AND_SHADOWS_1;
+extern float FIRE_AND_SHADOWS_INTENSITY_1;
 extern bool CGUE_F9_PRESSED;
 extern bool FIRE_AND_SHADOWS_2;
+extern float FIRE_AND_SHADOWS_INTENSITY_2;
 extern bool CGUE_F10_PRESSED;
 extern bool CGUE_F11_PRESSED;
 extern bool BLOOM;
@@ -77,6 +79,8 @@ extern FrustumG* frustumG;
 
 extern bool renderObjects;
 extern bool debugMode;
+extern bool playSound;
+extern bool fullscreen;
 
 // Change the Axis from (x, z, y) to (x, z, -y)
 extern mat3x3 changeAxis;

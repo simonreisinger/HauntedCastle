@@ -56,7 +56,7 @@ vec3 BSpline::calcPoint(float t)
 	//cout << "T(countT - polyGrad - 1) = " << T(countT - polyGrad - 1) << " ";
 	if (u >= T(countT - polyGrad - 1))
 	{
-		u = T(countT - polyGrad - 1) - 0.001;
+		u = T(countT - polyGrad - 1) - 0.001f;
 		//cout << "Overflow";
 	}
 
@@ -76,7 +76,7 @@ vec3 BSpline::calcDerivative(float t)
 	float u = t + T(polyGrad);
 	if (u >= T(countT - polyGrad - 1))
 	{
-		u = T(countT - polyGrad - 1) - 0.001;
+		u = T(countT - polyGrad - 1) - 0.001f;
 	}
 
 	//cout << "u = " << u << " ";

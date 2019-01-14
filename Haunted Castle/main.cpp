@@ -153,6 +153,10 @@ Coordinatesystem* coordinatesystem;
 Fire** fire;
 Windows* windows;
 
+// Initialize our sound system
+SoundSystemClass sound = SoundSystemClass();
+SoundClass soundSample;
+
 mat4x4 view;
 
 double mouseXPosOld, mouseYPosOld;
@@ -161,7 +165,7 @@ double mouseXPosOld, mouseYPosOld;
 float nearDist = 0.01f;
 float farDist = 200.0f;
 float fov = 100.0f;
-float pointShadowsNearPlane = 0.1; // = 1.0f;
+float pointShadowsNearPlane = 0.1f; // = 1.0f;
 float pointShadowsFarPlane = 50.0f; // = farDist; //
 ///////////////////////////////////////////
 
@@ -172,8 +176,6 @@ int height = 768;
 float ratio;
 
 const unsigned int SHADOW_WIDTH = 1600, SHADOW_HEIGHT = 1600; // TODO change this line
-
-auto fullscreen = false;
 
 float MOVESPEED = 80000.0f;
 float ROTATESPEED = 5000.0f;
@@ -486,11 +488,8 @@ int main(int argc, char** argv)
 
 
 
-	// Initialize our sound system
-	SoundSystemClass sound = SoundSystemClass();
 
 	// Create a sample sound
-	SoundClass soundSample;
 	sound.createSound(&soundSample, "Datensatz/sound/spookyMusic.mp3");
 
 
@@ -504,8 +503,10 @@ int main(int argc, char** argv)
 	glfwGetCursorPos(window, &mouseXPosOld, &mouseYPosOld);
 
 
-	// Play the sound, with loop mode
-	sound.playSound(soundSample, false);
+	if (playSound) {
+		// Play the sound, with loop mode
+		sound.playSound(soundSample, false);
+	}
 
 
 
@@ -1044,7 +1045,7 @@ void renderDepthCubemap(int index) {
 	glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
 	glClear(GL_DEPTH_BUFFER_BIT);
 	// Use our shader
-	glm:mat4 model = mat4(1);
+	mat4 model = mat4(1);
 	auto model_location = glGetUniformLocation(pointShadowsShader->programHandle, "model");
 	glUniformMatrix4fv(model_location, 1, GL_FALSE, value_ptr(model));
 
@@ -1296,28 +1297,36 @@ void update(float time_delta, float time_abs) // TODO change time_delta to delta
 	if (!debugMode) {
 		FIRE_AND_SHADOWS_1 = time_abs >= 20.0f;
 		FIRE_AND_SHADOWS_2 = time_abs >= 38.0f;
+		if (FIRE_AND_SHADOWS_1) {
+			FIRE_AND_SHADOWS_INTENSITY_1 = FIRE_AND_SHADOWS_INTENSITY_1 >= 1 ? 1.0f : FIRE_AND_SHADOWS_INTENSITY_1 + time_delta;
+		}
+		if (FIRE_AND_SHADOWS_2) {
+			FIRE_AND_SHADOWS_INTENSITY_2 = FIRE_AND_SHADOWS_INTENSITY_2 >= 1 ? 1.0f : FIRE_AND_SHADOWS_INTENSITY_2 + time_delta;
+		}
 	}
 }
 
 void moveObjects(float time_delta, float time_abs)
 {
-	torch2->rotateLinear("Stab", vec3(1, 0, 0), -45, 36.0, 1.0, time_abs, time_delta);
+	torch2->rotateLinear("Stab", vec3(1, 0, 0), -45, true, 36.0, 1.0, time_abs, time_delta);
 
 	chair1->translateLinear("Chair", vec3(0, -1.8, 0), 50.0, 2.0, time_abs, time_delta);
 
 	float chessDistField = 0.23f;
 
-	chess->translateLinear("White_Pawn_005", vec3(0, -1 * chessDistField, 0), 58.0, 0.5, time_abs, time_delta);
-	chess->translateLinear("White_Pawn_012", vec3(0, 2 * chessDistField, 0), 60.0, 1, time_abs, time_delta);
-	chess->translateLinear("White_Pawn_006", vec3(0, -2 * chessDistField, 0), 62.0, 1, time_abs, time_delta);
-	chess->translateLinear("Queen_001", vec3(-4 * chessDistField, 4 * chessDistField, 0), 64.0, 2, time_abs, time_delta);
+	chess->translateLinear("White_Pawn_005", vec3(0, -1 * chessDistField, 0), 58.0f, 0.5f, time_abs, time_delta);
+	chess->translateLinear("White_Pawn_012", vec3(0, 2 * chessDistField, 0), 60.0f, 1.0f, time_abs, time_delta);
+	chess->translateLinear("White_Pawn_006", vec3(0, -2 * chessDistField, 0), 62.0f, 1.0f, time_abs, time_delta);
+	chess->translateLinear("Queen_001", vec3(-4 * chessDistField, 4 * chessDistField, 0), 64.0f, 2.0f, time_abs, time_delta);
 
 
-	frame->translateGravity("Frame", 4.44412, 72.0, time_abs, time_delta);
+	frame->rotateLinear("Frame", vec3(1, 0, 0), -40.0f, false, 71.5f, 0.25f, time_abs, time_delta);
+	frame->rotateLinear("Frame", vec3(1, 0, 0), 10.0f, false, 71.75f, 0.25f, time_abs, time_delta);
+	frame->translateGravity("Empty", 4.44412f, 72.0f, time_abs, time_delta);
 
-	wardrobe->rotateLinear("wardrobe_door_right", vec3(0, 0, 1), -90, 80.0, 1.0, time_abs, time_delta);
+	wardrobe->rotateLinear("wardrobe_door_right", vec3(0, 0, 1), -90.0f, true, 80.0f, 1.0f, time_abs, time_delta);
 
-	wardrobe->rotateLinear("wardrobe_body", vec3(0, 1, 0), 90, 92.0, 2.0, time_abs, time_delta);
+	wardrobe->rotateLinear("wardrobe_body", vec3(0, 1, 0), 90.0f, true, 92.0f, 2.0f, time_abs, time_delta);
 }
 
 float rand(float min, float max)
@@ -1340,19 +1349,19 @@ void handleInput(GLFWwindow* window, float time_delta)
 		int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
 		if (state == GLFW_PRESS && (mouseXPos != mouseXPosOld || mouseYPos != mouseYPosOld))
 		{
-			double mouseXPosDiff = mouseXPos - mouseXPosOld;
-			double mouseYPosDiff = mouseYPos - mouseYPosOld;
+			float mouseXPosDiff = (float)(mouseXPos - mouseXPosOld);
+			float mouseYPosDiff = (float)(mouseYPos - mouseYPosOld);
 
-			actor->PxRotate(0, 0, ROTATESPEED * time_delta * mouseXPosDiff / 100);
+			actor->PxRotate(0, 0, ROTATESPEED * time_delta * mouseXPosDiff / 100.0f);
 
 
 			if (mouseYPosDiff > 0)
 			{
-				camera->rotateDown(time_delta * mouseYPosDiff / 10);
+				camera->rotateDown(time_delta * mouseYPosDiff / 10.0f);
 			}
 			if (mouseYPosDiff < 0)
 			{
-				camera->rotateUp(-time_delta * mouseYPosDiff / 10);
+				camera->rotateUp(-time_delta * mouseYPosDiff / 10.0f);
 			}
 		}
 
@@ -1604,7 +1613,7 @@ void handleInput(GLFWwindow* window, float time_delta)
 		CGUE_F11_PRESSED = false;
 	}
 
-	if (glfwGetKey(window, GLFW_KEY_PAGE_UP)) {
+	if (glfwGetKey(window, GLFW_KEY_PAGE_UP) || glfwGetKey(window, GLFW_KEY_KP_ADD)) {
 		AmbientIntensity += 0.01f;
 		if (AmbientIntensity > 1) {
 			AmbientIntensity = 1;
@@ -1612,14 +1621,14 @@ void handleInput(GLFWwindow* window, float time_delta)
 		cout << "Ambient Intensity changed to: " << AmbientIntensity << endl;
 	}
 
-	if (glfwGetKey(window, GLFW_KEY_PAGE_DOWN)) {
+	if (glfwGetKey(window, GLFW_KEY_PAGE_DOWN) || glfwGetKey(window, GLFW_KEY_KP_SUBTRACT)) {
 		AmbientIntensity -= 0.01f;
 		if (AmbientIntensity < 0) {
 			AmbientIntensity = 0;
 		}
 		cout << "Ambient Intensity changed to: " << AmbientIntensity << endl;
 	}
-
+	
 
 
 }

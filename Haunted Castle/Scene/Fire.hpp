@@ -39,7 +39,7 @@ namespace cgue
 
 		int particle_count;
 
-		void calculate(double deltaTime);
+		void calculate(float deltaTime);
 
 		void draw(mat4x4 view, mat4x4 proj, float flameIntensity);
 

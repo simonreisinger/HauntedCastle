@@ -231,7 +231,7 @@ vec3 computePointCubicHermiteCurve(float t, vec3 p1, vec3 p2, vec3 d1, vec3 d2)
 
 	// Source: https://github.com/keshavnandan/OpenGL/blob/master/hermite_curve/hermite.cpp
 
-	float h0, h1, h2, h3, dh0, dh1, dh2, dh3, t2, t3;
+	float h0, h1, h2, h3, t2, t3;
 	t2 = t * t;
 	t3 = t2 * t;
 	//hermite blending functions

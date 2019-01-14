@@ -18,6 +18,8 @@ in vec4 ShadowCoord;
 uniform int NORMAL_MAPPING;
 uniform int FIRE_AND_SHADOWS_1;
 uniform int FIRE_AND_SHADOWS_2;
+uniform float FIRE_AND_SHADOWS_INTENSITY_1;
+uniform float FIRE_AND_SHADOWS_INTENSITY_2;
 
 
 
@@ -199,7 +201,7 @@ void main(){
 		// Ambient
 		vec3(MaterialAmbientColor) +
 
-		FIRE_AND_SHADOWS_1 *
+		FIRE_AND_SHADOWS_1 * FIRE_AND_SHADOWS_INTENSITY_1 *
 		(1.0-shadow1) *
 		(
 			flameIntensity[0]*
@@ -211,7 +213,7 @@ void main(){
 			)
 		)
 		+
-		FIRE_AND_SHADOWS_2 *
+		FIRE_AND_SHADOWS_2 * FIRE_AND_SHADOWS_INTENSITY_2 *
 		(1.0-shadow2) *
 		(
 			flameIntensity[1] *

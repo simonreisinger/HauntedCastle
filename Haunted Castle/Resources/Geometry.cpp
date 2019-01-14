@@ -100,6 +100,6 @@ void Geometry::translateGravity(string meshName, float trans_y, float time_start
 	sceneNode->translateGravity(meshName, trans_y, time_start, time, time_delta);
 }
 
-void Geometry::rotateLinear(string meshName, vec3 rotateAxis, float rotateValue, float time_start, float duration, float time, float time_delta){
-	sceneNode->rotateLinear(meshName, rotateAxis, rotateValue, time_start, duration, time, time_delta);
+void Geometry::rotateLinear(string meshName, vec3 rotateAxis, float rotateValue, bool exactEndValue, float time_start, float duration, float time, float time_delta){
+	sceneNode->rotateLinear(meshName, rotateAxis, rotateValue, exactEndValue, time_start, duration, time, time_delta);
 }
