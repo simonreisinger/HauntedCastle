@@ -34,7 +34,6 @@
 #include "Scene/Chess.hpp"
 #include "Scene/Coordinatesystem.hpp"
 #include "Scene/Fire.hpp"
-#include "Scene/Windows.hpp"
 
 #include "fmod/fmod.hpp"
 #include "fmod/fmod_errors.h" // Only if you want error checking
@@ -151,7 +150,6 @@ Torch2* torch2;
 Chess* chess;
 Coordinatesystem* coordinatesystem;
 Fire** fire;
-Windows* windows;
 
 // Initialize our sound system
 SoundSystemClass sound = SoundSystemClass();
@@ -784,7 +782,6 @@ void initScene(){
 	actor->initActor();
 
 	room = new Room(renderShader);
-	windows = new Windows(renderShader);
 
 	chair1 = new Chair1(renderShader);
 	chair2 = new Chair2(renderShader);
@@ -1258,10 +1255,6 @@ void renderScene(Shader* drawShader, mat4x4 view, mat4x4 proj, mat4x4 camera_mod
 
 	commode->renderGeometry(drawShader, view, proj, camera_model, cull);
 
-	if (drawShader != directionalShadowsShader){
-		windows->renderGeometry(drawShader, view, proj, camera_model, cull);
-	}
-
 	if (renderObjects)
 	{
 		torch1->renderGeometry(drawShader, view, proj, camera_model, cull);
@@ -1652,7 +1645,6 @@ void OnShutdown()
 	delete chess; chess = nullptr;
 	delete coordinatesystem; coordinatesystem = nullptr;
 	delete fire; fire = nullptr;
-	delete windows; windows = nullptr;
 
 	delete renderShader; renderShader = nullptr;
 	delete directionalShadowsShader; directionalShadowsShader = nullptr;
