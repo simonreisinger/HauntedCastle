@@ -17,7 +17,6 @@
 #include "Resources\SoundSystemClass.hpp"
 
 #include "Resources/Geometry.hpp"
-#include "Resources/BSpline.hpp"
 #include "Scene/Actor.hpp"
 #include "Scene/Knight1.hpp"
 #include "Scene/Knight2.hpp"
@@ -541,7 +540,7 @@ int main(int argc, char** argv)
 		double time_update_start = glfwGetTime();
 
 		auto time_new = glfwGetTime();
-		auto time_delta = (float)(time_new - time);
+		auto time_delta = (float)(time_new - time) * speed;
 		refreshTime += time_delta;
 		time_abs += time_delta;
 		time = time_new;
@@ -1298,8 +1297,8 @@ void update(float time_delta, float time_abs) // TODO change time_delta to delta
 	moveObjects(time_delta, time_abs);
 
 	if (!debugMode) {
-		FIRE_AND_SHADOWS_1 = time_abs >= 23.0f;
-		FIRE_AND_SHADOWS_2 = time_abs >= 41.0f;
+		FIRE_AND_SHADOWS_1 = time_abs >= 22.0f;
+		FIRE_AND_SHADOWS_2 = time_abs >= 40.0f;
 		if (FIRE_AND_SHADOWS_1) {
 			FIRE_AND_SHADOWS_INTENSITY_1 = FIRE_AND_SHADOWS_INTENSITY_1 >= 1 ? 1.0f : FIRE_AND_SHADOWS_INTENSITY_1 + time_delta;
 		}
@@ -1615,9 +1614,12 @@ void handleInput(GLFWwindow* window, float time_delta)
 			vec4 look_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraLookAt(), 1);
 
 			vec4 dir = look_pos - camera_pos;
+			dir.y = 0;
+			dir = normalize(dir);
 
-			cout << "CameraPoint(vec3(" << camera_pos.x << ", " << -camera_pos.z << ", " << camera_pos.y << "), vec3("
-				<< dir.x << ", " << -dir.z << ", " << dir.y << "))," << endl;
+			/*cout << "CameraPoint(vec3(" << camera_pos.x << ", " << -camera_pos.z << ", " << camera_pos.y << "), vec3("
+				<< dir.x << ", " << -dir.z << ", " << dir.y << "))," << endl;*/
+			cout << ", vec3(" << dir.x << ", " << -dir.z << ", " << dir.y << ")" << endl;
 		}
 		CGUE_P_PRESSED = true;
 	}
@@ -1625,7 +1627,7 @@ void handleInput(GLFWwindow* window, float time_delta)
 		CGUE_P_PRESSED = false;
 	}
 
-	if (glfwGetKey(window, GLFW_KEY_PAGE_UP) || glfwGetKey(window, GLFW_KEY_KP_ADD)) {
+	if (glfwGetKey(window, GLFW_KEY_KP_ADD)) {
 		AmbientIntensity += 0.01f;
 		if (AmbientIntensity > 1) {
 			AmbientIntensity = 1;
@@ -1633,12 +1635,33 @@ void handleInput(GLFWwindow* window, float time_delta)
 		cout << "Ambient Intensity changed to: " << AmbientIntensity << endl;
 	}
 
-	if (glfwGetKey(window, GLFW_KEY_PAGE_DOWN) || glfwGetKey(window, GLFW_KEY_KP_SUBTRACT)) {
+	if (glfwGetKey(window, GLFW_KEY_KP_SUBTRACT)) {
 		AmbientIntensity -= 0.01f;
 		if (AmbientIntensity < 0) {
 			AmbientIntensity = 0;
 		}
 		cout << "Ambient Intensity changed to: " << AmbientIntensity << endl;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_PAGE_UP)) {
+		speed *= 1.1f;
+		if (speed > 10.0f) {
+			speed = 10.0f;
+		}
+		cout << "Speed changed to: " << speed << endl;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_PAGE_DOWN)) {
+		speed /= 1.1f;
+		if (speed < 0.1f) {
+			speed = 0.1f;
+		}
+		cout << "Speed changed to: " << speed << endl;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_HOME)) {
+		speed = 1.0f;
+		cout << "Speed reseted to: " << speed << endl;
 	}
 	
 

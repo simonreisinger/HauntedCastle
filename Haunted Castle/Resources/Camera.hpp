@@ -4,7 +4,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "CameraPoint.hpp"
 #include "Const.hpp"
-#include "BSpline.hpp"
 #include "Shader.hpp"
 #include <glm/gtc/type_ptr.hpp>
 
@@ -30,6 +29,5 @@ namespace cgue {
 		bool automaticCameraMovementActivated = true;
 
 		vec3 p, d;
-		BSpline bSpline = BSpline();
 	};
 }

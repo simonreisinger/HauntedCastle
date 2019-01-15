@@ -28,7 +28,6 @@
     <ClCompile Include="Scene\Torch1.cpp" />
     <ClCompile Include="Scene\Torch2.cpp" />
     <ClCompile Include="Scene\Wardrobe.cpp" />
-    <ClCompile Include="Resources\BSpline.cpp" />
     <ClCompile Include="Resources\SoundSystemClass.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -112,7 +111,6 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Resources\BSpline.hpp" />
     <ClInclude Include="Resources\CameraPoint.hpp" />
     <ClInclude Include="Resources\Camera.hpp" />
     <ClInclude Include="Resources\Const.hpp" />

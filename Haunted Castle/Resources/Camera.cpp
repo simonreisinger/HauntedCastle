@@ -1,4 +1,5 @@
 #include "Camera.hpp"
+#include <vector>
 
 using namespace cgue;
 using namespace glm;
@@ -55,21 +56,21 @@ CameraPoint(vec3(-2.26784, -11.2763, 6.37726), vec3(-0.782392, -0.00750256, 0.62
 //*
 CameraPoint cameraPoints[] =
 {
-CameraPoint(vec3(0.052459, 5.27136, 7), vec3(0.00318702, -0.827023, -0.56216)),
-CameraPoint(vec3(-0.164355, -7.45748, 7), vec3(0.0113447, -0.947555, 0.319392)),
-CameraPoint(vec3(3.14251, -14.2715, 7), vec3(0.147457, -0.78275, 0.604615)), // View into LightShaft
-CameraPoint(vec3(4.98621, -12.7012, 7), vec3(0.879675, -0.464813, 0.100593), 1.0f), // Knight
-CameraPoint(vec3(7.66495, -12.7472, 7), vec3(0.857222, 0.229049, 0.461201)),
-CameraPoint(vec3(9.04385, -6.18256, 7), vec3(0.617988, -0.700453, 0.35701)),
-CameraPoint(vec3(10.3453, -3.67952, 7), vec3(0.354056, 0.923556, 0.147273)),
-CameraPoint(vec3(8.58141, 4.23441, 7), vec3(0.670123, 0.61429, 0.416633)),
-CameraPoint(vec3(11.1419, 8.20631, 7), vec3(0.206903, 0.97803, 0.0254612)),
-CameraPoint(vec3(7.13014, 11.0796, 7), vec3(-0.946423, 0.125172, -0.297685)),
-CameraPoint(vec3(0.570977, 9.8421, 7), vec3(-0.805237, 0.0257921, -0.59239), 10.0f), // Chess
-CameraPoint(vec3(-1.11281, 6.09812, 7), vec3(-0.920251, -0.377038, 0.104783)),
-CameraPoint(vec3(-3.64812, -0.685256, 7), vec3(-0.197434, -0.96551, 0.169739)),
-CameraPoint(vec3(-0.809727+1, -11.1464, 7), vec3(-0.995574, -0.0885563, 0.0314488)),
-CameraPoint(vec3(-2.26784+1, -11.2763, 7), vec3(-0.782392, -0.00750256, 0.62274), 10.0f) // Ende
+CameraPoint(vec3(0.052459, 5.27136, 7), vec3(0.00318702, -0.827023, -0.56216), vec3(0.106156, -0.99435, 0)),
+CameraPoint(vec3(-0.164355, -7.45748, 7), vec3(0.0113447, -0.947555, 0.319392), vec3(0.182045, -0.98329, 0)),
+CameraPoint(vec3(3.14251, -14.2715, 7), vec3(0.147457, -0.78275, 0.604615), vec3(0.976024, -0.217663, 0)), // View into LightShaft
+CameraPoint(vec3(4.98621, -12.7012, 7), vec3(0.879675, -0.464813, 0.100593), vec3(0.973849, 0.227195, 0)), // Knight
+CameraPoint(vec3(7.66495, -12.7472, 7), vec3(0.857222, 0.229049, 0.461201), vec3(0.642701, 0.766117, 0)),
+CameraPoint(vec3(9.04385, -6.18256, 7), vec3(0.617988, -0.700453, 0.35701), vec3(0.442984, 0.896529, 0)),
+CameraPoint(vec3(10.3453, -3.67952, 7), vec3(0.354056, 0.923556, 0.147273), vec3(-0.0235125, 0.999723, 0)),
+CameraPoint(vec3(8.58141, 4.23441, 7), vec3(0.670123, 0.61429, 0.416633), vec3(0.270951, 0.962593, 0)),
+CameraPoint(vec3(11.1419, 8.20631, 7), vec3(0.206903, 0.97803, 0.0254612), vec3(-0.339872, 0.940472, 0)),
+CameraPoint(vec3(7.13014, 11.0796, 7), vec3(-0.946423, 0.125172, -0.297685), vec3(-0.996448, 0.084211, 0)),
+CameraPoint(vec3(0.570977, 9.8421, 7), vec3(-0.805237, 0.0257921, -0.59239), vec3(-0.818297, -0.574796, 0), 10.0f), // Chess
+CameraPoint(vec3(-1.11281, 6.09812, 7), vec3(-0.920251, -0.377038, 0.104783), vec3(-0.288093, -0.957602, 0)),
+CameraPoint(vec3(-3.64812, -0.685256, 7), vec3(-0.197434, -0.96551, 0.169739), vec3(0.167324, -0.985902, 0)),
+CameraPoint(vec3(-0.809727, -11.1464, 7), vec3(-0.995574, -0.0885563, 0.0314488), vec3(-0.798472, -0.602032, 0)),
+CameraPoint(vec3(-2.26784, -11.2763, 7), vec3(-0.782392, -0.00750256, 0.62274), vec3(-0.997522, -0.0703515, 0), 10.0f) // Ende
 };
 //*/
 
@@ -80,30 +81,6 @@ Camera::Camera(){
 	modelMatrix = mat4x4(1.0);// = glm::lookAt(vec3(0, 0, 15), vec3(0, 0, 0), vec3(0, 1, 0));
 	//modelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(0, 0, -15));
 
-	//				+X = Tür, -Y = Fenster, +Z = Höhe
-	float height = 7.0;
-	bSpline.addPoint(vec3(0, 9, height), 1);
-	bSpline.addPoint(vec3(0, 7, height), 2);
-	bSpline.addPoint(vec3(0, 5, height - 0.6), 2);
-	bSpline.addPoint(vec3(0, 3, height - 0.8), 2);
-	bSpline.addPoint(vec3(0, 1, height - 0.4), 2);
-	bSpline.addPoint(vec3(0, -1, height), 2);
-	bSpline.addPoint(vec3(0, -3, height), 2);
-	bSpline.addPoint(vec3(1, -5, height), 2);
-	bSpline.addPoint(vec3(1, -7, height), 2);
-	bSpline.addPoint(vec3(2, -9, height), 2);
-	bSpline.addPoint(vec3(2, -11, height), 2);
-	bSpline.addPoint(vec3(3, -13, height), 2);
-	bSpline.addPoint(vec3(4, -13, height), 2);
-	bSpline.addPoint(vec3(6, -13, height), 2);
-	bSpline.addPoint(vec3(8, -13, height), 2);
-	/*
-	bSpline.addPoint(vec3(2, -5, height), 2);
-	bSpline.addPoint(vec3(4, -5, height), 2);
-	bSpline.addPoint(vec3(6, -3, height), 2);
-	bSpline.addPoint(vec3(6, 5, height), 2);
-	*/
-	bSpline.addLastPoint(vec3(6, -3, height), 1, 1, 1);
 }
 
 Camera::~Camera(){}
@@ -241,7 +218,9 @@ vec3 computePointCubicHermiteCurve(float t, vec3 p1, vec3 p2, vec3 d1, vec3 d2)
 	h2 = t3 - 2 * t2 + t;
 	h3 = t3 - t2;
 
-	return p1 * h0 + p2 * h1 + d1 * h2 + d2 * h3;
+	float l = length(p2 - p1);
+
+	return p1 * h0 + p2 * h1 + l * d1 * h2 + l * d2 * h3;
 }
 
 vec3 computeDerivativeCubicHermiteCurve(float t, vec3 p1, vec3 p2, vec3 d1, vec3 d2)
@@ -310,6 +289,8 @@ void Camera::advance(float time_delta)
 			vec3 p2 = End.getPoint();
 			vec3 d1 = Start.getDerivative();
 			vec3 d2 = End.getDerivative();
+			vec3 cd1 = Start.getCurveDerivative();
+			vec3 cd2 = End.getCurveDerivative();
 
 			if (Start.getPause() > 0) {
 				if (Start.getPause() >= wait) {
@@ -331,9 +312,8 @@ void Camera::advance(float time_delta)
 				d = computeDerivativeLinearInterpolation(advance_t, d1, d2);
 				break;
 			case CURVE_HERMITE:
-				p = computePointCubicHermiteCurve(advance_t, p1, p2, d1, d2);
+				p = computePointCubicHermiteCurve(advance_t, p1, p2, cd1, cd2);
 				d = computeDerivativeLinearInterpolation(advance_t, d1, d2);
-				//d = computeDerivativeCubicHermiteCurve(advance_t, p1, p2, d1, d2);
 				break;
 			case CURVE_CATMULL:
 				if (t < indexLastEndPoint - 2)
@@ -362,19 +342,6 @@ void Camera::advance(float time_delta)
 		{
 			t += 1 * time_delta;
 		}
-
-		switch (method)
-		{
-		case CURVE_BSPLINE:
-
-			cout << "t = " << t << " ";
-			p = bSpline.calcPoint(t);
-			d = bSpline.calcDerivative(t);
-			cout << "Point: " << p.x << ", " << p.y << ", " << p.z << " ";
-			cout << "Derivative: " << d.x << ", " << d.y << ", " << d.z << endl;
-
-			break;
-		}
 	}
 }
 
@@ -397,7 +364,7 @@ void drawLineStrop(Shader *shader, mat4x4 VP, vector<vec3> points) {
 	auto view_proj_location = glGetUniformLocation(shader->programHandle, "VP");
 	glUniformMatrix4fv(view_proj_location, 1, GL_FALSE, value_ptr(VP));
 
-	glLineWidth(10.0);
+	glLineWidth(2.0);
 
 	glDrawArrays(GL_LINE_STRIP, 0, points.size());
 
@@ -428,16 +395,21 @@ void Camera::drawCurve(Shader* shader, mat4x4 VP) {
 		vec3 point = cameraPoints[i].getPoint();
 		points.push_back(vec3(point.x, point.z, -point.y));
 		vec3 dir = cameraPoints[i].getDerivative();
+		vec3 curveDir = cameraPoints[i].getCurveDerivative();
+		vec3 pointCurveDir = point + curveDir;
 		vec3 pointDir = point + dir;
 		points.push_back(vec3(pointDir.x, pointDir.z, -pointDir.y));
+		points.push_back(vec3(point.x, point.z, -point.y));
+		points.push_back(vec3(pointCurveDir.x, pointCurveDir.z, -pointCurveDir.y));
 		points.push_back(vec3(point.x, point.z, -point.y));
 
 		if (i < countPoints - 1) {
 			vec3 point2 = cameraPoints[i+1].getPoint();
 			vec3 dir2 = cameraPoints[i+1].getDerivative();
+			vec3 curveDir2 = cameraPoints[i + 1].getCurveDerivative();
 
 			for (float advance_t = 0.01f; advance_t < 1; advance_t += 0.01f) {
-				vec3 curvePoint = computePointCubicHermiteCurve(advance_t, point, point2, dir, dir2);
+				vec3 curvePoint = computePointCubicHermiteCurve(advance_t, point, point2, curveDir, curveDir2);
 				points.push_back(vec3(curvePoint.x, curvePoint.z, -curvePoint.y));
 			}
 		}

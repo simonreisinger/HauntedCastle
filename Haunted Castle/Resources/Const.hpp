@@ -80,6 +80,7 @@ extern int countObjectsLoading;
 
 extern FrustumG* frustumG;
 
+extern float speed;
 extern bool renderObjects;
 extern bool debugMode;
 extern bool playSound;
