@@ -542,7 +542,9 @@ int main(int argc, char** argv)
 		auto time_new = glfwGetTime();
 		auto time_delta = (float)(time_new - time) * speed;
 		refreshTime += time_delta;
-		time_abs += time_delta;
+		if (!debugMode) {
+			time_abs += time_delta;
+		}
 		time = time_new;
 
 		NUMBER_OF_CULLED_MESHES = 0;
@@ -562,11 +564,11 @@ int main(int argc, char** argv)
 		double time_blur_start = 0;
 		double time_blur_end = 0;
 
-		if (!debugMode && time_abs >= 95.5f) {
+		if (!debugMode && time_abs >= 85.0f) {
 			glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 			glViewport(0, 0, width, height);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-			if (time_abs >= 96.5f) {
+			if (time_abs >= 86.0f) {
 				renderImage(imageWasted);
 			}
 		} else {
@@ -1317,19 +1319,19 @@ void moveObjects(float time_delta, float time_abs)
 
 		float chessDistField = 0.24f;
 
-		chess->translateLinear("White_Pawn_005", vec3(0, -1 * chessDistField, 0), 61.0f, 0.5f, time_abs, time_delta);
-		chess->translateLinear("White_Pawn_012", vec3(0, 2 * chessDistField, 0), 63.0f, 1.0f, time_abs, time_delta);
-		chess->translateLinear("White_Pawn_006", vec3(0, -2 * chessDistField, 0), 65.0f, 1.0f, time_abs, time_delta);
-		chess->translateLinear("Queen_001", vec3(-4 * chessDistField, 4 * chessDistField, 0), 67.0f, 2.0f, time_abs, time_delta);
+		chess->translateLinear("White_Pawn_005", vec3(0, -1 * chessDistField, 0), 57.0f, 0.5f, time_abs, time_delta);
+		chess->translateLinear("White_Pawn_012", vec3(0, 2 * chessDistField, 0), 59.0f, 1.0f, time_abs, time_delta);
+		chess->translateLinear("White_Pawn_006", vec3(0, -2 * chessDistField, 0), 61.0f, 1.0f, time_abs, time_delta);
+		chess->translateLinear("Queen_001", vec3(-4 * chessDistField, 4 * chessDistField, 0), 63.0f, 2.0f, time_abs, time_delta);
 
 
-		frame->rotateLinear("Frame", vec3(1, 0, 0), -40.0f, false, 74.5f, 0.25f, time_abs, time_delta);
-		frame->rotateLinear("Frame", vec3(1, 0, 0), 10.0f, false, 74.75f, 0.25f, time_abs, time_delta);
-		frame->translateGravity("Empty", 4.44412f, 75.0f, time_abs, time_delta);
+		frame->rotateLinear("Frame", vec3(1, 0, 0), -40.0f, false, 68.5f, 0.25f, time_abs, time_delta);
+		frame->rotateLinear("Frame", vec3(1, 0, 0), 10.0f, false, 68.75f, 0.25f, time_abs, time_delta);
+		frame->translateGravity("Empty", 4.44412f, 69.0f, time_abs, time_delta);
 
-		wardrobe->rotateLinear("wardrobe_door_right", vec3(0, 0, 1), -90.0f, true, 83.0f, 1.0f, time_abs, time_delta);
+		wardrobe->rotateLinear("wardrobe_door_right", vec3(0, 0, 1), -90.0f, true, 77.0f, 1.0f, time_abs, time_delta);
 
-		wardrobe->rotateLinear("wardrobe_body", vec3(0, 1, 0), 90.0f, true, 94.5f, 2.0f, time_abs, time_delta);
+		wardrobe->rotateLinear("wardrobe_body", vec3(0, 1, 0), 90.0f, true, 84.0f, 2.0f, time_abs, time_delta);
 	}
 }
 
@@ -1613,13 +1615,13 @@ void handleInput(GLFWwindow* window, float time_delta)
 			vec4 camera_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraPos(), 1);
 			vec4 look_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraLookAt(), 1);
 
-			vec4 dir = look_pos - camera_pos;
+			vec4 dir = normalize(look_pos - camera_pos);
+
+			cout << "CameraPoint(vec3(" << camera_pos.x << ", " << -camera_pos.z << ", 7), vec3("
+				<< dir.x << ", " << -dir.z << ", " << dir.y << ")";
 			dir.y = 0;
 			dir = normalize(dir);
-
-			/*cout << "CameraPoint(vec3(" << camera_pos.x << ", " << -camera_pos.z << ", " << camera_pos.y << "), vec3("
-				<< dir.x << ", " << -dir.z << ", " << dir.y << "))," << endl;*/
-			cout << ", vec3(" << dir.x << ", " << -dir.z << ", " << dir.y << ")" << endl;
+			cout << ", vec3(" << dir.x << ", " << -dir.z << ", " << dir.y << "))," << endl;
 		}
 		CGUE_P_PRESSED = true;
 	}
