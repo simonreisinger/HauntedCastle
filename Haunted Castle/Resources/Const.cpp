@@ -25,6 +25,7 @@ float FIRE_AND_SHADOWS_INTENSITY_2 = 0.0f;
 bool CGUE_F10_PRESSED = false;
 bool CGUE_F11_PRESSED = false;
 bool CGUE_P_PRESSED = false;
+bool CGUE_L_PRESSED = false;
 bool LIGHT_SHAFTS = true;
 bool BLOOM = true;
 int NUMBER_OF_CULLED_MESHES = 0;
@@ -106,6 +107,7 @@ int countMeshesLoading = 73;
 int iObjectsLoaded = 0;
 int countObjectsLoading = 14;
 
+int LEVEL_OF_RENDER_QUALITY = 1; // 1 = high, 0 = low
 float speed = 1.0f;
 bool renderObjects = true;
 bool debugMode = false;

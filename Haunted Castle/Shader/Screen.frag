@@ -20,6 +20,7 @@ uniform int FIRE_AND_SHADOWS_1;
 uniform int FIRE_AND_SHADOWS_2;
 uniform float FIRE_AND_SHADOWS_INTENSITY_1;
 uniform float FIRE_AND_SHADOWS_INTENSITY_2;
+uniform int LEVEL_OF_RENDER_QUALITY;
 
 
 
@@ -125,8 +126,9 @@ float lightShaft(vec3 FragPos_worldspace, vec3 Camera_worldspace) {
 	vec3 delta_lightview = normalize(Camera_worldspace - FragPos_worldspace);
 	vec3 delta_worldspace = delta_lightview;
 
-	float step_size_worldspace = 0.05 * raymarch_distance_worldspace;
-	float step_size_lightview = step_size_worldspace;
+	float level_of_render_quality_factor = (LEVEL_OF_RENDER_QUALITY == 1 ? 1.0 : 2.0);
+
+	float step_size = level_of_render_quality_factor * 0.025 * raymarch_distance_worldspace;
 
 	vec3 ray_position_lightview = FragPos_worldspace;
 
@@ -135,7 +137,7 @@ float lightShaft(vec3 FragPos_worldspace, vec3 Camera_worldspace) {
 
 	int previosLuminated = 0;
 
-	for (float l = raymarch_distance_worldspace; l > step_size_worldspace; l -= step_size_worldspace) {
+	for (float l = raymarch_distance_worldspace; l > step_size; l -= step_size) {
 		vec4 ray_position_lightclipspace = biasMatrix * light_projection_matrix * vec4(ray_position_lightview, 1);
 
 		float shadow_term = texture( directionalShadowsDepthMap, ray_position_lightclipspace.xyz );
@@ -144,7 +146,7 @@ float lightShaft(vec3 FragPos_worldspace, vec3 Camera_worldspace) {
 			
 			for (float i = previosLuminated == 1 ? 0 : -0.9; i <= 0.9; i += 0.1) {
 			
-				vec3 ray_position_lightview_detail = ray_position_lightview + i * step_size_lightview * delta_lightview;
+				vec3 ray_position_lightview_detail = ray_position_lightview + i * step_size * delta_lightview;
 				
 				vec4 ray_position_lightclipspace_detail = biasMatrix * light_projection_matrix * vec4(ray_position_lightview_detail, 1);
 
@@ -155,7 +157,7 @@ float lightShaft(vec3 FragPos_worldspace, vec3 Camera_worldspace) {
 				// multiplication is faster than division, so do it once
 				float d_rcp = 1.0/d;
 		
-				light_contribution += 0.1 * shadow_term * (phi * 0.25 * PI_RCP) * d_rcp * d_rcp * 
+				light_contribution += level_of_render_quality_factor * 0.1 * shadow_term * (phi * 0.25 * PI_RCP) * d_rcp * d_rcp * 
 					exp(-d*tau) *
 					exp(-l*tau);
 			}
@@ -164,7 +166,7 @@ float lightShaft(vec3 FragPos_worldspace, vec3 Camera_worldspace) {
 			previosLuminated = 0;
 		}
 
-		ray_position_lightview += step_size_lightview * delta_lightview;
+		ray_position_lightview += step_size * delta_lightview;
 	}
 
 	return light_contribution;

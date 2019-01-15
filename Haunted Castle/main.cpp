@@ -1299,7 +1299,7 @@ void update(float time_delta, float time_abs) // TODO change time_delta to delta
 	moveObjects(time_delta, time_abs);
 
 	if (!debugMode) {
-		FIRE_AND_SHADOWS_1 = time_abs >= 22.0f;
+		FIRE_AND_SHADOWS_1 = time_abs >= 22.5f;
 		FIRE_AND_SHADOWS_2 = time_abs >= 40.0f;
 		if (FIRE_AND_SHADOWS_1) {
 			FIRE_AND_SHADOWS_INTENSITY_1 = FIRE_AND_SHADOWS_INTENSITY_1 >= 1 ? 1.0f : FIRE_AND_SHADOWS_INTENSITY_1 + time_delta;
@@ -1629,6 +1629,18 @@ void handleInput(GLFWwindow* window, float time_delta)
 	}
 	else {
 		CGUE_P_PRESSED = false;
+	}
+
+	// L - Level of Rendered Details
+	if (glfwGetKey(window, GLFW_KEY_L)) {
+		if (CGUE_L_PRESSED == false) {
+			LEVEL_OF_RENDER_QUALITY = LEVEL_OF_RENDER_QUALITY == 1 ? 0 : 1;
+			cout << "LEVEL_OF_RENDER_QUALITY set to " << LEVEL_OF_RENDER_QUALITY << endl;
+		}
+		CGUE_L_PRESSED = true;
+	}
+	else {
+		CGUE_L_PRESSED = false;
 	}
 
 	if (glfwGetKey(window, GLFW_KEY_KP_ADD)) {
