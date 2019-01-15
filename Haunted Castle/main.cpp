@@ -1313,6 +1313,8 @@ void update(float time_delta, float time_abs) // TODO change time_delta to delta
 void moveObjects(float time_delta, float time_abs)
 {
 	if (renderObjects) {
+		door->rotateLinear("Door", vec3(0, 0, 1), -45, true, 31.0, 4.0, time_abs, time_delta);
+
 		torch2->rotateLinear("Stab", vec3(1, 0, 0), -45, true, 39.0, 1.0, time_abs, time_delta);
 
 		chair1->translateLinear("Chair", vec3(0, -1.8, 0), 53.0, 2.0, time_abs, time_delta);
