@@ -1,5 +1,4 @@
 #include "Camera.hpp"
-#include <vector>
 
 using namespace cgue;
 using namespace glm;
@@ -366,19 +365,33 @@ void Camera::advance(float time_delta)
 	}
 }
 
-void drawLineStrop(Shader *shader, mat4x4 VP, vector<vec3> points) {
-	GLuint vao;
+void Camera::initLineStrop(Shader *shader, mat4x4 VP, vector<vec3> points) {
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
 
-	GLuint vb;
 	glGenBuffers(1, &vb);
 	glBindBuffer(GL_ARRAY_BUFFER, vb);
-	glBufferData(GL_ARRAY_BUFFER, 3 * points.size() * sizeof(float), &points[0], GL_STATIC_DRAW);
+	//glBufferData(GL_ARRAY_BUFFER, 3 * points.size() * sizeof(float), &points[0], GL_STATIC_DRAW);
 
 	glBindBuffer(GL_ARRAY_BUFFER, vb);
 	glVertexAttribPointer(glGetAttribLocation(shader->programHandle, "pos"), 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(glGetAttribLocation(shader->programHandle, "pos"));
+	shader->useShader();
+
+	glBindVertexArray(0);
+}
+
+
+void Camera::drawLineStrop(Shader *shader, mat4x4 VP, vector<vec3> points) {
+	if (!initiatializedLineStrop) {
+		initiatializedLineStrop = true;
+		initLineStrop(shader, VP, points);
+	}
+
+	glBindVertexArray(vao);
+
+	glBufferData(GL_ARRAY_BUFFER, 3 * points.size() * sizeof(float), &points[0], GL_STATIC_DRAW);
+
 	shader->useShader();
 
 	// Model View
@@ -388,12 +401,6 @@ void drawLineStrop(Shader *shader, mat4x4 VP, vector<vec3> points) {
 	glLineWidth(2.0);
 
 	glDrawArrays(GL_LINE_STRIP, 0, points.size());
-
-	glUseProgram(0);
-
-	glDisableVertexAttribArray(glGetAttribLocation(shader->programHandle, "pos"));
-	glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
-
 
 	glBindVertexArray(0);
 }

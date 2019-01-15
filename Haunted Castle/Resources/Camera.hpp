@@ -6,6 +6,7 @@
 #include "Const.hpp"
 #include "Shader.hpp"
 #include <glm/gtc/type_ptr.hpp>
+#include <vector>
 
 namespace cgue {
 	class Camera : public SceneObject
@@ -29,5 +30,12 @@ namespace cgue {
 		bool automaticCameraMovementActivated = true;
 
 		vec3 p, d;
+
+		GLuint vao;
+		GLuint vb;
+
+		bool initiatializedLineStrop = false;
+		void initLineStrop(Shader *shader, mat4x4 VP, vector<vec3> points);
+		void drawLineStrop(Shader *shader, mat4x4 VP, vector<vec3> points);
 	};
 }
