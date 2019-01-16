@@ -378,6 +378,9 @@ void Camera::initLineStrop(Shader *shader, mat4x4 VP, vector<vec3> points) {
 	glEnableVertexAttribArray(glGetAttribLocation(shader->programHandle, "pos"));
 	shader->useShader();
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	glBindVertexArray(0);
 }
 
@@ -399,6 +402,8 @@ void Camera::drawLineStrop(Shader *shader, mat4x4 VP, vector<vec3> points) {
 	glUniformMatrix4fv(view_proj_location, 1, GL_FALSE, value_ptr(VP));
 
 	glLineWidth(2.0);
+
+	
 
 	glDrawArrays(GL_LINE_STRIP, 0, points.size());
 
