@@ -1165,13 +1165,12 @@ void renderLoadingImageProgress() {
 }
 
 void renderEndImage() {
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	glViewport(0, 0, width, height);
 	imageShader->useShader();
 
-	renderImage(imageLoading);
-	glfwSwapBuffers(window);
+	auto progress_location = glGetUniformLocation(imageShader->programHandle, "progress");
+	glUniform1f(progress_location, 0.0f);
+
+	renderImage(imageWasted);
 }
 
 void intCombine(){
