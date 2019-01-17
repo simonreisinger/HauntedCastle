@@ -75,7 +75,9 @@ void sendPointShadowsDataToScreenRenderer(int index);
 void sendDirectionalShadowsDataToScreenRenderer();
 float rand(float min, float max);
 void moveObjects(float time_delta, float time_abs);
-void renderImage(Texture &image);
+void renderImage(Texture* image);
+void renderLoadingImageProgress();
+void renderEndImage();
 
 GLFWwindow* window;
 
@@ -84,6 +86,9 @@ Shader* directionalShadowsShader;
 Shader* pointShadowsShader;
 Shader* cameraPathShader;
 Shader* imageShader;
+
+Texture* imageLoading;
+Texture* imageWasted;
 
 
 ///////////////////////////////////////////////////////////////
@@ -369,7 +374,7 @@ static void APIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum
 int main(int argc, char** argv)
 {
 
-	cout << "Loading..." << endl;
+	//cout << "Loading..." << endl;
 
 	// TODO implement full screen
 	ratio = (float)width / (float)height;
@@ -511,15 +516,15 @@ int main(int argc, char** argv)
 
 
 	imageShader = new Shader("Shader/Image.vert", "Shader/Image.frag");
-	Texture imageLoading = Texture("images", "loading.jpg");
-	renderImage(imageLoading);
-	glfwSwapBuffers(window);
+	imageLoading = new Texture("images", "loading.jpg");
+
+	renderLoadingImageProgress();
 
 
 	init();
 
 
-	Texture imageWasted = Texture("images", "wasted.jpg");
+	imageWasted = new Texture("images", "wasted.jpg");
 
 	// Game Loop
 	auto time = glfwGetTime();
@@ -569,7 +574,7 @@ int main(int argc, char** argv)
 			glViewport(0, 0, width, height);
 			glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			if (time_abs >= 86.0f) {
-				renderImage(imageWasted);
+				renderEndImage();
 			}
 		} else {
 			time_pointShadows_start = glfwGetTime();
@@ -771,34 +776,36 @@ void initScene(){
 	frustumG = new FrustumG();
 	camera = new Camera();
 
-	actor = new Actor(renderShader);
+	actor = new Actor(renderShader); renderLoadingImageProgress();
 	actor->setPhysX(gPhysicsSDK, gFoundation, gDefaultErrorCallback, gDefaultAllocatorCallback, gScene);
 	actor->initActor();
 
-	room = new Room(renderShader);
+	room = new Room(renderShader); renderLoadingImageProgress();
 
-	chair1 = new Chair1(renderShader);
-	chair2 = new Chair2(renderShader);
+	
 
-	desk = new Desk(renderShader);
+	chair1 = new Chair1(renderShader); renderLoadingImageProgress();
+	chair2 = new Chair2(renderShader); renderLoadingImageProgress();
 
-	commode = new Commode(renderShader);
+	desk = new Desk(renderShader); renderLoadingImageProgress();
 
-	frame = new Frame(renderShader);
+	commode = new Commode(renderShader); renderLoadingImageProgress();
+
+	frame = new Frame(renderShader); renderLoadingImageProgress();
 
 	if (renderObjects) {
-		wardrobe = new Wardrobe(renderShader);
+		wardrobe = new Wardrobe(renderShader); renderLoadingImageProgress();
 
-		torch1 = new Torch1(renderShader);
-		torch2 = new Torch2(renderShader);
+		torch1 = new Torch1(renderShader); renderLoadingImageProgress();
+		torch2 = new Torch2(renderShader); renderLoadingImageProgress();
 
 
-		chess = new Chess(renderShader);
+		chess = new Chess(renderShader); renderLoadingImageProgress();
 
-		knight1 = new Knight1(renderShader);
-		knight2 = new Knight2(renderShader);
+		knight1 = new Knight1(renderShader); renderLoadingImageProgress();
+		knight2 = new Knight2(renderShader); renderLoadingImageProgress();
 
-		door = new Door(renderShader);
+		door = new Door(renderShader); renderLoadingImageProgress();
 	}
 
 	fire = new Fire*[sizeof(torchPos) / sizeof(*torchPos)];
@@ -1136,17 +1143,35 @@ void renderBlur(){
 	}
 }
 
-void renderImage(Texture &image) {
+void renderImage(Texture* image) {
+	image->bind(TEXTURE_SLOT_STATIC_IMAGE);
+	auto image_location = glGetUniformLocation(imageShader->programHandle, "image");
+	glUniform1i(image_location, TEXTURE_SLOT_STATIC_IMAGE);
+
+	renderQuad();
+}
+
+void renderLoadingImageProgress() {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glViewport(0, 0, width, height);
 	imageShader->useShader();
 
-	image.bind(10);
-	auto image_location = glGetUniformLocation(imageShader->programHandle, "image");
-	glUniform1i(image_location, 10);
+	auto progress_location = glGetUniformLocation(imageShader->programHandle, "progress");
+	glUniform1f(progress_location, (float)iObjectsLoaded/(float)countObjectsLoading);
 
-	renderQuad();
+	renderImage(imageLoading);
+	glfwSwapBuffers(window);
+}
+
+void renderEndImage() {
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glViewport(0, 0, width, height);
+	imageShader->useShader();
+
+	renderImage(imageLoading);
+	glfwSwapBuffers(window);
 }
 
 void intCombine(){
@@ -1178,15 +1203,15 @@ void renderCombine(){
 	//glViewport(iRender * drawWidth, 0, drawWidth, height);
 	shaderCombine->useShader();
 
-	glActiveTexture(GL_TEXTURE8);
+	glActiveTexture(GL_TEXTURE0 + TEXTURE_SLOT_COMBINE_SCENE);
 	glBindTexture(GL_TEXTURE_2D, colorBuffers[0]);
 	auto colorBuffers0_location = glGetUniformLocation(shaderCombine->programHandle, "scene");
-	glUniform1i(colorBuffers0_location, 8);
+	glUniform1i(colorBuffers0_location, TEXTURE_SLOT_COMBINE_SCENE);
 
-	glActiveTexture(GL_TEXTURE9);
+	glActiveTexture(GL_TEXTURE0 + TEXTURE_SLOT_COMBINE_BLOOM);
 	glBindTexture(GL_TEXTURE_2D, pingpongColorbuffers[1]);
 	auto colorBuffers1_location = glGetUniformLocation(shaderCombine->programHandle, "bloomBlur");
-	glUniform1i(colorBuffers1_location, 9);
+	glUniform1i(colorBuffers1_location, TEXTURE_SLOT_COMBINE_BLOOM);
 
 	GLboolean bloom = true;
 	GLfloat exposure = 0.9f;
@@ -1709,6 +1734,9 @@ void OnShutdown()
 	delete pointShadowsShader; pointShadowsShader = nullptr;
 	delete shaderBlur; shaderBlur = nullptr;
 	delete imageShader; imageShader = nullptr;
+
+	delete imageLoading; imageLoading = nullptr;
+	delete imageWasted; imageWasted = nullptr;
 
 	delete frustumG; frustumG = nullptr;
 
