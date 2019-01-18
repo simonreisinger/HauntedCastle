@@ -413,7 +413,7 @@ int main(int argc, char** argv)
 
 
 	// Refresh rate
-	int refresh_rate = 120;
+	int refresh_rate = 60;
 	glfwWindowHint(GLFW_REFRESH_RATE, refresh_rate);
 
 	glfwSwapInterval(-1);
