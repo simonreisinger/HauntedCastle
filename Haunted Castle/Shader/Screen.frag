@@ -96,11 +96,16 @@ float ShadowCalculation(vec3 fragPos, vec3 flameCenterPosition, samplerCube poin
     int samples = 20;
     float viewDistance = length(viewPos - fragPos);
     float diskRadius = (1.0 + (viewDistance / pointShadowsFarPlane)) / 25.0;
+
+	float currentDepthFactor = diskRadius * min(1, 1 / sqrt(currentDepth));
+
+	float currentDepthMinusBias = currentDepth - bias;
+
     for(int i = 0; i < samples; ++i)
     {
-        float closestDepth = texture(pointShadowsDepthCubeMap, fragToLight + gridSamplingDisk[i] * diskRadius * min(1, 1 / sqrt(currentDepth))).r;
+        float closestDepth = texture(pointShadowsDepthCubeMap, fragToLight + gridSamplingDisk[i] * currentDepthFactor).r;
         closestDepth *= pointShadowsFarPlane;   // undo mapping [0;1]
-        if(currentDepth - bias > closestDepth)
+        if(currentDepthMinusBias > closestDepth)
             shadow += 1.0;
     }
     shadow /= float(samples);
@@ -153,7 +158,7 @@ float lightShaft(vec3 FragPos_worldspace, vec3 Camera_worldspace) {
 				shadow_term = texture( directionalShadowsDepthMap, ray_position_lightclipspace_detail.xyz );
 
 				// get distance in world space
-				float d = length(vec3(0, FragPos_worldspace.y - light_position.y, FragPos_worldspace.z - light_position.z));
+				float d = length(vec3(0, ray_position_lightview_detail.y - light_position.y, ray_position_lightview_detail.z - light_position.z));
 				// multiplication is faster than division, so do it once
 				float d_rcp = 1.0/d;
 		
@@ -256,8 +261,10 @@ void main(){
 
 	// PCF
 	// 4 Times Stratified Poisson Sampling
+	float discDevidor = 1/700.0;
+	float ShadowCoordZFactor = (ShadowCoord.z-bias)/ShadowCoord.w;
 	for (int i=0;i<4;i++){
-		visibility -= 0.25*(1.0-texture( directionalShadowsDepthMap, vec3(ShadowCoord.xy + disk[i]/700.0,  (ShadowCoord.z-bias)/ShadowCoord.w) ));
+		visibility -= 0.25*(1.0-texture( directionalShadowsDepthMap, vec3(ShadowCoord.xy + disk[i] * discDevidor,   ShadowCoordZFactor)));
 	}
 
 	vec3 nV = normalize( Normal_worldspace );
