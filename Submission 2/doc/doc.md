@@ -45,9 +45,9 @@ MOUSE DRAG DOWN | Camera up
 Implemented:
 - [Bling-Phong illumination model](https://en.wikipedia.org/wiki/Blinn%E2%80%93Phong_shading_model)
 - Loading all models with textures
-- Debug camera ([Controls](##CONTROLS) see above)
+- Debug camera ([Controls](#CONTROLS) see above)
 - Camera Path ([Cubic Hermite](https://en.wikipedia.org/wiki/Cubic_Hermite_spline))
-- All [Effect](##EFFECTS) (See below)
+- All [Effect](#EFFECTS) (See below)
 
 ## EFFECTS
 TODO UND QUELLEN EINFÜGEN
