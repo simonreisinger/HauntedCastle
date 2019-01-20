@@ -142,7 +142,8 @@ float lightShaft(vec3 FragPos_worldspace, vec3 Camera_worldspace) {
 
 	int previosLuminated = 0;
 
-	for (float l = raymarch_distance_worldspace; l > step_size; l -= step_size) {
+	for (float l = raymarch_distance_worldspace; l > step_size; l -= step_size) {
+
 		vec4 ray_position_lightclipspace = biasMatrix * light_projection_matrix * vec4(ray_position_lightview, 1);
 
 		float shadow_term = texture( directionalShadowsDepthMap, ray_position_lightclipspace.xyz );

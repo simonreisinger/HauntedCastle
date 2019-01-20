@@ -495,7 +495,7 @@ int main(int argc, char** argv)
 
 
 	// Create a sample sound
-	sound.createSound(&soundSample, "Datensatz/sound/spookyMusic.mp3");
+	sound.createSound(&soundSample, "Datensatz/sound/sound.mp3");
 
 
 
@@ -508,10 +508,6 @@ int main(int argc, char** argv)
 	glfwGetCursorPos(window, &mouseXPosOld, &mouseYPosOld);
 
 
-	if (playSound) {
-		// Play the sound, with loop mode
-		sound.playSound(soundSample, false);
-	}
 
 
 
@@ -534,6 +530,13 @@ int main(int argc, char** argv)
 	double time_directionalShadows_start = glfwGetTime();
 	renderDepthMap();
 	double time_directionalShadows_end = glfwGetTime();
+
+
+	if (playSound) {
+		// Play the sound, with loop mode
+		sound.playSound(soundSample, false);
+	}
+
 
 	while (!glfwWindowShouldClose(window))
 	{
@@ -1355,7 +1358,7 @@ void moveObjects(float time_delta, float time_abs)
 		frame->rotateLinear("Frame", vec3(1, 0, 0), 10.0f, false, 68.75f, 0.25f, time_abs, time_delta);
 		frame->translateGravity("Empty", 4.44412f, 69.0f, time_abs, time_delta);
 
-		wardrobe->rotateLinear("wardrobe_door_right", vec3(0, 0, 1), -90.0f, true, 77.0f, 1.0f, time_abs, time_delta);
+		wardrobe->rotateLinear("wardrobe_door_right", vec3(0, 0, 1), -90.0f, true, 77.0f, 3.0f, time_abs, time_delta);
 
 		wardrobe->rotateLinear("wardrobe_body", vec3(0, 1, 0), 90.0f, true, 84.0f, 2.0f, time_abs, time_delta);
 	}
@@ -1476,35 +1479,33 @@ void handleInput(GLFWwindow* window, float time_delta)
 	if (glfwGetKey(window, GLFW_KEY_F1)){
 		if (!CGUE_F1_PRESSED)
 		{
-			cout << endl << "HOW TO PLAY:" << endl;
-			cout << "Try to pass the parkour of knight1 faster than your opponent." << endl;
-			cout << "-------------------" << endl;
-			cout << "CONTROLS:" << endl;
-			cout << "CONTROLS                        | FUNCTION" << endl;
+			cout << endl << "CONTROLS" << endl;
+			cout << "F1                              | Help / Show Controls" << endl;
+			cout << "F2                              | Frame Time on/off" << endl;
+			cout << "+/-                             | Ambient Light up/down" << endl;
+			cout << "Page up/Page down/Pos1          | Speed up/down/reset" << endl;
+			cout << "C                               | Debug Mode on/off" << endl;
+			cout << "ESC                             | Quit Game" << endl;
+			cout << "------------------------------------------------------------------------------------" << endl;
+			cout << "CONTROLS JUST IN DEBUG MODE:" << endl;
+			cout << "F3                              | Wire Frame on/off" << endl;
+			cout << "F4                              | Textur-Sampling-Quality: Nearest Neighbor/Bilinear" << endl;
+			cout << "F5                              | Mip Mapping-Quality: Off/Nearest Neighbor/Linear" << endl;
+			cout << "F6                              | Viewfrustum-Culling on/off" << endl;
+			cout << "F7                              | Normal Mapping on/off" << endl;
+			cout << "F8                              | Fire and Shadows 1 on/off" << endl;
+			cout << "F9                              | Fire and Shadows 2 on/off" << endl;
+			cout << "F10                             | Bloom on/off" << endl;
+			cout << "F11                             | Light Shafts on/off" << endl;
 			cout << "W, ARROW UP                     | Accelerate" << endl;
 			cout << "S, ARROW DOWN                   | Decelerate/Backwards" << endl;
 			cout << "A, ARROW LEFT, MOUSE DRAG RIGHT | Pan left" << endl;
 			cout << "D, ARROW RIGHT, MOUSE DRAG LEFT | Pan right" << endl;
-			cout << "ARROW UP                        | Camera up" << endl;
-			cout << "ARROW DOWN                      | Camera down" << endl;
-			cout << "ARROW LEFT                      | Camera left" << endl;
-			cout << "ARROW RIGHT                     | Camera right" << endl;
 			cout << "Q                               | Go down" << endl;
 			cout << "E                               | Go up" << endl;
 			cout << "MOUSE DRAG UP                   | Camera down" << endl;
 			cout << "MOUSE DRAG DOWN                 | Camera up" << endl;
-			cout << "-------------------" << endl;
-			cout << "F1 - Help / Show Controls" << endl;
-			cout << "F2 - Frame Time on/off" << endl;
-			cout << "F3 - Wire Frame on/off" << endl;
-			cout << "F4 - Textur-Sampling-Quality: Nearest Neighbor/Bilinear" << endl;
-			cout << "F5 - Mip Mapping-Quality: Off/Nearest Neighbor/Linear" << endl;
-			cout << "F6 - Viewfrustum-Culling on/off" << endl;
-			cout << "F7 - Normal Mapping on/off" << endl;
-			cout << "F8 - Fire and Shadows 1 on/off" << endl;
-			cout << "F9 - Fire and Shadows 2 on/off" << endl;
-			cout << "F10 - Bloom on/off" << endl;
-			cout << "ESC - Quit Game" << endl << endl;
+			cout << "------------------------------------------------------------------------------------" << endl;
 		}
 		CGUE_F1_PRESSED = true;
 	}
@@ -1524,147 +1525,157 @@ void handleInput(GLFWwindow* window, float time_delta)
 		CGUE_F2_PRESSED = false;
 	}
 
-	// F3 - Wire Frame on/off
-	if (glfwGetKey(window, GLFW_KEY_F3)) {
-		if (!CGUE_F3_PRESSED) {
-			CGUE_RENDER = CGUE_RENDER == GL_TRIANGLES ? GL_LINE_STRIP : GL_TRIANGLES;
-			cout << "Wire Frame " << (CGUE_RENDER == GL_TRIANGLES ? "on" : "off") << endl;
-		}
-		CGUE_F3_PRESSED = true;
-	} else {
-		CGUE_F3_PRESSED = false;
-	}
-
-	//  F4 - Textur-Sampling-Quality: Nearest Neighbor/Bilinear
-	if (glfwGetKey(window, GLFW_KEY_F4)) {
-		if (!CGUE_F4_PRESSED) {
-			TEXTURE_SAMPLING_QUALITY = !TEXTURE_SAMPLING_QUALITY;
-			cout << "Textur-Sampling-Quality: " << (TEXTURE_SAMPLING_QUALITY ? "Bilinear" : "Nearest Neighbor") << endl;
-		}
-		CGUE_F4_PRESSED = true;
-	} else {
-		CGUE_F4_PRESSED = false;
-	}
-
-	// F5 - Mip Mapping-Quality: Off/Nearest Neighbor/Linear
-	if (glfwGetKey(window, GLFW_KEY_F5)) {
-		if (CGUE_F5_PRESSED == false) {
-			if (MIP_MAPPING_QUALITY == 0) {
-				cout << "Mip Mapping-Quality: Nearest Neighbor" << endl;
-				MIP_MAPPING_QUALITY = 1;
-			} else if (MIP_MAPPING_QUALITY == 1) {
-				cout << "Mip Mapping-Quality: Linear" << endl;
-				MIP_MAPPING_QUALITY = 2;
-			} else {
-				cout << "Mip Mapping-Quality: Off" << endl;
-				MIP_MAPPING_QUALITY = 0;
+	if (!camera->getAutomaticCameraMovementActivated())
+	{
+		// F3 - Wire Frame on/off
+		if (glfwGetKey(window, GLFW_KEY_F3)) {
+			if (!CGUE_F3_PRESSED) {
+				CGUE_RENDER = CGUE_RENDER == GL_TRIANGLES ? GL_LINE_STRIP : GL_TRIANGLES;
+				cout << "Wire Frame " << (CGUE_RENDER == GL_TRIANGLES ? "on" : "off") << endl;
 			}
+			CGUE_F3_PRESSED = true;
 		}
-		CGUE_F5_PRESSED = true;
-	} else {
-		CGUE_F5_PRESSED = false;
-	}
-
-	// F6 - Viewfrustum-Culling on/off
-	if (glfwGetKey(window, GLFW_KEY_F6)) {
-		if (CGUE_F6_PRESSED == false) {
-			VIEWFRUSTUM_CULLING = !VIEWFRUSTUM_CULLING;
-			cout << "Viewfrustum-Culling " << (VIEWFRUSTUM_CULLING ? "on" : "off") << endl;
+		else {
+			CGUE_F3_PRESSED = false;
 		}
-		CGUE_F6_PRESSED = true;
-	} else {
-		CGUE_F6_PRESSED = false;
-	}
 
-	// F7 - Normal Mapping
-	if (glfwGetKey(window, GLFW_KEY_F7)) {
-		if (CGUE_F7_PRESSED == false) {
-			NORMAL_MAPPING = !NORMAL_MAPPING;
-			cout << "Normal Mapping " << (NORMAL_MAPPING ? "on" : "off") << endl;
+		//  F4 - Textur-Sampling-Quality: Nearest Neighbor/Bilinear
+		if (glfwGetKey(window, GLFW_KEY_F4)) {
+			if (!CGUE_F4_PRESSED) {
+				TEXTURE_SAMPLING_QUALITY = !TEXTURE_SAMPLING_QUALITY;
+				cout << "Textur-Sampling-Quality: " << (TEXTURE_SAMPLING_QUALITY ? "Bilinear" : "Nearest Neighbor") << endl;
+			}
+			CGUE_F4_PRESSED = true;
 		}
-		CGUE_F7_PRESSED = true;
-	} else {
-		CGUE_F7_PRESSED = false;
-	}
-
-	// F8 - Fire
-	if (glfwGetKey(window, GLFW_KEY_F8)) {
-		if (CGUE_F8_PRESSED == false) {
-			FIRE_AND_SHADOWS_1 = !FIRE_AND_SHADOWS_1;
-			cout << "Fire and Shadows 1 " << (FIRE_AND_SHADOWS_1 ? "on" : "off") << endl;
+		else {
+			CGUE_F4_PRESSED = false;
 		}
-		CGUE_F8_PRESSED = true;
-	}
-	else {
-		CGUE_F8_PRESSED = false;
-	}
 
-	// F9 - Fire
-	if (glfwGetKey(window, GLFW_KEY_F9)) {
-		if (CGUE_F9_PRESSED == false) {
-			FIRE_AND_SHADOWS_2 = !FIRE_AND_SHADOWS_2;
-			cout << "Fire and Shadows 2 " << (FIRE_AND_SHADOWS_2 ? "on" : "off") << endl;
+		// F5 - Mip Mapping-Quality: Off/Nearest Neighbor/Linear
+		if (glfwGetKey(window, GLFW_KEY_F5)) {
+			if (CGUE_F5_PRESSED == false) {
+				if (MIP_MAPPING_QUALITY == 0) {
+					cout << "Mip Mapping-Quality: Nearest Neighbor" << endl;
+					MIP_MAPPING_QUALITY = 1;
+				}
+				else if (MIP_MAPPING_QUALITY == 1) {
+					cout << "Mip Mapping-Quality: Linear" << endl;
+					MIP_MAPPING_QUALITY = 2;
+				}
+				else {
+					cout << "Mip Mapping-Quality: Off" << endl;
+					MIP_MAPPING_QUALITY = 0;
+				}
+			}
+			CGUE_F5_PRESSED = true;
 		}
-		CGUE_F9_PRESSED = true;
-	}
-	else {
-		CGUE_F9_PRESSED = false;
-	}
-
-	// F10 - Fire
-	if (glfwGetKey(window, GLFW_KEY_F10)) {
-		if (CGUE_F10_PRESSED == false) {
-			BLOOM = !BLOOM;
-			cout << "Bloom " << (BLOOM ? "on" : "off") << endl;
+		else {
+			CGUE_F5_PRESSED = false;
 		}
-		CGUE_F10_PRESSED = true;
-	}
-	else {
-		CGUE_F10_PRESSED = false;
-	}
 
-	// F11 - Camera Pos
-	if (glfwGetKey(window, GLFW_KEY_F11)) {
-		if (CGUE_F11_PRESSED == false) {
-			LIGHT_SHAFTS = !LIGHT_SHAFTS;
+		// F6 - Viewfrustum-Culling on/off
+		if (glfwGetKey(window, GLFW_KEY_F6)) {
+			if (CGUE_F6_PRESSED == false) {
+				VIEWFRUSTUM_CULLING = !VIEWFRUSTUM_CULLING;
+				cout << "Viewfrustum-Culling " << (VIEWFRUSTUM_CULLING ? "on" : "off") << endl;
+			}
+			CGUE_F6_PRESSED = true;
 		}
-		CGUE_F11_PRESSED = true;
-	}
-	else {
-		CGUE_F11_PRESSED = false;
-	}
-
-	// P - Camera Pos
-	if (glfwGetKey(window, GLFW_KEY_P)) {
-		if (CGUE_P_PRESSED == false) {
-
-			vec4 camera_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraPos(), 1);
-			vec4 look_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraLookAt(), 1);
-
-			vec4 dir = normalize(look_pos - camera_pos);
-
-			cout << "CameraPoint(vec3(" << camera_pos.x << ", " << -camera_pos.z << ", 7), vec3("
-				<< dir.x << ", " << -dir.z << ", " << dir.y << ")";
-			dir.y = 0;
-			dir = normalize(dir);
-			cout << ", vec3(" << dir.x << ", " << -dir.z << ", " << dir.y << "))," << endl;
+		else {
+			CGUE_F6_PRESSED = false;
 		}
-		CGUE_P_PRESSED = true;
-	}
-	else {
-		CGUE_P_PRESSED = false;
-	}
 
-	// L - Level of Rendered Details
-	if (glfwGetKey(window, GLFW_KEY_L)) {
-		if (CGUE_L_PRESSED == false) {
-			LEVEL_OF_RENDER_QUALITY = LEVEL_OF_RENDER_QUALITY == 1 ? 0 : 1;
-			cout << "LEVEL_OF_RENDER_QUALITY set to " << LEVEL_OF_RENDER_QUALITY << endl;
+		// F7 - Normal Mapping
+		if (glfwGetKey(window, GLFW_KEY_F7)) {
+			if (CGUE_F7_PRESSED == false) {
+				NORMAL_MAPPING = !NORMAL_MAPPING;
+				cout << "Normal Mapping " << (NORMAL_MAPPING ? "on" : "off") << endl;
+			}
+			CGUE_F7_PRESSED = true;
 		}
-		CGUE_L_PRESSED = true;
-	}
-	else {
-		CGUE_L_PRESSED = false;
+		else {
+			CGUE_F7_PRESSED = false;
+		}
+
+		// F8 - Fire
+		if (glfwGetKey(window, GLFW_KEY_F8)) {
+			if (CGUE_F8_PRESSED == false) {
+				FIRE_AND_SHADOWS_1 = !FIRE_AND_SHADOWS_1;
+				cout << "Fire and Shadows 1 " << (FIRE_AND_SHADOWS_1 ? "on" : "off") << endl;
+			}
+			CGUE_F8_PRESSED = true;
+		}
+		else {
+			CGUE_F8_PRESSED = false;
+		}
+
+		// F9 - Fire
+		if (glfwGetKey(window, GLFW_KEY_F9)) {
+			if (CGUE_F9_PRESSED == false) {
+				FIRE_AND_SHADOWS_2 = !FIRE_AND_SHADOWS_2;
+				cout << "Fire and Shadows 2 " << (FIRE_AND_SHADOWS_2 ? "on" : "off") << endl;
+			}
+			CGUE_F9_PRESSED = true;
+		}
+		else {
+			CGUE_F9_PRESSED = false;
+		}
+
+		// F10 - Fire
+		if (glfwGetKey(window, GLFW_KEY_F10)) {
+			if (CGUE_F10_PRESSED == false) {
+				BLOOM = !BLOOM;
+				cout << "Bloom " << (BLOOM ? "on" : "off") << endl;
+			}
+			CGUE_F10_PRESSED = true;
+		}
+		else {
+			CGUE_F10_PRESSED = false;
+		}
+
+		// F11 - Light Shafts
+		if (glfwGetKey(window, GLFW_KEY_F11)) {
+			if (CGUE_F11_PRESSED == false) {
+				LIGHT_SHAFTS = !LIGHT_SHAFTS;
+			}
+			CGUE_F11_PRESSED = true;
+		}
+		else {
+			CGUE_F11_PRESSED = false;
+		}
+
+		// P - Camera Pos
+		if (glfwGetKey(window, GLFW_KEY_P)) {
+			if (CGUE_P_PRESSED == false) {
+
+				vec4 camera_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraPos(), 1);
+				vec4 look_pos = pxMatToGlm(PxMat44(actor->actor->getGlobalPose())) * vec4(camera->getCameraLookAt(), 1);
+
+				vec4 dir = normalize(look_pos - camera_pos);
+
+				cout << "CameraPoint(vec3(" << camera_pos.x << ", " << -camera_pos.z << ", 7), vec3("
+					<< dir.x << ", " << -dir.z << ", " << dir.y << ")";
+				dir.y = 0;
+				dir = normalize(dir);
+				cout << ", vec3(" << dir.x << ", " << -dir.z << ", " << dir.y << "))," << endl;
+			}
+			CGUE_P_PRESSED = true;
+		}
+		else {
+			CGUE_P_PRESSED = false;
+		}
+
+		// L - Level of Rendered Details
+		if (glfwGetKey(window, GLFW_KEY_L)) {
+			if (CGUE_L_PRESSED == false) {
+				LEVEL_OF_RENDER_QUALITY = LEVEL_OF_RENDER_QUALITY == 1 ? 0 : 1;
+				cout << "LEVEL_OF_RENDER_QUALITY set to " << LEVEL_OF_RENDER_QUALITY << endl;
+			}
+			CGUE_L_PRESSED = true;
+		}
+		else {
+			CGUE_L_PRESSED = false;
+		}
 	}
 
 	if (glfwGetKey(window, GLFW_KEY_KP_ADD)) {

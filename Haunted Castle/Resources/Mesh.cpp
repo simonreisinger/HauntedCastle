@@ -398,6 +398,9 @@ void Mesh::loadUniforms(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalP
 	else {
 		glUniform1i(normal_tex_enabled, 0);
 	}
+
+	auto normalMapping_location = glGetUniformLocation(shader->programHandle, "NORMAL_MAPPING");
+	glUniform1i(normalMapping_location, NORMAL_MAPPING);
 }
 
 void Mesh::draw(Shader* shader, mat4x4 view, mat4x4 proj, mat4x4 globalPose, bool cull)

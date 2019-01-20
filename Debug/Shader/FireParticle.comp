@@ -1,0 +1,100 @@
+#version 430 core
+
+#define PI 3.1415926535897932384626433832795
+
+layout(local_size_x=32,
+	local_size_y=32,
+	local_size_z=1) in;
+
+layout(std430, binding = 0) buffer Pos1
+{
+	vec4 Position_In[];
+};
+layout(std430, binding = 1) buffer Vel1
+{
+	vec4 Velocity_In[];
+};
+layout(std430, binding = 2) buffer Pos2
+{
+	vec4 Position_Out[];
+};
+layout(std430, binding = 3) buffer Vel2
+{
+	vec4 Velocity_Out[];
+};
+
+// current particle count (atomic counter)
+layout (binding = 4, offset = 0) uniform atomic_uint Count;
+
+// last particle count (atomic counter)
+layout (binding = 5, offset = 0) uniform atomic_uint LastCount;
+
+//uniform uint LastCount;
+uniform uint MaximumCount;
+uniform float DeltaT;
+
+uniform vec3 flameTop;
+uniform vec3 flamePos;
+uniform vec3 flameDir;
+
+uniform uint spawnCount;
+
+const vec3 GRAVITY = vec3(0, 0.01f, 0);
+
+void addParticleToOutputList(vec3 pos, vec3 vel, float TTL, float InvMass) {
+	// increment the atomic counter and use its previous value:
+	
+	uint nr = atomicCounterIncrement(Count);
+	if (nr >= MaximumCount) {
+		// we are out of memory
+		atomicCounterDecrement(Count);
+		return;
+	}
+	
+	Position_Out[nr] = vec4(pos, TTL);
+	Velocity_Out[nr] = vec4(vel, InvMass);
+}
+
+void main(void)
+{
+	// unique one-dimensional index:
+	uint idx = gl_GlobalInvocationID.x + gl_GlobalInvocationID.y * gl_NumWorkGroups.x * gl_WorkGroupSize.x;
+	if(idx >= atomicCounter(LastCount)) return;
+	
+	vec3 forces = normalize(flamePos + flameTop - Position_In[idx].xyz);
+	vec3 velocity = normalize(Velocity_In[idx].xyz + DeltaT * forces);
+	float invMass = Velocity_In[idx].w;
+	vec3 pos = Position_In[idx].xyz + DeltaT * velocity * invMass;
+	float TTL = Position_In[idx].w - DeltaT;
+
+	if (TTL > 0) { // particle‘s still alive
+		addParticleToOutputList(pos, velocity, TTL, invMass);
+	}
+
+	if(spawnCount > idx)
+	{
+		float u1 = abs(sin(dot(pos.xy ,vec2(12.9898,78.233))));
+		float u2 = abs(sin(dot(pos.yz ,vec2(12.9898,78.233))));
+
+		float u1log = sqrt(abs(-2.0 * log(u1)));
+		u1log = u1log > 1.0 ? 1.0 : u1log;
+
+		float rand_x = u1log * cos(2.0 * PI * u2)/10.0f;
+		float rand_z = u1log * sin(2.0 * PI * u2)/10.0f;
+		float rand_y = 1.0;//u1 + 2.5f;
+		
+
+		vec3 dir_1 = normalize(cross(flameDir, vec3(0, 1, 0)));
+		vec3 dir_2 = normalize(cross(flameDir, dir_1));
+
+		//vec3 posNew = flamePos + vec3(rand_x, 0, rand_z);
+		vec3 posNew = flamePos + dir_1 * rand_x + dir_2 * rand_z;
+		vec3 velNew = normalize(flameDir + dir_1 * 0.5*rand_x + dir_2 * 0.5*rand_z);
+
+		float TTL_init = 1;
+		float InvMass_init = 0.8 + 0.4 * abs(sin(dot(pos.xy ,vec2(12.9898,78.233))));
+		
+		addParticleToOutputList(posNew, velNew, TTL_init, InvMass_init);
+
+	}
+}
