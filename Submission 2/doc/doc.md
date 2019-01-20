@@ -1,4 +1,5 @@
 # EZG18 - Haunted Castle
+ <> Brief description of the implementation, in particular a short description of how the different aspects of the requirements (see above) were implemented - be specific, but keep it concise.
 ## Story
 The user finds herself/hisself in a medieval dark room and can barely identify the objects around him/her. Suddenly torches catch fire as if by ghost hand. He/She takes a look around the room and see different things moving: A chair that is moving forward, chess figure starting moving, torches move to an upright position and paintings falling down. All ends with the cupboard falling on the user.
 
