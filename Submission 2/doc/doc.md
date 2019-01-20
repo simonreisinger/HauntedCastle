@@ -4,6 +4,7 @@ The user finds herself/hisself in a medieval dark room and can barely identify t
 
 ## Scene
 Medieval room with torches on fire, knight armors, chairs with chess desk, stone walls, paintings and closet.
+![overview](images/overview.png)
 
 ## CONTROLS
 
@@ -41,30 +42,34 @@ MOUSE DRAG UP | Camera down
 MOUSE DRAG DOWN | Camera up
 
 ## DEVELOPMENT STATUS
-Implemented until now:
-- Bling-Phong illumination model
-- All models with textures
-- Debug camera (controls see above)
-- Camera Path
-- All Effect (See below)
-
+Implemented:
+- [Bling-Phong illumination model](https://en.wikipedia.org/wiki/Blinn%E2%80%93Phong_shading_model)
+- Loading all models with textures
+- Debug camera ([Controls](##CONTROLS) see above)
+- Camera Path ([Cubic Hermite](https://en.wikipedia.org/wiki/Cubic_Hermite_spline))
+- All [Effect](##EFFECTS) (See below)
 
 ## EFFECTS
-Implemented until now:
-TODO BILDER UND QUELLEN EINFÜGEN
+TODO UND QUELLEN EINFÜGEN
 TODO How you've implemented those Effects (Links/References to papers, books or other resources where the effect is described and a description of your extensions to it)
 - Direction shadows with PCF (from the sun)
+![DirectionShadows](images/DirectionShadows.png)
 - Bloom (Bright Window)
+![Bloom](images/Bloom.png)
 - Fire (Particle Effect) (Source: Revision Course Slides: Particle Systems (2018W); Revision Course Slides: Particle Systems (2018W))
+![Fire](images/Fire.png)
 - Omnidirectional Shadows (Shadows of Torches) (Source: Revision Course Slides: Omnidirectional Shadows (2018W))
+![OmnidirectionalShadows](images/OmnidirectionalShadows.png)
 - Bump Mapping (Wall) ()
+![BumpMapping](images/BumpMapping.png)
 - Volumetric Lighting (Light Rays from Sun) (Source: Revision Course Slides: Volumetric Lighting (2018W))
-
+![VolumetricLighting](images/VolumetricLighting.png)
 
 ## IMPLEMENTATION DETAILS
-Requirements:
+### Requirements:
 - Windows
 - OpenGL 3.3 Core Profile
+- NVIDIA GTX 1060 (Tested on AMAROK PC in VisLab)
 
 ### Tools
 - Visual Studios 2013
@@ -98,5 +103,9 @@ Requirements:
 ### Music:
 - Spooky Music Instrumental - Ravensbrook: https://www.youtube.com/watch?v=H9D8fAC6CoU
 
-## Tested on the following graphic cards:
-- NVIDIA GTX 1060 (AMAROK PC in VisLab)
+## VIDEO
+Coming soon
+
+## Authors:
+* Michael Pointner
+* Simon Reisinger
