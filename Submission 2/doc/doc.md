@@ -1,12 +1,12 @@
 # EZG18 - Haunted Castle
 ## Story
-The user finds herself/himself in a medieval dark room and can barely identify the objects around him/her. Suddenly torches catch fire as if by ghost hand. He/She takes a look around the room and sees different things moving: A chair that is moving forward, chess figure starting moving, torches move to an upright position and paintings falling down. All ends with the wardrobe falling on the user.
+The user finds herself/himself in a medieval dark room and can barely identify the objects around him/her. Suddenly torches catch fire as if by ghost hand. He/She takes a look around the room and sees different things moving: A chair that is moving forward, chess figure starting moving ([Fool's Mate](https://en.wikipedia.org/wiki/Fool%27s_mate)), torches move to an upright position and paintings falling down. All ends with the wardrobe falling on the user.
 
 ## Scene
 Medieval room with torches on fire, knight armors, chairs with chess desk, stone walls, paintings and closet.
-![overview](images/overview2.png)
+![overview2](images/overview2.png)
 
-![overview](images/overview3.png)
+![overview3](images/overview3.png)
 
 ## CONTROLS
 
@@ -17,7 +17,7 @@ Key(s) | control
 F1 | Help / Show Controls
 F2 | Frame Time on/off
 +/- | Ambient Light up/down
-Page up/Page down/Pos1 | Speed up/down/reset
+Page up/Page down/Pos1 | Speed up/down/reset (The speed of the sound is not changed. Therefore it will get out of sync)
 C| Debug Mode on/off
 ESC | Quit Game
 
@@ -47,38 +47,46 @@ MOUSE DRAG DOWN | Camera up
 Implemented:
 - [Bling-Phong illumination model](https://en.wikipedia.org/wiki/Blinn%E2%80%93Phong_shading_model)
 - Loading all [models](#Models) with textures
+- We perform view frustum culling.
 - Debug camera ([Controls](#CONTROLS) see above)
-- Camera Path ([Cubic Hermite](https://en.wikipedia.org/wiki/Cubic_Hermite_spline))
+- Autmatic Camera Movement: The Camera is moving along a predefined [Cubic Hermite Spline](https://en.wikipedia.org/wiki/Cubic_Hermite_spline)
 - All [Effects](#EFFECTS) (See below)
 
 ## EFFECTS
 - Direction shadows with PCF (from the sun)
+  - The Direction shadows can be seen at the floor. They represent the light of the sunn falling in through the Window.
   - https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
 
 ![DirectionShadows](images/DirectionShadows.png)
 
 - Bloom (Bright Window)
+  - In the scene the Bloom effect is used in the Windows to simulate that it is very bright outside. This effect extracts the brightest parts of the image, blurres them in an extra shader and in a final step adds them to the original image. 
   - http://learnopengl.com/#!Advanced-Lighting/Bloom
 
 ![Bloom](images/Bloom.png)
 
 - Fire (Particle Effect)
-  - Revision Course Slides: Particle Systems (2018W)
+  - The Fire is realized using Particle Bilboards for drawing and Compute Shaders for position updates.
+  - Revision Course Slides: Compute Shaders (2018W)
   - Revision Course Slides: Particle Systems (2018W)
 
 ![Fire](images/Fire.png)
 
-- Omnidirectional Shadows (Shadows of Torches)
+- Omnidirectional Shadows
+  - The Omnidirectional Shadows are the Shadows of Torches. They are “flickering” because the fire is irregular.
   - Revision Course Slides: Omnidirectional Shadows (2018W)
 
 ![OmnidirectionalShadows](images/OmnidirectionalShadows.png)
 
-- Bump Mapping (Wall)
-  - Kilgard, M. J. (2000, July). A practical and robust bump-mapping technique for today’s GPUs. In Game Developers Conference 2000 (pp. 1-39). https://www.cg.tuwien.ac.at/courses/Realtime/slides/VU.WS.2013/PracticalBumpMap.pdf
+- Normal/Bump Mapping (Wall)
+  - The normal Mapping can be seen on the walls. It makes texture look more liek 2D
+  - Lecture Slides: Shading (2018W)
+  - http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/
 
 ![BumpMapping](images/BumpMapping.png)
 
 - Volumetric Lighting (Light Rays from Sun)
+  - Volumetric Lighting are visible as the light shafts falling in through the windows.
   - Revision Course Slides: Volumetric Lighting (2018W)
 
 ![VolumetricLighting](images/VolumetricLighting.png)
@@ -126,5 +134,5 @@ Implemented:
 Coming soon
 
 ## Authors
-* Michael Pointner
-* Simon Reisinger
+* Michael Pointner, 01427791
+* Simon Reisinger, 01426220
