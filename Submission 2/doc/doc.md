@@ -17,7 +17,7 @@ Key(s) | control
 F1 | Help / Show Controls
 F2 | Frame Time on/off
 +/- | Ambient Light up/down
-Page up/Page down/Pos1 | Speed up/down/reset (The speed of the sound is not changed. Therefore it will get out of sync)
+Page up/Page down/Pos1 | Speed up/down/reset (The speed of the sound is not changed. Therefore it gets out of sync)
 C| Debug Mode on/off
 ESC | Quit Game
 
@@ -49,7 +49,7 @@ Implemented:
 - Loading all [models](#Models) with textures
 - We perform view frustum culling.
 - Debug camera ([Controls](#CONTROLS) see above)
-- Autmatic Camera Movement: The Camera is moving along a predefined [Cubic Hermite Spline](https://en.wikipedia.org/wiki/Cubic_Hermite_spline)
+- Automatic Camera Movement: The Camera is moving along a predefined [Cubic Hermite Spline](https://en.wikipedia.org/wiki/Cubic_Hermite_spline)
 - All [Effects](#EFFECTS) (See below)
 
 ## EFFECTS
@@ -60,33 +60,33 @@ Implemented:
 ![DirectionShadows](images/DirectionShadows.png)
 
 - Bloom (Bright Window)
-  - In the scene the Bloom effect is used in the Windows to simulate that it is very bright outside. This effect extracts the brightest parts of the image, blurres them in an extra shader and in a final step adds them to the original image. 
+  - In the scene the Bloom effect is used in the Windows to simulate that it is very bright outside. This effect extracts the brightest parts of the image, blurs them in an extra shader and in a final step adds them to the original image. 
   - http://learnopengl.com/#!Advanced-Lighting/Bloom
 
 ![Bloom](images/Bloom.png)
 
 - Fire (Particle Effect)
-  - The Fire is realized using Particle Bilboards for drawing and Compute Shaders for position updates.
+  - The Fire is realized using Particle Billboards for drawing and Compute Shaders for position updates.
   - Revision Course Slides: Compute Shaders (2018W)
   - Revision Course Slides: Particle Systems (2018W)
 
 ![Fire](images/Fire.png)
 
 - Omnidirectional Shadows
-  - The Omnidirectional Shadows are the Shadows of Torches. They are “flickering” because the fire is irregular.
+  - The Omnidirectional Shadows are the Shadows of Torches. They are “flickering” because the intensity of the fire is irregular.
   - Revision Course Slides: Omnidirectional Shadows (2018W)
 
 ![OmnidirectionalShadows](images/OmnidirectionalShadows.png)
 
 - Normal/Bump Mapping (Wall)
-  - The normal Mapping can be seen on the walls. It makes texture look more liek 2D
+  - The Normal Mapping can be seen on the walls. It makes texture look more like 2D
   - Lecture Slides: Shading (2018W)
   - http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/
 
 ![BumpMapping](images/BumpMapping.png)
 
 - Volumetric Lighting (Light Rays from Sun)
-  - Volumetric Lighting are visible as the light shafts falling in through the windows.
+  - Volumetric Lighting is visible as the light shafts falling in through the windows.
   - Revision Course Slides: Volumetric Lighting (2018W)
 
 ![VolumetricLighting](images/VolumetricLighting.png)
@@ -131,7 +131,7 @@ Implemented:
 - Sound Effects: https://freesound.org
 
 ## VIDEO
-Coming soon
+https://www.cg.tuwien.ac.at/courses/Realtime/HallOfFame/2018/video/HauntedCastle.mp4
 
 ## Authors
 * Michael Pointner, 01427791
