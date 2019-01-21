@@ -373,7 +373,43 @@ static void APIENTRY DebugCallback(GLenum source, GLenum type, GLuint id, GLenum
 
 int main(int argc, char** argv)
 {
-
+	string defaultSettings;
+	cout << "Use default settings? (window mode with 1280x768) Y/n ";
+	cin >> defaultSettings;
+	if (defaultSettings.compare("n") == 0) {
+		string fullscreenSetting;
+		cout << "Fullscreen y/N ";
+		cin >> fullscreenSetting;
+		if (fullscreenSetting.compare("y") == 0) {
+			fullscreen = true;
+		}
+		else {
+			bool sizeOK;
+			do {
+				sizeOK = true;
+				fullscreen = false;
+				try {
+					cout << "Width in px: ";
+					string widthStr;
+					cin >> widthStr;
+					width = stoi(widthStr);
+					height = (width * 3) / 5;
+					if (width < 400) {
+						cout << "Width needs to be > 400" << endl;
+						sizeOK = false;
+					}
+				}
+				catch (std::invalid_argument& e) {
+					cout << "Value needs to be an Integer!" << endl;
+					sizeOK = false;
+				}
+				catch (std::out_of_range& e) {
+					cout << "Value out of range!" << endl;
+					sizeOK = false;
+				}
+			} while (!sizeOK);
+		}
+	}
 	//cout << "Loading..." << endl;
 
 	// TODO implement full screen
