@@ -63,7 +63,7 @@ Implemented:
   - In the scene the Bloom effect is used in the Windows to simulate that it is very bright outside. This effect extracts the brightest parts of the image, blurs them in an extra shader and in a final step adds them to the original image. 
   - http://learnopengl.com/#!Advanced-Lighting/Bloom
 
-![Bloom](Submission 2/doc/images/Bloom.png)
+![Bloom](Submission%202/doc/images/Bloom.png)
 
 - Fire (Particle Effect)
   - The Fire is realized using Particle Billboards for drawing and Compute Shaders for position updates.
