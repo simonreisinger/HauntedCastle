@@ -570,7 +570,7 @@ int main(int argc, char** argv)
 
 	if (playSound) {
 		// Play the sound, with loop mode
-		sound.playSound(soundSample, false);
+		sound.playSound(soundSample, false, debugMode);
 	}
 
 
@@ -1498,6 +1498,11 @@ void handleInput(GLFWwindow* window, float time_delta)
 			camera->changeAutomaticCameraMovementActivatedState();
 			c_pressed = true;
 			debugMode = !debugMode;
+
+			if (playSound) {
+				// Play the sound, with loop mode
+				sound.pauseSound(!debugMode);
+			}
 		}
 	}
 	else

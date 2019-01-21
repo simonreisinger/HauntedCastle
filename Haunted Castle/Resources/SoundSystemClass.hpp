@@ -16,7 +16,11 @@ public:
 
 	void createSound(SoundClass *pSound, const char* pFile);
 
-	void playSound(SoundClass pSound, bool bLoop);
+	void playSound(SoundClass pSound, bool bLoop, bool paused);
 
 	void releaseSound(SoundClass pSound);
+
+	void pauseSound(bool unPause);
+
+	FMOD::Channel* channel = NULL;
 };

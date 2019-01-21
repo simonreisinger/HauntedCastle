@@ -30,7 +30,7 @@ void SoundSystemClass::createSound(SoundClass *pSound, const char* pFile)
 	m_pSystem->createSound(pFile, NULL, 0, pSound);
 }
 
-void SoundSystemClass::playSound(SoundClass pSound, bool bLoop = false)
+void SoundSystemClass::playSound(SoundClass pSound, bool bLoop = false, bool paused = false)
 {
 	if (!bLoop)
 		pSound->setMode(FMOD_LOOP_OFF);
@@ -40,10 +40,24 @@ void SoundSystemClass::playSound(SoundClass pSound, bool bLoop = false)
 		pSound->setLoopCount(-1);
 	}
 
-	m_pSystem->playSound(pSound, FMOD_DEFAULT, false, 0);
+	m_pSystem->playSound(pSound, FMOD_DEFAULT, paused, &channel);
 }
 
 void SoundSystemClass::releaseSound(SoundClass pSound)
 {
 	pSound->release();
+}
+
+void SoundSystemClass::pauseSound(bool unPause)
+{
+	bool isPaused;
+	channel->getPaused(&isPaused);
+	if (isPaused && unPause)
+	{
+		channel->setPaused(false);
+	}
+	else if (!isPaused && !unPause)
+	{
+		channel->setPaused(true);
+	}
 }
