@@ -670,10 +670,11 @@ int main(int argc, char** argv)
 		{
 			if (CGUE_DISPLAY_FRAME_TIME)
 			{
-				cout << "Time: " << time_abs << "s, ";
-				cout << "Frame time: " << (int)(time_delta * 1000) << "ms, Frame/sec: " << (int)(1.0f / time_delta) << ", ";
-				cout << "Real Frame time: " << (time_total_end - time_total_start) * 1000 << "ms, Real Frame/sec: " << (int)(1.0f / (time_total_end - time_total_start)) << endl;
-
+				//cout << "Time: " << time_abs << "s, ";
+				//cout << "Frame time: " << (int)(time_delta * 1000) << "ms, "; 
+				cout << "Frame / sec: " << (int)(1.0f / time_delta) << endl;// ", ";
+				//cout << "Real Frame time: " << (time_total_end - time_total_start) * 1000 << "ms, Real Frame/sec: " << (int)(1.0f / (time_total_end - time_total_start)) << endl;
+				/*
 				cout << "update: " << (time_update_end - time_update_start)*1000 << "ms, ";
 				cout << "PointShadows: " << (time_pointShadows_end - time_pointShadows_start) * 1000 << "ms, ";
 				cout << "DirectionalShadows: " << (time_directionalShadows_end - time_directionalShadows_start) * 1000 << "ms, ";
@@ -681,6 +682,7 @@ int main(int argc, char** argv)
 				cout << "Blur: " << (time_blur_end - time_blur_start) * 1000 << "ms, ";
 				cout << "Fire: " << (time_fires_end - time_fires_start) * 1000 << "ms, ";
 				cout << "Swap: " << (time_swap_end - time_swap_start) * 1000 << "ms" << endl;
+				*/
 			}
 			if (VIEWFRUSTUM_CULLING) {
 				cout << "Number of Culled Meshes: " << NUMBER_OF_CULLED_MESHES << endl;
