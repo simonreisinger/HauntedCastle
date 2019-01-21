@@ -1,18 +1,20 @@
 # EZG18 - Haunted Castle
  <> Brief description of the implementation, in particular a short description of how the different aspects of the requirements (see above) were implemented - be specific, but keep it concise.
 ## Story
-The user finds herself/hisself in a medieval dark room and can barely identify the objects around him/her. Suddenly torches catch fire as if by ghost hand. He/She takes a look around the room and see different things moving: A chair that is moving forward, chess figure starting moving, torches move to an upright position and paintings falling down. All ends with the cupboard falling on the user.
+The user finds herself/himself in a medieval dark room and can barely identify the objects around him/her. Suddenly torches catch fire as if by ghost hand. He/She takes a look around the room and sees different things moving: A chair that is moving forward, chess figure starting moving, torches move to an upright position and paintings falling down. All ends with the wardrobe falling on the user.
 
 ## Scene
 Medieval room with torches on fire, knight armors, chairs with chess desk, stone walls, paintings and closet.
-![overview](images/overview.png)
+![overview](images/overview2.png)
+
+![overview](images/overview3.png)
 
 ## CONTROLS
 
 ### ALWAYS AVAILABLE
 
-Key(s) | control 
---- | --- 
+Key(s) | control
+--- | ---
 F1 | Help / Show Controls
 F2 | Frame Time on/off
 +/- | Ambient Light up/down
@@ -22,8 +24,8 @@ ESC | Quit Game
 
 ### JUST IN DEBUG MODE
 
-Key(s) | control 
---- | --- 
+Key(s) | control
+--- | ---
 F3 | Wire Frame on/off
 F4 | Textur-Sampling-Quality: Nearest Neighbor/Bilinear
 F5 | Mip Mapping-Quality: Off/Nearest Neighbor/Linear
@@ -48,15 +50,14 @@ Implemented:
 - Loading all [models](#Models) with textures
 - Debug camera ([Controls](#CONTROLS) see above)
 - Camera Path ([Cubic Hermite](https://en.wikipedia.org/wiki/Cubic_Hermite_spline))
-- All [Effect](#EFFECTS) (See below)
+- All [Effects](#EFFECTS) (See below)
 
 ## EFFECTS
 <> TODO How you've implemented those Effects (Links/References to papers, books or other resources where the effect is described and a description of your extensions to it)
 
 - Direction shadows with PCF (from the sun)
-  - (Liu, N., & Pang, M. Y. (2009, January). Shadow mapping algorithms: a complete survey. In Computer Network and Multimedia Technology, 2009. CNMT 2009. International Symposium on (pp. 1-5). IEEE. https://ieeexplore.ieee.org/stamp/stamp.jsp?tp=&arnumber=5374715 Reeves, W. T., Salesin, D. H., & Cook, R. L. (1987, August). Rendering antialiased shadows with depth maps. In ACM Siggraph Computer Graphics (Vol. 21, No. 4, pp. 283-291).
-                                             https://dl.acm.org/citation.cfm?id=37435)
-                                             
+  - https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
+
 ![DirectionShadows](images/DirectionShadows.png)
 
 - Bloom (Bright Window)
