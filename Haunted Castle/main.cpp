@@ -672,7 +672,7 @@ int main(int argc, char** argv)
 			{
 				//cout << "Time: " << time_abs << "s, ";
 				//cout << "Frame time: " << (int)(time_delta * 1000) << "ms, "; 
-				cout << "Frame / sec: " << (int)(1.0f / time_delta) << endl;// ", ";
+				cout << "Frame/sec: " << (int)(1.0f / time_delta) << endl;// ", ";
 				//cout << "Real Frame time: " << (time_total_end - time_total_start) * 1000 << "ms, Real Frame/sec: " << (int)(1.0f / (time_total_end - time_total_start)) << endl;
 				/*
 				cout << "update: " << (time_update_end - time_update_start)*1000 << "ms, ";
