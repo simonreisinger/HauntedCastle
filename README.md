@@ -125,7 +125,7 @@ Implemented:
 - Walls of Room: Stone(1)01 from Total_Textures_V1
 - Ceiling of Room: Wood(2)09 from Total_Textures_V1
 - Floor of Room: Wood(2)10 from Total_Textures_V1
-- Frame Image: https://dermeister.at/evilmaster01.jpg
+- Framed Image: https://dermeister.at/evilmaster01.jpg
 
 ### Music
 - Spooky Music Instrumental - Ravensbrook: https://www.youtube.com/watch?v=H9D8fAC6CoU
