@@ -131,8 +131,8 @@ Implemented:
 - Sound Effects: https://freesound.org
 
 ## VIDEO
-https://www.cg.tuwien.ac.at/courses/Realtime/HallOfFame/2018//video/video-Gruppe37.mp4
+https://www.cg.tuwien.ac.at/courses/Realtime/HallOfFame/2018/video/video-Gruppe37.mp4
 
 ## Authors
-* Michael Pointner, 01427791
-* Simon Reisinger, 01426220
+* Michael Pointner
+* Simon Reisinger
