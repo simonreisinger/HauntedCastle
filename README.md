@@ -95,7 +95,7 @@ Implemented:
 ### Requirements
 - Windows
 - OpenGL 3.3 Core Profile
-- NVIDIA GTX 1060 (Tested on AMAROK PC in VisLab)
+- NVIDIA GTX 1060
 
 ### Tools
 - Visual Studios 2013
@@ -121,9 +121,9 @@ Implemented:
 - Table: https://free3d.com/3d-model/round-table-928375.html
 
 ### Additional Textures
-- Walls of Room: Stone(1)01 from https://www.cg.tuwien.ac.at/courses/Textures/Total_Textures_V1/
-- Ceiling of Room: Wood(2)09 from https://www.cg.tuwien.ac.at/courses/Textures/Total_Textures_V1/
-- Floor of Room: Wood(2)10 from https://www.cg.tuwien.ac.at/courses/Textures/Total_Textures_V1/
+- Walls of Room: Stone(1)01 from Total_Textures_V1
+- Ceiling of Room: Wood(2)09 from Total_Textures_V1
+- Floor of Room: Wood(2)10 from Total_Textures_V1
 - Frame Image: https://dermeister.at/evilmaster01.jpg
 
 ### Music
@@ -131,7 +131,7 @@ Implemented:
 - Sound Effects: https://freesound.org
 
 ## VIDEO
-https://www.cg.tuwien.ac.at/courses/Realtime/HallOfFame/2018/video/HauntedCastle.mp4
+https://www.cg.tuwien.ac.at/courses/Realtime/HallOfFame/2018//video/video-Gruppe37.mp4
 
 ## Authors
 * Michael Pointner, 01427791
