@@ -94,7 +94,7 @@ Implemented:
 
 ## IMPLEMENTATION DETAILS
 ### Requirements
-- Windows
+- Windows 10
 - OpenGL 3.3 Core Profile
 - NVIDIA GTX 1060
 
