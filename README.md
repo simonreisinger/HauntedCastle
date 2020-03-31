@@ -135,5 +135,5 @@ Implemented:
 https://www.cg.tuwien.ac.at/courses/Realtime/HallOfFame/2018/video/video-Gruppe37.mp4
 
 ## Authors
-* Michael Pointner
-* Simon Reisinger
+* [Michael Pointner](http://michael.pointner.info/)
+* [Simon Reisinger](https://simonreisinger.com)
