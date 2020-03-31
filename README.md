@@ -132,7 +132,7 @@ Implemented:
 - Sound Effects: https://freesound.org
 
 ## VIDEO
-![](https://www.cg.tuwien.ac.at/courses/Realtime/HallOfFame/2018/video/video-Gruppe37.mp4)
+https://www.cg.tuwien.ac.at/courses/Realtime/HallOfFame/2018/video/video-Gruppe37.mp4
 
 ## Authors
 * [Michael Pointner](http://michael.pointner.info/)
