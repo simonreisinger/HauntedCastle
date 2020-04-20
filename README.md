@@ -20,7 +20,7 @@ F2 | Frame Time on/off
 +/- | Ambient Light up/down
 Page up/Page down/Pos1 | Speed up/down/reset (The speed of the sound is not changed. Therefore it gets out of sync)
 C| Debug Mode on/off
-ESC | Quit Game
+ESC | Quit
 
 ### JUST IN DEBUG MODE
 
