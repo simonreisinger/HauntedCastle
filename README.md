@@ -5,9 +5,9 @@ The user finds herself/himself in a medieval dark room and can barely identify t
 
 ## Scene
 Medieval room with torches on fire, knight armors, chairs with chess desk, stone walls, paintings and closet.
-![overview2](Submission%202/doc/images/overview2.png)
+![overview2](screenshots/overview2.png)
 
-![overview3](Submission%202/doc/images/overview3.png)
+![overview3](screenshots/overview3.png)
 
 ## CONTROLS
 
@@ -58,39 +58,39 @@ Implemented:
   - The Direction shadows can be seen at the floor. They represent the light of the sunn falling in through the Window.
   - https://learnopengl.com/Advanced-Lighting/Shadows/Shadow-Mapping
 
-![DirectionShadows](Submission%202/doc/images/DirectionShadows.png)
+![DirectionShadows](screenshots/DirectionShadows.png)
 
 - Bloom (Bright Window)
   - In the scene the Bloom effect is used in the Windows to simulate that it is very bright outside. This effect extracts the brightest parts of the image, blurs them in an extra shader and in a final step adds them to the original image. 
   - http://learnopengl.com/#!Advanced-Lighting/Bloom
 
-![Bloom](Submission%202/doc/images/Bloom.png)
+![Bloom](screenshots/Bloom.png)
 
 - Fire (Particle Effect)
   - The Fire is realized using Particle Billboards for drawing and Compute Shaders for position updates.
   - Revision Course Slides: Compute Shaders (2018W)
   - Revision Course Slides: Particle Systems (2018W)
 
-![Fire](Submission%202/doc/images/Fire.png)
+![Fire](screenshots/Fire.png)
 
 - Omnidirectional Shadows
   - The Omnidirectional Shadows are the Shadows of Torches. They are “flickering” because the intensity of the fire is irregular.
   - Revision Course Slides: Omnidirectional Shadows (2018W)
 
-![OmnidirectionalShadows](Submission%202/doc/images/OmnidirectionalShadows.png)
+![OmnidirectionalShadows](screenshots/OmnidirectionalShadows.png)
 
 - Normal/Bump Mapping (Wall)
   - The Normal Mapping can be seen on the walls. It makes texture look more like 2D
   - Lecture Slides: Shading (2018W)
   - http://www.opengl-tutorial.org/intermediate-tutorials/tutorial-13-normal-mapping/
 
-![BumpMapping](Submission%202/doc/images/BumpMapping.png)
+![BumpMapping](screenshots/BumpMapping.png)
 
 - Volumetric Lighting (Light Rays from Sun)
   - Volumetric Lighting is visible as the light shafts falling in through the windows.
   - Revision Course Slides: Volumetric Lighting (2018W)
 
-![VolumetricLighting](Submission%202/doc/images/VolumetricLighting.png)
+![VolumetricLighting](screenshots/VolumetricLighting.png)
 
 ## IMPLEMENTATION DETAILS
 ### Requirements
