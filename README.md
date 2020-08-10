@@ -1,5 +1,6 @@
 # Haunted Castle
-This project was created for the course [Real Time Rendering](https://www.cg.tuwien.ac.at/courses/Realtime/) at the [TU Wien](https://www.tuwien.at). ([Hall of Fame](https://www.cg.tuwien.ac.at/courses/Realtime/HallOfFame/2018/index.html))
+([Hall of Fame](https://www.cg.tuwien.ac.at/courses/Realtime/HallOfFame/2018/index.html))
+
 ## Story
 The user finds herself/himself in a medieval dark room and can barely identify the objects around him/her. Suddenly torches catch fire as if by ghost hand. He/She takes a look around the room and sees different things moving: A chair that is moving forward, chess figure starting moving ([Fool's Mate](https://en.wikipedia.org/wiki/Fool%27s_mate)), torches move to an upright position and paintings falling down. All ends with the wardrobe falling on the user.
 
@@ -133,6 +134,9 @@ Implemented:
 
 ## VIDEO
 https://www.cg.tuwien.ac.at/courses/Realtime/HallOfFame/2018/video/video-Gruppe37.mp4
+
+## Acknowledgment
+This project was created for the course [Real Time Rendering](https://www.cg.tuwien.ac.at/courses/Realtime/) at the [TU Wien](https://www.tuwien.at).
 
 ## Authors
 * [Michael Pointner](http://michael.pointner.info/)
